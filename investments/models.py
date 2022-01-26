@@ -1,33 +1,51 @@
-from django.db import models
+
+
 
 # Create your models here.
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.base import ModelState  # default user from django
+from django.urls import reverse
 
 # Main
 
+class AssetManager(models.Manager):
+    def get_queryset(self):
+        return super(AssetManager, self).get_queryset().filter(is_active=True)
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
 
     def __str__(self):
         return "{}".format(self.name)
+    
+    def get_absolute_url(self):
+        return reverse('store:category_list', args=[self.slug])
     
     class Meta:
         verbose_name_plural = "   Categories" # Espaços em Branco organizam quem vem primeiro
     
 
 class Asset(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="categories")
+    category = models.ForeignKey(Category, related_name='asset', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=18, decimal_places=2)
+    slug = models.SlugField(max_length=255)
+    price = models.DecimalField(max_digits=18, decimal_places=18)
+    objects = models.Manager()
+    assets = AssetManager()
 
     def __str__(self):
         return '  {}  |  {}  |  {}  '.format(self.ticker, self.price, self.category)
-    
+
     class Meta:
         verbose_name_plural = "  Assets"
+        ordering = ('-ticker',)
+
+    def get_absolute_url(self):
+        return reverse('store:asset_detail', args=[self.slug])
+    
 
 # Child Classes with ihneritace from Assets
 class Fii(Asset):
@@ -44,7 +62,6 @@ class Fii(Asset):
     class Meta:
         verbose_name_plural = " Fiis"
         
-
 class Stock(Asset):
     setor = models.CharField(max_length=255)
     twelve_m_yield = models.DecimalField(max_digits=18, decimal_places=2)
