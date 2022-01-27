@@ -4,3 +4,4 @@
 - Minha Arca
 - Pague Crypto
 - Mercado Crypto
+- Yoga Brasilia
