@@ -7,6 +7,16 @@ from django.db import models
 
 # Main
 
+class SetorFii(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+
+    def __str__(self):
+        return "{}".format(self.name)
+    
+    class Meta:
+        verbose_name_plural = "   Setor Fiis" # Espaços em Branco organizam quem vem primeiro
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
@@ -19,13 +29,13 @@ class Category(models.Model):
     
 
 class Asset(models.Model):
-    category = models.ForeignKey(Category, related_name='asset', on_delete=models.CASCADE)
-    ticker = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, related_name='categories', on_delete=models.CASCADE)
+    ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
     price = models.DecimalField(max_digits=18, decimal_places=4)
 
     def __str__(self):
-        return '  {}  |  {}  |  {}  '.format(self.ticker, self.price, self.category)
+        return '{}'.format(self.ticker)
 
     class Meta:
         verbose_name_plural = "  Assets"
@@ -34,7 +44,7 @@ class Asset(models.Model):
 
 # Child Classes with ihneritace from Assets
 class Fii(Asset):
-    setor = models.CharField(max_length=255)
+    setor_fii = models.ForeignKey(SetorFii, null=True, default=None, on_delete=models.CASCADE, related_name="setor_fiis")
     last_dividend = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     last_yield = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     six_m_yield = models.DecimalField(max_digits=18, decimal_places=2, default=0)
@@ -42,7 +52,7 @@ class Fii(Asset):
     p_vpa = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     
     def __str__(self):
-        return '  {}  |  {}  |  {}  '.format(self.ticker, self.price, self.setor)
+        return '{}'.format(self.ticker)
     
     class Meta:
         verbose_name_plural = " Fiis"

@@ -8,7 +8,7 @@ from . import models
 # Minha Holding
 
 admin.site.register(models.Category)
-
+admin.site.register(models.SetorFii)
 
 class AssetAdmin(admin.ModelAdmin):
     list_display =('ticker', 'price', 'category')
@@ -17,9 +17,9 @@ class AssetAdmin(admin.ModelAdmin):
     list_filter =(('category', RelatedFieldListFilter),)
 
 class FiiAdmin(admin.ModelAdmin):
-    list_display =('ticker', 'price', 'category', 'setor', 'last_dividend', 'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa' )
+    list_display =('ticker', 'setor_fii', 'price','last_dividend', 'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa' )
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'setor', 'last_dividend', 'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa']
+    list_editable = ['price', 'setor_fii', 'last_dividend', 'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa']
 
 class ETFAdmin(admin.ModelAdmin):
     list_display =('ticker', 'price', 'category')
@@ -31,7 +31,6 @@ class CryptoAdmin(admin.ModelAdmin):
 
 class DividendAdmin(admin.ModelAdmin):
     list_display =('asset', 'value_per_share_brl', 'record_date', 'pay_date' )
-# Como puxar valores da tabela foreing key
 
 admin.site.register(models.Asset, AssetAdmin)
 admin.site.register(models.Fii, FiiAdmin )
