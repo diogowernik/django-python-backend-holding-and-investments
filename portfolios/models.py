@@ -29,13 +29,22 @@ class Broker(models.Model):
         verbose_name_plural = "   Brokers" # Espaços em Branco organizam quem vem primeiro
 
 class PortfolioAsset(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    broker = models.ForeignKey(Broker, null=True, default=None, on_delete=models.CASCADE, related_name="brokers")
+    # broker = models.ForeignKey(Broker, null=True, default=1, on_delete=models.CASCADE, related_name="brokers")
     shares_amount = models.DecimalField(max_digits=18, decimal_places=2) 
     share_average_price_brl = models.DecimalField(max_digits=18, decimal_places=2)
-    total_cost_brl = models.DecimalField(max_digits=18, decimal_places=2)
-    total_today_brl = models.DecimalField(max_digits=18, decimal_places=2)
+    total_cost_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
+    total_today_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
+
+    def save(self, *args, **kwargs):
+        self.total_cost_brl = self.shares_amount * self.share_average_price_brl
+        self.total_today_brl = self.shares_amount * self.asset.price
+        super(PortfolioAsset, self).save(*args, **kwargs)
+
+    @property
+    def profit(self):
+        return self.total_cost_brl - self.total_today_brl
 
     def __str__(self):
         return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl, self.total_cost_brl)

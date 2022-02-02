@@ -14,9 +14,9 @@ class BrokerAdmin(admin.ModelAdmin):
     list_editable = ['slug']
 
 class PortfolioAssetAdmin(admin.ModelAdmin):
-    list_display =('asset', 'portfolio', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl', 'total_today_brl' )
-    list_editable = ['portfolio', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl', 'total_today_brl']
-    list_filter =(('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter),)
+    list_display =('asset', 'shares_amount', 'share_average_price_brl','total_cost_brl', 'total_today_brl', 'profit' )
+    list_editable = ['shares_amount', 'share_average_price_brl']
+    list_filter =(('portfolio', RelatedFieldListFilter),)
 
 admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.Broker, BrokerAdmin)

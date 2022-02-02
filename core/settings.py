@@ -27,8 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+# LOGIN_URL = 'rest_framework:login'
+# LOGOUT_URL = 'rest_framework:logout'
 # Application definition
+
+SWAGGER_SETTINGS = {
+   'USE_SESSION_AUTH': False
+}
 
 INSTALLED_APPS = [
     'django_admin_select2',

@@ -27,6 +27,8 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    
+
     path('admin/', admin.site.urls),
 
     path('auth/', include('djoser.urls')),
@@ -35,4 +37,5 @@ urlpatterns = [
     path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
     path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),
     url(r'^$', home, name='home'),
+   #  url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
