@@ -17,6 +17,16 @@ class SetorFii(models.Model):
     class Meta:
         verbose_name_plural = "   Setor Fiis" # Espaços em Branco organizam quem vem primeiro
 
+class SetorCrypto(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+
+    def __str__(self):
+        return "{}".format(self.name)
+    
+    class Meta:
+        verbose_name_plural = "   Setor Cryptos" # Espaços em Branco organizam quem vem primeiro
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
@@ -62,16 +72,19 @@ class ETF(Asset):
     class Meta:
         verbose_name_plural = " ETFs"
 
+class Currency(Asset):
+    class Meta:
+        verbose_name_plural = " Currencies"
+
+class FixedIncome(Asset):
+    default_currency = models.ForeignKey(Currency, related_name='currencies', on_delete=models.CASCADE)
+    class Meta:
+        verbose_name_plural = " RendaFixas"
+
 class Crypto(Asset):
-    SetorChoices = (
-                ('1', 'MainNet'),
-                ('2', 'SideChain'),
-                ('3', 'Oracle'),
-                ('4', 'Game'),
-            )
-    setor = models.CharField(max_length=255, choices= SetorChoices)
-    marketcap = models.DecimalField(max_digits=18, decimal_places=2)
-    circulating_supply = models.DecimalField(max_digits=18, decimal_places=2)
+    setor_crypto = models.ForeignKey(SetorCrypto, null=True, default=1, on_delete=models.CASCADE, related_name="setor_cryptos")
+    marketcap = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    circulating_supply = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
     class Meta:
         verbose_name_plural = " Crytpos"

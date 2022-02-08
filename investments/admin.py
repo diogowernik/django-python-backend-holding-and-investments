@@ -9,6 +9,7 @@ from . import models
 
 admin.site.register(models.Category)
 admin.site.register(models.SetorFii)
+admin.site.register(models.SetorCrypto)
 
 class AssetAdmin(admin.ModelAdmin):
     list_display =('ticker', 'price', 'category')
@@ -25,9 +26,19 @@ class ETFAdmin(admin.ModelAdmin):
     list_display =('ticker', 'price', 'category')
 
 class CryptoAdmin(admin.ModelAdmin):
-    list_display =('ticker', 'price', 'category', 'setor', 'marketcap', 'circulating_supply' )
+    list_display =('ticker', 'price', 'category', 'setor_crypto', 'marketcap', 'circulating_supply' )
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'setor', 'marketcap', 'circulating_supply']
+    list_editable = ['price', 'category', 'setor_crypto', 'marketcap', 'circulating_supply']
+
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display =('ticker', 'price', 'category' )
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['price', 'category', ]
+
+class FixedIncomeAdmin(admin.ModelAdmin):
+    list_display =('ticker', 'price', 'category' )
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['price', 'category', ]
 
 class DividendAdmin(admin.ModelAdmin):
     list_display =('asset', 'value_per_share_brl', 'record_date', 'pay_date' )
@@ -37,3 +48,5 @@ admin.site.register(models.Fii, FiiAdmin )
 admin.site.register(models.ETF, ETFAdmin)
 admin.site.register(models.Crypto, CryptoAdmin)
 admin.site.register(models.Dividend, DividendAdmin)
+admin.site.register(models.Currency, CurrencyAdmin )
+admin.site.register(models.FixedIncome, FixedIncomeAdmin)

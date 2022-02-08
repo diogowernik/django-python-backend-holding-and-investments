@@ -1,0 +1,127 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+{% block content %}
+
+<h1>Custom message!</h1>
+
+
+<div id="chart">
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
+
+<script>
+  var options = {
+    series: [
+          {
+            name: 'Desktops',
+            data: [
+              {
+                x: 'ABC',
+                y: 10
+              },
+              {
+                x: 'DEF',
+                y: 60
+              },
+              {
+                x: 'XYZ',
+                y: 41
+              }
+            ]
+          },
+          {
+            name: 'Mobile',
+            data: [
+              {
+                x: 'ABCD',
+                y: 10
+              },
+              {
+                x: 'DEFG',
+                y: 20
+              },
+              {
+                x: 'WXYZ',
+                y: 51
+              },
+              {
+                x: 'PQR',
+                y: 30
+              },
+              {
+                x: 'MNO',
+                y: 20
+              },
+              {
+                x: 'CDE',
+                y: 30
+              }
+            ]
+          }
+        ],
+    legend: {
+      show: true,
+      position: 'bottom',
+      horizontalAlign: 'left',
+      fontSize: '14px',
+      fontFamily: 'Helvetica, Arial',
+      fontWeight: 400,
+      width:'20px',
+    },
+    theme: {
+      mode: 'light', 
+    //   palette: 'palette6', 
+    },
+  dataLabels: {
+    enabled: true,
+    style: {
+      fontSize: '12px',
+    },
+    formatter: function(text, op) {
+      return [text, op.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })]
+    },
+    offsetY: -4
+  },
+  chart: {
+    height: 450,
+    type: 'treemap',
+    toolbar: {
+      show: false}
+  },
+  colors: [
+    '#3B93A5',
+    '#F7B844',
+    '#38BC6A',
+    '#EC3C65',
+    '#748C38',
+    '#8A1459',
+    '#71A021',
+    '#1E5D8C',
+    '#421243',
+    '#7F94B0',
+    '#EF6537',
+    '#C0ADDB'
+    ],
+    plotOptions: {
+        treemap: {
+            // distributed: true,
+            enableShades: false
+        }
+    }
+};
+
+var chart = new ApexCharts(document.querySelector("#chart"), options);
+chart.render();
+
+// var url = "/api/portfolio/<%= @portfolio.id %>/br_stocks_chart";
+// $.getJSON(url, function (response) {
+//  chart.updateSeries(response);
+// });
+
+
+</script>
+
+
+<!-- Render the rest of the ChangeList view by calling block.super -->
+{{ block.super }}
+{% endblock %}
