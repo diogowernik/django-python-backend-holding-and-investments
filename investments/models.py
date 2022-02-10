@@ -37,12 +37,11 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "   Categories" # Espaços em Branco organizam quem vem primeiro
     
-
 class Asset(models.Model):
     category = models.ForeignKey(Category, related_name='categories', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
-    price = models.DecimalField(max_digits=18, decimal_places=4)
+    price = models.FloatField()
 
     def __str__(self):
         return '{}'.format(self.ticker)
@@ -51,15 +50,14 @@ class Asset(models.Model):
         verbose_name_plural = "  Assets"
         ordering = ('-ticker',)
     
-
 # Child Classes with ihneritace from Assets
 class Fii(Asset):
     setor_fii = models.ForeignKey(SetorFii, null=True, default=None, on_delete=models.CASCADE, related_name="setor_fiis")
-    last_dividend = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    last_yield = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    six_m_yield = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    twelve_m_yield = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    p_vpa = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    last_dividend = models.FloatField(default=0)
+    last_yield = models.FloatField(default=0)
+    six_m_yield = models.FloatField(default=0)
+    twelve_m_yield = models.FloatField(default=0)
+    p_vpa = models.FloatField(default=0)
     
     def __str__(self):
         return '{}'.format(self.ticker)
@@ -83,15 +81,15 @@ class FixedIncome(Asset):
 
 class Crypto(Asset):
     setor_crypto = models.ForeignKey(SetorCrypto, null=True, default=1, on_delete=models.CASCADE, related_name="setor_cryptos")
-    marketcap = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    circulating_supply = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    marketcap = models.FloatField(default=0)
+    circulating_supply = models.FloatField(default=0)
 
     class Meta:
         verbose_name_plural = " Crytpos"
 
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends")
-    value_per_share_brl = models.DecimalField(max_digits=18, decimal_places=2)
+    value_per_share_brl = models.FloatField()
     record_date = models.DateField(null=True, blank=True)
     pay_date = models.DateField(null=True, blank=True)
 

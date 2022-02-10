@@ -2,6 +2,10 @@ from datetime import date
 from django.db import models
 from django.contrib.auth.models import User
 from investments.models import Asset
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+
+
 
 class Portfolio(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -27,19 +31,30 @@ class Broker(models.Model):
 class PortfolioAsset(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    shares_amount = models.DecimalField(max_digits=18, decimal_places=0) 
-    share_average_price_brl = models.DecimalField(max_digits=18, decimal_places=2)
-    total_cost_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
-    total_today_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
+    shares_amount = models.FloatField() 
+    share_average_price_brl = models.FloatField()
+    total_cost_brl = models.FloatField(editable=False)
+    total_today_brl = models.FloatField(editable=False)    
 
+    def validate_unique(self, *args, **kwargs):
+        super().validate_unique(*args, **kwargs)
+        # if self.__class__.objects.filter(portfolio=self.portfolio, asset=self.asset).filter(~Q(id=self.id)).exists():
+        if self.__class__.objects.\
+                filter(portfolio=self.portfolio, asset=self.asset).\
+                exclude(id=self.id).\
+                exists():
+            raise ValidationError(
+                message='This asset already exists in this portfolio.',
+                code='unique_together',
+            )
     def save(self, *args, **kwargs):
-        self.total_cost_brl = self.shares_amount * self.share_average_price_brl
-        self.total_today_brl = self.shares_amount * self.asset.price
+        self.total_cost_brl = round(self.shares_amount * self.share_average_price_brl, 2)
+        self.total_today_brl = round(self.shares_amount * self.asset.price, 2)
         super(PortfolioAsset, self).save(*args, **kwargs)
 
     @property
     def profit(self):
-        return  self.total_today_brl - self.total_cost_brl
+        return  round(self.total_today_brl - self.total_cost_brl, 2)
 
     @property
     def category(self):
@@ -54,14 +69,14 @@ class PortfolioAsset(models.Model):
 class BrokerAsset(models.Model):
     portfolio_asset = models.ForeignKey(PortfolioAsset, on_delete=models.CASCADE, default=1)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
-    shares_amount = models.DecimalField(max_digits=18, decimal_places=0) 
-    share_average_price_brl = models.DecimalField(max_digits=18, decimal_places=2)
-    total_cost_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
-    total_today_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
+    shares_amount = models.FloatField() 
+    share_average_price_brl = models.FloatField()
+    total_cost_brl = models.FloatField(editable=False)
+    total_today_brl = models.FloatField(editable=False)
 
     def save(self, *args, **kwargs):
-        self.total_cost_brl = self.shares_amount * self.share_average_price_brl
-        self.total_today_brl = self.shares_amount * self.portfolio_asset.asset.price
+        self.total_cost_brl = round(self.shares_amount * self.share_average_price_brl, 2)
+        self.total_today_brl = round(self.shares_amount * self.portfolio_asset.asset.price, 2)
         super(BrokerAsset, self).save(*args, **kwargs)
     
     @property
@@ -72,7 +87,7 @@ class BrokerAsset(models.Model):
         return ' {} | {} '.format(self.portfolio_asset.asset.ticker, self.broker)
 
     class Meta:
-        verbose_name_plural = "  Portfolio Assets"
+        verbose_name_plural = "  Assets per Broker"
 
 class Transaction(models.Model):
     OrderChoices = (
@@ -80,43 +95,64 @@ class Transaction(models.Model):
         ('Sell', 'Sell'),
     )
     date =  models.DateField(("Date"), default=date.today)
-    portfolio_asset = models.ForeignKey(PortfolioAsset, on_delete=models.CASCADE, default=1)
-    broker_asset = models.ForeignKey(BrokerAsset, on_delete=models.CASCADE, default=1)
-    shares_amount = models.DecimalField(max_digits=18, decimal_places=0)
-    new_average_price = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
-    broker_average_price = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
-    share_cost_brl = models.DecimalField(max_digits=18, decimal_places=2)
-    total_cost_brl = models.DecimalField(max_digits=18, decimal_places=2, editable=False)
-    order = models.CharField(max_length = 8, choices = OrderChoices)
+    order = models.CharField(max_length = 8, choices = OrderChoices) 
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
+    broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
+    shares_amount = models.FloatField()
+    share_cost_brl = models.FloatField()
+    total_cost_brl = models.FloatField(editable=False)
+    portfolio_asset = models.ForeignKey(PortfolioAsset, on_delete=models.CASCADE, editable=False)
+    portfolio_avarage_price = models.FloatField(editable=False)
+    broker_asset = models.ForeignKey(BrokerAsset, on_delete=models.CASCADE, default=1, editable=False)
+    broker_average_price = models.FloatField(editable=False)
 
-    # Atualiza valores no PortfolioAsset
     def save(self, *args, **kwargs):
-        self.total_cost_brl = self.shares_amount * self.share_cost_brl
-        self.new_average_price = (self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount + self.shares_amount * self.share_cost_brl) / (self.portfolio_asset.shares_amount + self.shares_amount)
-        self.broker_average_price = (self.broker_asset.share_average_price_brl * self.broker_asset.shares_amount + self.shares_amount * self.share_cost_brl) / (self.broker_asset.shares_amount + self.shares_amount)
-        if self.order == 'Buy':
-            self.portfolio_asset.shares_amount += self.shares_amount
-            self.portfolio_asset.share_average_price_brl = self.new_average_price
-            self.broker_asset.shares_amount += self.shares_amount
-            self.broker_asset.share_average_price_brl = self.broker_average_price
-        if self.order == 'Sell':
-            self.portfolio_asset.shares_amount -= self.shares_amount
-        self.portfolio_asset.save()
+        self.share_cost_brl = round(self.share_cost_brl, 2)
+        self.total_cost_brl = round(self.shares_amount * self.share_cost_brl, 2)
+        # Atualiza PortfolioAsset
+        try:
+            self.portfolio_asset = PortfolioAsset.objects.get(portfolio=self.portfolio, asset=self.asset)
+            self.portfolio_avarage_price = round((self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount + self.shares_amount * self.share_cost_brl) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
+            if self.order == 'Buy':
+                self.portfolio_asset.shares_amount += self.shares_amount
+                self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
+            if self.order == 'Sell':
+                self.portfolio_asset.shares_amount -= self.shares_amount
+            self.portfolio_asset.save()
+        except PortfolioAsset.DoesNotExist:
+            self.portfolio_asset = PortfolioAsset.objects.create(portfolio=self.portfolio, asset=self.asset, shares_amount=self.shares_amount, share_average_price_brl=self.share_cost_brl)
+            self.portfolio_avarage_price=self.share_cost_brl 
+            self.portfolio_asset.save()
+        # Atualiza BrokerAsset
+        try:
+            self.broker_asset = BrokerAsset.objects.get(portfolio_asset=self.portfolio_asset, broker=self.broker)
+            self.broker_average_price = round((self.broker_asset.share_average_price_brl * self.broker_asset.shares_amount + self.shares_amount * self.share_cost_brl) / (self.broker_asset.shares_amount + self.shares_amount), 2)
+            if self.order == 'Buy':
+                self.broker_asset.shares_amount += self.shares_amount
+                self.broker_asset.share_average_price_brl = self.broker_average_price
+            if self.order == 'Sell':
+                self.broker_asset.shares_amount -= self.shares_amount
+            self.broker_asset.save()
+        except BrokerAsset.DoesNotExist:
+            self.broker_asset = BrokerAsset.objects.create(broker=self.broker, portfolio_asset=self.portfolio_asset, shares_amount=self.shares_amount, share_average_price_brl=self.share_cost_brl)
+            self.broker_average_price=self.share_cost_brl 
+            self.broker_asset.save()
+
+
         super(Transaction, self).save(*args, **kwargs) 
-        self.broker_asset.save()
-        super(Transaction, self).save(*args, **kwargs) 
-
-
-
-    
+        
     def __str__(self):
         return '{}'.format(self.portfolio_asset.asset.ticker)
 
     class Meta:
         verbose_name_plural = "  Transactions"
-
-
-
+    
+    # @receiver(pre_save, sender=Transaction)
+    # def update_balance_account(sender, instance, update_fields=None, **kwargs):
+    #     trans = Transaction.objects.get(portfolio_asset=instance.portfolio_asset, id=instance.id, UserID=instance.UserID)
+    #     instance.portfolio_asset.shares_amount -= trans.shares_amount
+    #     instance.portfolio_asset.save()
 
     # Atualiza valores no Portfolio Assets na atualização de ordens estudar depois
 
@@ -125,11 +161,7 @@ class Transaction(models.Model):
     #     self.portfolio_asset.save()
     #     super(Transaction, self).delete(*args, **kwargs) 
 
-    # @receiver(pre_save, sender=Transaction)
-    # def update_balance_account(sender, instance, update_fields=None, **kwargs):
-    #     trans = Transaction.objects.get(portfolio_asset=instance.portfolio_asset, id=instance.id, UserID=instance.UserID)
-    #     instance.portfolio_asset.shares_amount -= trans.shares_amount
-    #     instance.portfolio_asset.save()
+
 
 
 

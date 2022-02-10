@@ -16,6 +16,7 @@ class AssetAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'category']
     list_filter =(('category', RelatedFieldListFilter),)
+    search_fields = ['ticker']
 
 class FiiAdmin(admin.ModelAdmin):
     list_display =('ticker', 'setor_fii', 'price','last_dividend', 'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa' )

@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin import RelatedFieldListFilter
 from . import models
-from investments.models import Category
+from admin_auto_filters.filters import AutocompleteFilter
 
-# Register your models here.
 
 class PortfolioAdmin(admin.ModelAdmin):
     list_display =('name', 'owner')
@@ -14,10 +13,15 @@ class BrokerAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ['slug']
 
+class AssetFilter(AutocompleteFilter):
+    title = 'Asset' # display title
+    field_name = 'asset' # name of the foreign key field
+
 class PortfolioAssetAdmin(admin.ModelAdmin):
     list_display =('asset', 'shares_amount', 'share_average_price_brl','total_cost_brl', 'total_today_brl', 'profit', 'category' )
     list_editable = ['shares_amount', 'share_average_price_brl']
-    list_filter =(('asset__category', RelatedFieldListFilter),)
+    # list_filter =(('asset__category', RelatedFieldListFilter),)
+    list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter),]
 
 class BrokerAssetAdmin(admin.ModelAdmin):
     list_display =('ticker', 'broker', 'shares_amount', 'share_average_price_brl','total_cost_brl', 'total_today_brl' )
@@ -25,7 +29,7 @@ class BrokerAssetAdmin(admin.ModelAdmin):
     list_filter =(('portfolio_asset__asset__category', RelatedFieldListFilter), ('broker', RelatedFieldListFilter),)
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display =('portfolio_asset', 'shares_amount', 'share_cost_brl','total_cost_brl', 'order', 'new_average_price' )
+    list_display =('date','portfolio','asset','shares_amount', 'share_cost_brl','total_cost_brl', 'order', 'portfolio_avarage_price' )
     list_editable =                  ['shares_amount', 'share_cost_brl', 'order']
     list_filter =(('portfolio_asset__asset__category', RelatedFieldListFilter),)
 
