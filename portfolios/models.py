@@ -3,9 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from investments.models import Asset
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-
-
 
 class Portfolio(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -64,7 +61,7 @@ class PortfolioAsset(models.Model):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount ,self.share_average_price_brl)
 
     class Meta:
-        verbose_name_plural = "  Portfolio Assets"
+        verbose_name_plural = "  Assets per portfolio"
 
 class BrokerAsset(models.Model):
     portfolio_asset = models.ForeignKey(PortfolioAsset, on_delete=models.CASCADE, default=1)
@@ -90,6 +87,7 @@ class BrokerAsset(models.Model):
         verbose_name_plural = "  Assets per Broker"
 
 class Transaction(models.Model):
+    id = models.AutoField(primary_key=True)
     OrderChoices = (
         ('Buy', 'Buy'),
         ('Sell', 'Sell'),
@@ -138,9 +136,37 @@ class Transaction(models.Model):
             self.broker_asset = BrokerAsset.objects.create(broker=self.broker, portfolio_asset=self.portfolio_asset, shares_amount=self.shares_amount, share_average_price_brl=self.share_cost_brl)
             self.broker_average_price=self.share_cost_brl 
             self.broker_asset.save()
-
-
+        
         super(Transaction, self).save(*args, **kwargs) 
+        # Cria PortfolioToken
+
+        if PortfolioToken.objects.exists():
+            last = PortfolioToken.objects.latest('id')
+            if self.order == 'Buy':
+                PortfolioToken.objects.create(
+                    # transaction_id=self.id,
+                    portfolio=self.portfolio,
+                    date=self.date,
+                    total_today_brl=self.total_cost_brl + last.total_today_brl,
+                    order_value=self.total_cost_brl
+                )
+            if self.order == 'Sell':
+                PortfolioToken.objects.create(
+                    # transaction_id=self.id,
+                    portfolio = self.portfolio,
+                    date = self.date,
+                    total_today_brl = last.total_today_brl - self.total_cost_brl,
+                    order_value = - self.total_cost_brl
+                )
+        else:
+            PortfolioToken.objects.create(
+                    # transaction_id=self.id,
+                    portfolio=self.portfolio,
+                    date=self.date,
+                    total_today_brl=self.total_cost_brl,
+                    order_value=self.total_cost_brl
+            )
+
         
     def __str__(self):
         return '{}'.format(self.portfolio_asset.asset.ticker)
@@ -148,23 +174,41 @@ class Transaction(models.Model):
     class Meta:
         verbose_name_plural = "  Transactions"
     
-    # @receiver(pre_save, sender=Transaction)
-    # def update_balance_account(sender, instance, update_fields=None, **kwargs):
-    #     trans = Transaction.objects.get(portfolio_asset=instance.portfolio_asset, id=instance.id, UserID=instance.UserID)
-    #     instance.portfolio_asset.shares_amount -= trans.shares_amount
-    #     instance.portfolio_asset.save()
+class PortfolioToken(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
+    # transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
 
-    # Atualiza valores no Portfolio Assets na atualização de ordens estudar depois
+    total_today_brl = models.FloatField()
+    order_value = models.FloatField()
+    date =  models.DateField(("Date"), default=date.today)
+    tokens_amount = models.FloatField(editable=False)
+    token_price = models.FloatField(editable=False)
+    profit = models.FloatField(editable=False, default=1)
+    historical_average_price = models.FloatField(editable=False, default=1)
+    historical_profit = models.FloatField(editable=False)
 
-    # def delete(self, *args, **kwargs):
-    #     self.portfolio_asset.shares_amount -= self.shares_amount
-    #     self.portfolio_asset.save()
-    #     super(Transaction, self).delete(*args, **kwargs) 
+    def __str__(self):
+        return ' {} '.format(self.portfolio.name)
+
+    class Meta:
+        verbose_name_plural = "  Tokens per Porftolio"
 
 
+    def save(self, *args, **kwargs):
+        if PortfolioToken.objects.exists():
+            last = PortfolioToken.objects.latest('id')
+            self.tokens_amount = round(last.tokens_amount+(self.order_value/last.token_price), 2)
+            self.token_price = round(self.total_today_brl/self.tokens_amount, 4)
+            self.profit = round((self.token_price-last.token_price)/last.token_price, 4)
+            self.historical_average_price = (last.tokens_amount*last.historical_average_price+(self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
+            self.historical_profit = round((self.token_price-self.historical_average_price)/self.historical_average_price, 4)
+        else: 
+            self.tokens_amount = self.order_value
+            self.token_price = self.total_today_brl/self.tokens_amount
+            self.profit = (self.total_today_brl - self.order_value)/self.order_value
+            self.historical_average_price = 1
+            self.historical_profit = self.profit
 
 
-
-
-
+        super(PortfolioToken, self).save(*args, **kwargs) 
     
