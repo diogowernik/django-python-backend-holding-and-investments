@@ -87,6 +87,11 @@ class Crypto(Asset):
     class Meta:
         verbose_name_plural = " Crytpos"
 
+class PrivateAsset(Asset):
+    class Meta:
+        verbose_name_plural = " Private Assets"
+
+
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends")
     value_per_share_brl = models.FloatField()
