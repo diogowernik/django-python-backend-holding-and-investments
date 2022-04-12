@@ -1,6 +1,10 @@
 from rest_framework import generics
 from . import permissions, serializers
 from . import models
+from rest_framework.response import Response
+from investments.models import Category
+
+
 
 # Create your views here.
 
@@ -19,3 +23,35 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
     # permission_classes = [permissions.IsOwnerOrReadOnly]
     serializer_class = serializers.PortfolioDetailSerializer
     queryset = models.Portfolio.objects.all()
+
+class PortfolioAssetList(generics.ListAPIView):
+    serializer_class = serializers.PortfolioAssetSerializer
+
+    def get_queryset(self):
+        return models.PortfolioAsset.objects.all()
+      
+        
+class CategoryList(generics.ListAPIView):
+    serializer_class = serializers.CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        response = super(CategoryList, self).list(request, *args, **kwargs) 
+        
+        return response     
+
+class TreeMapList(generics.ListAPIView):
+    serializer_class = serializers.TreeMapSerializer
+
+    def get_queryset(self):
+        return models.PortfolioAsset.objects.filter(asset__category__name="Fundos Imobiliários")
+
+    def list(self, request, *args, **kwargs):
+        response = super(TreeMapList, self).list(request, *args, **kwargs) 
+        response.data = {
+            "name": "Fundos Imobiliários",
+            "data": response.data
+            } 
+        return response      

@@ -36,6 +36,9 @@ urlpatterns = [
 
     path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
     path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),
+    path('api/portfolios/<pk>/assets', portfolio_views.PortfolioAssetList.as_view()),
+    path('api/portfolios/<pk>/categories', portfolio_views.CategoryList.as_view()),
+    path('api/portfolios/<pk>/treemap', portfolio_views.TreeMapList.as_view()),
     url(r'^$', home, name='home'),
    #  url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

@@ -26,9 +26,8 @@ class PortfolioAssetSum(ChangeList):
         self.portfolio_asset_sum = round(q['portfolio_asset_sum'], 2)
 
 class PortfolioAssetAdmin(admin.ModelAdmin):
-    list_display =('asset', 'shares_amount', 'share_average_price_brl','total_cost_brl', 'total_today_brl', 'profit', 'category' )
-    list_editable = ['shares_amount', 'share_average_price_brl']
-    # list_filter =(('asset__category', RelatedFieldListFilter),)
+    list_display =('asset', 'shares_amount', 'share_average_price_brl','total_cost_brl', 'total_today_brl', 'trade_profit' , 'dividends_profit', 'profit', 'category' )
+    list_editable = ['shares_amount', 'share_average_price_brl', 'trade_profit', 'dividends_profit']
     list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter),]
 
     def get_changelist(self, request):
@@ -40,9 +39,9 @@ class BrokerAssetAdmin(admin.ModelAdmin):
     list_filter =(('portfolio_asset__asset__category', RelatedFieldListFilter), ('broker', RelatedFieldListFilter),)
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display =('date','portfolio','asset','shares_amount', 'share_cost_brl','total_cost_brl', 'order', 'portfolio_avarage_price' )
+    list_display =('date','portfolio', 'broker', 'asset','shares_amount', 'share_cost_brl','total_cost_brl', 'order', 'portfolio_avarage_price' )
     list_editable =                  ['shares_amount', 'share_cost_brl', 'order']
-    list_filter =(('portfolio_asset__asset__category', RelatedFieldListFilter),)
+    list_filter =(('portfolio_asset__asset__category', RelatedFieldListFilter), ('broker', RelatedFieldListFilter),)
 
 class PortfolioTokenAdmin(admin.ModelAdmin):
     list_display =('date','portfolio', 'total_today_brl', 'order_value', 'tokens_amount', 'token_price', 'profit_percentage', 'historical_percentage')
