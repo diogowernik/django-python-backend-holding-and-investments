@@ -19,3 +19,4 @@ python manage.py createsuperuser
 # create fixtures
 
 python manage.py dumpdata --indent 4 > fixtures.json
+python manage.py loaddata fixtures.json

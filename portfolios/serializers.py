@@ -4,32 +4,36 @@ from investments.models import Category
 
 # Minha Holding
 
+
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
         fields = ('id', 'name', 'image')
 
-class PortfolioDetailSerializer(serializers.ModelSerializer):    
+
+class PortfolioDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
         fields = ('id', 'name', 'image')
 
+
 class PortfolioAssetSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
+
     class Meta:
         model = models.PortfolioAsset
         fields = (
-                'id', 
-                'ticker', 
-                'shares_amount', 
-                'share_average_price_brl', 
-                'total_cost_brl', 
-                'total_today_brl', 
-                'category', 
-                'profit',
-                'dividends_profit',
-                'trade_profit',
-            )
+            'id',
+            'ticker',
+            'shares_amount',
+            'share_average_price_brl',
+            'total_cost_brl',
+            'total_today_brl',
+            'category',
+            'profit',
+            'dividends_profit',
+            'trade_profit',
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -37,36 +41,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = (
-                'name', 
- 
-            )
-        # fields = (
-        #         'id', 
-        #         'ticker', 
-        #         'shares_amount', 
-        #         'share_average_price_brl', 
-        #         'total_cost_brl', 
-        #         'total_today_brl', 
-        #         'category', 
-        #         'profit',
-        #     )
-
-class TreeMapSerializer(serializers.ModelSerializer):
-    x = serializers.CharField(source='ticker')
-    y = serializers.FloatField(source='total_cost_brl')
-    class Meta:
-        model = models.PortfolioAsset
-        fields = (
-                'x', 
-                'y',   
-            )
-        # fields = (
-        #         'id', 
-        #         'ticker', 
-        #         'shares_amount', 
-        #         'share_average_price_brl', 
-        #         'total_cost_brl', 
-        #         'total_today_brl', 
-        #         'category', 
-        #         'profit',
-        #     )
+            'name',
+            'slug',
+        )
