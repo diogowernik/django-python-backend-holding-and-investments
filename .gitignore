@@ -138,4 +138,5 @@ GitHub.sublime-settings
 
 # Remove excel files
 *.xls
+*.xlsx
 excel/*
