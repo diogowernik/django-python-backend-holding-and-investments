@@ -1,7 +1,62 @@
-# Backend em python
+# Django Python Api Backend for Holding and Investments
 
-- Minha Holding
-- Minha Arca
-- Pague Crypto
-- Mercado Crypto
-- Yoga Brasilia
+This project have a backend for holding and investments.
+
+The frontend is in React. That can be accessed by the following link:
+
+[]: # Path: https://github.com/diogowernik/react-frontend-holding-and-investments
+
+## How to start
+
+Clone or Fork the repository:
+
+    git clone https://github.com/diogowernik/react-frontend-holding-and-investments.git backend
+
+Create the python environment:
+
+    python3 -m venv backend_env
+    source backend_env/bin/activate
+    cd backend
+    python3 -m pip install -r requirements.txt
+
+Migrate the database:
+
+    python manage.py migrate
+
+Create the superuser:
+
+    python manage.py createsuperuser
+
+Run the server:
+
+    python manage.py runserver
+
+Go to running application:
+
+    http://localhost:8000/
+
+Login to the admin:
+
+    http://localhost:8000/admin/
+
+## Todos
+
+This app is not ready, there are some features that are missing. And some features that are working.
+
+### Features that are Working for users on the backend
+
+    * Register (Create an account)
+    * Login
+    * Logout
+    * CRUD for Multiple Portfolios (Holdings)
+
+### Features that need to be done for users on the backend
+
+    * Permissions (CRUD of the portfolios only for owners and admins)
+    * CRUD for Investments transaction (Create, Read, Update, Delete) at the moment only read
+
+### Features that are Working for admin
+
+    * Admin can Create Categories (Assets)
+    * Admin can CRUD (Create, Read, Update, Delete) Portfolios, Assets, Categories
+    * Assets (Fiis, Stocks, Real Estate, Cryptos, International Currencies, Personal Goods) can be created by admin
