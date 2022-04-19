@@ -39,21 +39,21 @@ Login to the admin:
 
     http://localhost:8000/admin/
 
-## Todos
+## Features and Things to do
 
 This app is not ready, there are some features that are missing. And some features that are working.
 
 ### Features that are Working for users on the backend
 
-    * Register (Create an account)
-    * Login
-    * Logout
-    * CRUD for Multiple Portfolios (Holdings)
+- Register (Create an account)
+- Login
+- Logout
+- CRUD for Multiple Portfolios (Holdings)
 
 ### Features that need to be done for users on the backend
 
-    * Permissions (CRUD of the portfolios only for owners and admins)
-    * CRUD for Investments transaction (Create, Read, Update, Delete) at the moment only read
+- Permissions (CRUD of the portfolios only for owners and admins)
+- CRUD for Investments transaction (Create, Read, Update, Delete) at the moment only read
 
 ### Features that are Working for admin
 
@@ -64,5 +64,7 @@ This app is not ready, there are some features that are missing. And some featur
 - The tokens works as quotes for the investments in the portfolio
 
 ### Some screens images of the app
+
+**API for the frontend:**
 
 ![Screen 1](./readme_imgs/screen1.png)
