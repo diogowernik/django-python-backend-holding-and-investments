@@ -57,12 +57,12 @@ This app is not ready, there are some features that are missing. And some featur
 
 ### Features that are Working for admin
 
-    * Admin can CRUD (Create, Read, Update, Delete) Portfolios, Assets, Categories
-    * Admin can CRUD (Create, Read, Update, Delete) Investments and Transactions
-    * Transaction automatically creates or updates Portfolios and Assets from Portfolio
-    * Transaction automatically creates or updates "Tokens" valeu
-    * The tokens works as quotes for the investments in the portfolio
+- Admin can CRUD (Create, Read, Update, Delete) Portfolios, Assets, Categories
+- Admin can CRUD (Create, Read, Update, Delete) Investments and Transactions
+- Transaction automatically creates or updates Portfolios and Assets from Portfolio
+- Transaction automatically creates or updates "Tokens" value
+- The tokens works as quotes for the investments in the portfolio
 
 ### Some screens images of the app
 
-    ![Screen 1](./readme_imgs/screen1.png)
+![Screen 1](./readme_imgs/screen1.png)
