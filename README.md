@@ -4,13 +4,13 @@ This project have a backend for holding and investments.
 
 The frontend is in React. That can be accessed by the following link:
 
-[]: # Path: https://github.com/diogowernik/react-frontend-holding-and-investments
+https://github.com/diogowernik/react-frontend-holding-and-investments
 
 ## How to start
 
 Clone or Fork the repository:
 
-    git clone https://github.com/diogowernik/react-frontend-holding-and-investments.git backend
+    git clone https://github.com/diogowernik/django-python-backend-holding-and-investments.git backend
 
 Create the python environment:
 
@@ -57,6 +57,8 @@ This app is not ready, there are some features that are missing. And some featur
 
 ### Features that are Working for admin
 
-    * Admin can Create Categories (Assets)
     * Admin can CRUD (Create, Read, Update, Delete) Portfolios, Assets, Categories
-    * Assets (Fiis, Stocks, Real Estate, Cryptos, International Currencies, Personal Goods) can be created by admin
+    * Admin can CRUD (Create, Read, Update, Delete) Investments and Transactions
+    * Transaction automatically creates or updates Portfolios and Assets from Portfolio
+    * Transaction automatically creates or updates "Tokens" valeu
+    * The tokens works as quotes for the investments in the portfolio
