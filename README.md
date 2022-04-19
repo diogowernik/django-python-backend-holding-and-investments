@@ -62,3 +62,7 @@ This app is not ready, there are some features that are missing. And some featur
     * Transaction automatically creates or updates Portfolios and Assets from Portfolio
     * Transaction automatically creates or updates "Tokens" valeu
     * The tokens works as quotes for the investments in the portfolio
+
+### Some screens images of the app
+
+    ![Screen 1](./readme_imgs/screen1.png)
