@@ -140,3 +140,7 @@ GitHub.sublime-settings
 *.xls
 *.xlsx
 excel/*
+
+sample_data.json
+fixtures.json
+.DS_Store

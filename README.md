@@ -1,8 +1,6 @@
 # Django Python Api Backend for Holding and Investments
 
-This project have a backend for holding and investments.
-
-The frontend is in React. That can be accessed by the following link:
+There is already a frontend for this project, it is in React. And can be accessed by the following link:
 
 https://github.com/diogowernik/react-frontend-holding-and-investments
 
@@ -39,6 +37,18 @@ Login to the admin:
 
     http://localhost:8000/admin/
 
+If you want to use sample data, change the name of fixtures.json.backup to 'sample_data.json' and run the following command:
+
+    python manage.py loaddata sample_data.json
+
+- admin login:
+  username: admin
+  password: adm12345678
+
+- user login (for the frontend app build in react):
+  username: portfolio@admin.com
+  password: folio123
+
 ## Features and Things to do
 
 This app is not ready, there are some features that are missing. And some features that are working.
@@ -48,7 +58,7 @@ This app is not ready, there are some features that are missing. And some featur
 - Register (Create an account)
 - Login
 - Logout
-- CRUD for Multiple Portfolios (Holdings)
+- CRUD for Multiple Portfolios
 
 ### Features that need to be done for users on the backend
 
