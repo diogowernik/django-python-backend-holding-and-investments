@@ -42,12 +42,14 @@ If you want to use sample data, change the name of fixtures.json.backup to 'samp
     python manage.py loaddata sample_data.json
 
 - admin login:
-  username: admin
-  password: adm12345678
+
+    username: admin
+    password: adm12345678
 
 - user login (for the frontend app build in react):
-  username: portfolio@admin.com
-  password: folio123
+
+    username: portfolio@admin.com
+    password: folio123
 
 ## Features and Things to do
 
