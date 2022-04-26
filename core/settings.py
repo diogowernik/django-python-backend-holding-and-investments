@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 SWAGGER_SETTINGS = {
-   'USE_SESSION_AUTH': False
+    'USE_SESSION_AUTH': False
 }
 
 INSTALLED_APPS = [
@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'drf_yasg',
     'investments',
     'portfolios',
+    'categories',
+    'dividends',
+    'brokers',
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
@@ -127,8 +130,8 @@ TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
-DATE_FORMAT = ( ( 'd/m/Y' ))
-DATE_INPUT_FORMATS = ( ('%d/%m/%Y'),)
+DATE_FORMAT = (('d/m/Y'))
+DATE_INPUT_FORMATS = (('%d/%m/%Y'),)
 
 USE_L10N = False
 

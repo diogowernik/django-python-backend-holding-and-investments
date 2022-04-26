@@ -1,44 +1,5 @@
-
-
-# Create your models here.
-
 from django.db import models
-
-# Main
-
-
-class SetorFii(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-
-    def __str__(self):
-        return "{}".format(self.name)
-
-    class Meta:
-        verbose_name_plural = "   Setor Fiis"  # White spaces organize who comes first
-
-
-class SetorCrypto(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-
-    def __str__(self):
-        return "{}".format(self.name)
-
-    class Meta:
-        # White spaces organize who comes first
-        verbose_name_plural = "   Setor Cryptos"
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-
-    def __str__(self):
-        return "{}".format(self.name)
-
-    class Meta:
-        verbose_name_plural = "   Categories"  # White spaces organize who comes first
+from categories.models import Category, SetorFii, SetorCrypto
 
 
 class Asset(models.Model):
@@ -71,13 +32,13 @@ class Fii(Asset):
         return '{}'.format(self.ticker)
 
     class Meta:
-        verbose_name_plural = " Fiis"
+        verbose_name_plural = "  Brazilian Reits"
 
 
-class ETF(Asset):
+class Stocks(Asset):
 
     class Meta:
-        verbose_name_plural = " ETFs"
+        verbose_name_plural = "   Stocks"
 
 
 class Currency(Asset):
@@ -90,7 +51,7 @@ class FixedIncome(Asset):
         Currency, related_name='currencies', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name_plural = " RendaFixas"
+        verbose_name_plural = "    Fixed Incomes"
 
 
 class Crypto(Asset):
@@ -100,23 +61,9 @@ class Crypto(Asset):
     circulating_supply = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = " Crytpos"
+        verbose_name_plural = "Cripto Currencies"
 
 
 class PrivateAsset(Asset):
     class Meta:
-        verbose_name_plural = " Private Assets"
-
-
-class Dividend(models.Model):
-    asset = models.ForeignKey(
-        Asset, on_delete=models.CASCADE, related_name="dividends")
-    value_per_share_brl = models.FloatField()
-    record_date = models.DateField(null=True, blank=True)
-    pay_date = models.DateField(null=True, blank=True)
-
-    def __str__(self):
-        return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
-
-    class Meta:
-        verbose_name_plural = "Dividends"
+        verbose_name_plural = "  Private Assets"

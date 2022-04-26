@@ -11,12 +11,6 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_editable = ['owner']
 
 
-class BrokerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
-    prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['slug']
-
-
 class AssetFilter(AutocompleteFilter):
     title = 'Asset'  # display title
     field_name = 'asset'  # name of the foreign key field
@@ -72,7 +66,6 @@ class PortfolioTokenAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Portfolio, PortfolioAdmin)
-admin.site.register(models.Broker, BrokerAdmin)
 admin.site.register(models.PortfolioAsset, PortfolioAssetAdmin)
 admin.site.register(models.BrokerAsset, BrokerAssetAdmin)
 admin.site.register(models.Transaction, TransactionAdmin)

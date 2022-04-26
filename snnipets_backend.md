@@ -10,6 +10,7 @@ python3 -m pip install -r requirements.txt
 # start server
 
 python manage.py runserver
+python manage.py makemigrations
 python manage.py migrate
 
 # create superuser
@@ -20,3 +21,7 @@ python manage.py createsuperuser
 
 python manage.py dumpdata --indent 4 > fixtures.json
 python manage.py loaddata fixtures.json
+
+# create app with django
+
+python manage.py startapp <app_name>

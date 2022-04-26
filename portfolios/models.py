@@ -2,6 +2,7 @@ from datetime import date
 from django.db import models
 from django.contrib.auth.models import User
 from investments.models import Asset
+from brokers.models import Broker
 from django.core.exceptions import ValidationError
 
 
@@ -14,19 +15,7 @@ class Portfolio(models.Model):
         return '{}'.format(self.name)
 
     class Meta:
-        verbose_name_plural = "   Portfolios"
-
-
-class Broker(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-
-    def __str__(self):
-        return "{}".format(self.name)
-
-    class Meta:
-        # White spaces organize who comes first
-        verbose_name_plural = "   Brokers"
+        verbose_name_plural = "     Portfolios"
 
 
 class PortfolioAsset(models.Model):
@@ -73,7 +62,7 @@ class PortfolioAsset(models.Model):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
 
     class Meta:
-        verbose_name_plural = "  Assets per portfolio"
+        verbose_name_plural = "   Portfolio Assets"
 
 
 class BrokerAsset(models.Model):
@@ -100,7 +89,7 @@ class BrokerAsset(models.Model):
         return ' {} | {} '.format(self.portfolio_asset.asset.ticker, self.broker)
 
     class Meta:
-        verbose_name_plural = "  Assets per Broker"
+        verbose_name_plural = "  Portfolio Assets (per Broker)"
 
 
 class Transaction(models.Model):
@@ -198,7 +187,7 @@ class Transaction(models.Model):
         return '{}'.format(self.portfolio_asset.asset.ticker)
 
     class Meta:
-        verbose_name_plural = "  Transactions"
+        verbose_name_plural = "    Portfolio Transactions"
 
 
 class PortfolioToken(models.Model):
@@ -219,7 +208,7 @@ class PortfolioToken(models.Model):
         return ' {} '.format(self.portfolio.name)
 
     class Meta:
-        verbose_name_plural = "  Tokens per Porftolio"
+        verbose_name_plural = " Porftolio Tokens"
 
     def save(self, *args, **kwargs):
         if PortfolioToken.objects.exists():
