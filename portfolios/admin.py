@@ -19,9 +19,10 @@ class AssetFilter(AutocompleteFilter):
 class PortfolioAssetSum(ChangeList):
     def get_results(self, *args, **kwargs):
         super(PortfolioAssetSum, self).get_results(*args, **kwargs)
-        q = self.result_list.aggregate(
-            portfolio_asset_sum=Sum('total_today_brl'))
-        self.portfolio_asset_sum = round(q['portfolio_asset_sum'], 2)
+        if self.result_list:
+            q = self.result_list.aggregate(
+                portfolio_asset_sum=Sum('total_today_brl'))
+            self.portfolio_asset_sum = round(q['portfolio_asset_sum'], 2)
 
 
 class PortfolioAssetAdmin(admin.ModelAdmin):
