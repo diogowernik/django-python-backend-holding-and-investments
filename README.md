@@ -43,10 +43,12 @@ If you want to use sample data, change the name of fixtures.json.backup to 'samp
 
 - admin login:
 
+
     username: admin
     password: adm12345678
 
 - user login (for the frontend app build in react):
+
 
     username: portfolio@admin.com
     password: folio123
