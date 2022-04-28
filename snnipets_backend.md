@@ -3,7 +3,7 @@
 python3 -m venv backend_env
 source backend_env/bin/activate
 
-python3 -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 /Users/Diogo/WebDevelopment/Projetos/minhaholding/backend_env/bin/python3 -m pip install --upgrade pip
 
@@ -25,3 +25,15 @@ python manage.py loaddata fixtures.json
 # create app with django
 
 python manage.py startapp <app_name>
+
+# install pandas
+
+    pip install pandas
+
+# install sqlalchemy
+
+    pip install sqlalchemy
+
+# install openyxl
+
+    pip install openpyxl
