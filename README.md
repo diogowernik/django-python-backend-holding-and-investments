@@ -51,7 +51,10 @@ This app is not ready, there are some features that are missing. And some featur
 ### Features that need to be done for users on the backend
 
 - Permissions (CRUD of the portfolios only for owners and admins)
-- CRUD for Investments transaction (Create, Read, Update, Delete) at the moment only read
+- Automatic update price and fundamentalist data of assets (webscraping)
+- Create Transactions Logic for (Buy, Sell, Update, Delete, Create, etc..)
+  -- Each transaction create or update: portfolio asset, broker asset
+- Automatic update the token value once a month
 
 ### Features that are Working for admin
 
