@@ -12,9 +12,8 @@ class Command(BaseCommand):
         # get assets from db that will be updated
         queryset = Fii.objects.values_list("id", "ticker")
         app_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
-        app_list = app_df
-        app_list['ticker'] = app_list['ticker'].astype(str) + '.SA'
-        app_list = app_list["ticker"].astype(str).tolist()
+        app_df['ticker'] = app_df['ticker'].astype(str) + '.SA'
+        app_list = app_df["ticker"].astype(str).tolist()
         # print(app_list)
         # get price from yfinance (only from fiis in db)
         yahoo_df = yf.download(app_list, period="1min")["Adj Close"]
