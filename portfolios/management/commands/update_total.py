@@ -1,17 +1,13 @@
-from unicodedata import name
 import pandas as pd
 from django.core.management.base import BaseCommand
-import yfinance as yf
-from sqlalchemy import create_engine
-import datetime
 from portfolios.models import PortfolioAsset
-from django.db.models import Q
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        # get portfolio assets from db that will be updated
+        print("Updating Portfolio Asset total today brl")
+        # get portfolio assets from db and update total today
         queryset = PortfolioAsset.objects.values_list(
             "id", "asset__ticker", "asset__price", "shares_amount", "total_today_brl")
         app_df = pd.DataFrame(list(queryset), columns=[
@@ -19,7 +15,7 @@ class Command(BaseCommand):
         app_df['total_today_brl'] = app_df['shares_amount'] * app_df['price']
         # set index
         app_df = app_df.set_index('id')
-        print(app_df)
+        # print(app_df)
 
         for index, row in app_df.iterrows():
             try:
@@ -29,3 +25,4 @@ class Command(BaseCommand):
             except Exception as e:
                 print(f' Key Exception - {e} - {index}')
                 pass
+        print("Portfolio Asset total today brl updated")

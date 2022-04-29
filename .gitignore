@@ -145,3 +145,5 @@ excel/*
 sample_data.json
 fixtures.json
 .DS_Store
+
+portfolios/management/backup/*
