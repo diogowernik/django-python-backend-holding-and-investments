@@ -45,11 +45,11 @@ class CategorySerializer(serializers.ModelSerializer):
             'slug',
         )
 
+
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transaction
         fields = (
-            'id',
             'order',
             'date',
             'portfolio',
