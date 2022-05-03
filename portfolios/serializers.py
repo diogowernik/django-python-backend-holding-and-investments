@@ -44,3 +44,17 @@ class CategorySerializer(serializers.ModelSerializer):
             'name',
             'slug',
         )
+
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Transaction
+        fields = (
+            'id',
+            'order',
+            'date',
+            'portfolio',
+            'asset',
+            'broker',
+            'shares_amount',
+            'share_cost_brl',
+        )

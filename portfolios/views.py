@@ -42,3 +42,12 @@ class CategoryList(generics.ListAPIView):
         response = super(CategoryList, self).list(request, *args, **kwargs)
 
         return response
+
+class TransactionList(generics.ListCreateAPIView):
+    serializer_class = serializers.TransactionSerializer
+
+    def get_queryset(self):
+        return models.Transaction.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

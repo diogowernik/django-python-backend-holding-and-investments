@@ -3,6 +3,9 @@
 python3 -m venv backend_env
 source backend_env/bin/activate
 
+# install django
+pip install django==3.0.2
+
 python -m pip install -r requirements.txt
 
 /Users/Diogo/WebDevelopment/Projetos/minhaholding/backend_env/bin/python3 -m pip install --upgrade pip

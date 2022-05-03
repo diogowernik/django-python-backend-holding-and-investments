@@ -7,6 +7,8 @@ from django.conf.urls import url
 
 
 from portfolios import views as portfolio_views
+from brokers import views as broker_views
+from investments import views as investment_views
 from .views import home
 
 
@@ -42,5 +44,9 @@ urlpatterns = [
          portfolio_views.PortfolioAssetList.as_view()),
     path('api/portfolios/<pk>/categories',
          portfolio_views.CategoryList.as_view()),
+    path('api/portfolios/<pk>/transactions/', 
+         portfolio_views.TransactionList.as_view()),
+    path('api/brokers/', broker_views.BrokerList.as_view()),
+    path('api/assets/', investment_views.AssetList.as_view()),
     url(r'^$', home, name='home'),
 ]
