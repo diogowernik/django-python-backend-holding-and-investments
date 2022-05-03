@@ -154,7 +154,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DATE_FORMAT': "%d/%m/%Y",
-    'DATE_INPUT_FORMATS': ["%d-%m%Y"],
+    'DATE_INPUT_FORMATS': [("%d/%m/%Y"),  ("%Y-%m-%d")],
 }
 
 CORS_ALLOWED_ORIGINS = [
