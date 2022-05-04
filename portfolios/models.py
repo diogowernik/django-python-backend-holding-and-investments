@@ -127,9 +127,9 @@ class Transaction(models.Model):
 
             if self.order == 'Buy':
                 self.portfolio_asset.shares_amount += self.shares_amount
+                self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
             if self.order == 'Sell':
                 self.portfolio_asset.shares_amount -= self.shares_amount
-                self.portfolio_asset.share_average_price_brl = self.sell_avarage_price
             self.portfolio_asset.save()
         except PortfolioAsset.DoesNotExist:
             self.portfolio_asset = PortfolioAsset.objects.create(
