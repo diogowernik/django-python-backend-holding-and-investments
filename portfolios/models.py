@@ -218,15 +218,18 @@ class PortfolioToken(models.Model):
                 last.tokens_amount+(self.order_value/last.token_price), 2)
             if self.tokens_amount > 0:
                 self.token_price = round(
-                    self.order_value/self.tokens_amount, 4)
+                    self.total_today_brl/self.tokens_amount, 4)
+                self.historical_average_price = (last.tokens_amount*last.historical_average_price+(
+                    self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
+                self.historical_profit = round(
+                    (self.token_price-self.historical_average_price)/self.historical_average_price, 4)
             else:
-                self.token_price = 0
+                self.token_price = 1
+                self.historical_average_price = 1
+                self.historical_profit = 0
             self.profit = round(
                 (self.token_price-last.token_price)/last.token_price, 4)
-            self.historical_average_price = (last.tokens_amount*last.historical_average_price+(
-                self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
-            self.historical_profit = round(
-                (self.token_price-self.historical_average_price)/self.historical_average_price, 4)
+
         else:
             self.tokens_amount = self.order_value
             self.token_price = self.total_today_brl/self.tokens_amount
