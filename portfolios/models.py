@@ -124,11 +124,12 @@ class Transaction(models.Model):
                 portfolio=self.portfolio, asset=self.asset)
             self.portfolio_avarage_price = round((self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount +
                                                  self.shares_amount * self.share_cost_brl) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
+
             if self.order == 'Buy':
                 self.portfolio_asset.shares_amount += self.shares_amount
-                self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
             if self.order == 'Sell':
                 self.portfolio_asset.shares_amount -= self.shares_amount
+                self.portfolio_asset.share_average_price_brl = self.sell_avarage_price
             self.portfolio_asset.save()
         except PortfolioAsset.DoesNotExist:
             self.portfolio_asset = PortfolioAsset.objects.create(
@@ -215,8 +216,11 @@ class PortfolioToken(models.Model):
             last = PortfolioToken.objects.latest('id')
             self.tokens_amount = round(
                 last.tokens_amount+(self.order_value/last.token_price), 2)
-            self.token_price = round(
-                self.total_today_brl/self.tokens_amount, 4)
+            if self.tokens_amount > 0:
+                self.token_price = round(
+                    self.order_value/self.tokens_amount, 4)
+            else:
+                self.token_price = 0
             self.profit = round(
                 (self.token_price-last.token_price)/last.token_price, 4)
             self.historical_average_price = (last.tokens_amount*last.historical_average_price+(
