@@ -32,9 +32,9 @@ class Command(BaseCommand):
         fiis['twelve_m_yield'] = fiis['twelve_m_yield'].str.replace(',', '.')
         fiis['twelve_m_yield'] = fiis['twelve_m_yield'].str.replace('%', '')
         fiis['p_vpa'] = fiis['p_vpa'] / 100
-        fiis['setor'] = fiis['setor'].str.replace('Títulos e Val. Mob.', 'TVM')
-        fiis['setor'] = fiis['setor'].str.replace(
-            'Lajes Corporativas', 'Lajes')
+        # fiis['setor'] = fiis['setor'].str.replace('Títulos e Val. Mob.', 'TVM')
+        # fiis['setor'] = fiis['setor'].str.replace(
+        #     'Lajes Corporativas', 'Lajes')
         fiis = fiis.set_index('ticker')
 
         # print(fiis)

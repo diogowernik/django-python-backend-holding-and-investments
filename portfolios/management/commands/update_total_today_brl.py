@@ -6,7 +6,7 @@ from portfolios.models import PortfolioAsset
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        print("Updating Portfolio Asset total today brl")
+        print("Updating Portfolio total")
         # get portfolio assets from db and update total today
         queryset = PortfolioAsset.objects.values_list(
             "id", "asset__ticker", "asset__price", "shares_amount", "total_today_brl")
@@ -25,4 +25,4 @@ class Command(BaseCommand):
             except Exception as e:
                 print(f' Key Exception - {e} - {index}')
                 pass
-        print("Portfolio Asset total today brl updated")
+        print("Portfolio total updated")

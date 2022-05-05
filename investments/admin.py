@@ -29,10 +29,10 @@ class StocksAdmin(admin.ModelAdmin):
 
 
 class CryptoAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category',
+    list_display = ('ticker', 'slug', 'price', 'category',
                     'setor_crypto', 'marketcap', 'circulating_supply')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'setor_crypto',
+    list_editable = ['slug', 'price', 'category', 'setor_crypto',
                      'marketcap', 'circulating_supply']
 
 
