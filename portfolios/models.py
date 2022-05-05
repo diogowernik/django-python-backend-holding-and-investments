@@ -1,9 +1,11 @@
 from datetime import date
+from hashlib import new
 from django.db import models
 from django.contrib.auth.models import User
 from investments.models import Asset
 from brokers.models import Broker
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 
 
 class Portfolio(models.Model):
@@ -194,8 +196,6 @@ class Transaction(models.Model):
 class PortfolioToken(models.Model):
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, default=1)
-    # transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
-
     total_today_brl = models.FloatField()
     order_value = models.FloatField()
     date = models.DateField(("Date"), default=date.today)
@@ -212,6 +212,7 @@ class PortfolioToken(models.Model):
         verbose_name_plural = " Porftolio Tokens"
 
     def save(self, *args, **kwargs):
+
         if PortfolioToken.objects.exists():
             last = PortfolioToken.objects.latest('id')
             self.tokens_amount = round(
