@@ -43,6 +43,8 @@ urlpatterns = [
     path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),
     path('api/portfolios/<pk>/assets',
          portfolio_views.PortfolioAssetList.as_view()),
+    path('api/portfolios/<pk>/broker_assets/',
+         portfolio_views.BrokerAssetList.as_view()),
     path('api/portfolios/<pk>/categories',
          portfolio_views.CategoryList.as_view()),
     path('api/brokers/', broker_views.BrokerList.as_view()),
