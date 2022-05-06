@@ -1,4 +1,4 @@
-# update Stockss price
+# update Stocks price
 import pandas as pd
 from django.core.management.base import BaseCommand
 import yfinance as yf
