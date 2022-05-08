@@ -37,14 +37,6 @@ class PortfolioAssetAdmin(admin.ModelAdmin):
         return PortfolioAssetSum
 
 
-class BrokerAssetAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'broker', 'shares_amount',
-                    'share_average_price_brl', 'total_cost_brl', 'total_today_brl')
-    list_editable = ['shares_amount', 'broker', 'share_average_price_brl']
-    list_filter = (('portfolio_asset__asset__category',
-                   RelatedFieldListFilter), ('broker', RelatedFieldListFilter),)
-
-
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('date', 'portfolio', 'broker', 'asset', 'shares_amount',
                     'share_cost_brl', 'total_cost_brl', 'order', 'portfolio_avarage_price')
@@ -69,6 +61,5 @@ class PortfolioTokenAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioAsset, PortfolioAssetAdmin)
-admin.site.register(models.BrokerAsset, BrokerAssetAdmin)
 admin.site.register(models.Transaction, TransactionAdmin)
 admin.site.register(models.PortfolioToken, PortfolioTokenAdmin)

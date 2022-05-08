@@ -32,13 +32,6 @@ class PortfolioAssetList(generics.ListAPIView):
         return models.PortfolioAsset.objects.filter(portfolio_id=self.kwargs['pk'])
 
 
-class BrokerAssetList(generics.ListAPIView):
-    serializer_class = serializers.BrokerAssetSerializer
-
-    def get_queryset(self):
-        return models.BrokerAsset.objects.all()
-
-
 class CategoryList(generics.ListAPIView):
     serializer_class = serializers.CategorySerializer
 

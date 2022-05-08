@@ -68,33 +68,6 @@ class PortfolioAsset(models.Model):
         verbose_name_plural = "   Portfolio Assets"
 
 
-class BrokerAsset(models.Model):
-    portfolio_asset = models.ForeignKey(
-        PortfolioAsset, on_delete=models.CASCADE, default=1)
-    broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
-    shares_amount = models.FloatField()
-    share_average_price_brl = models.FloatField()
-    total_cost_brl = models.FloatField(editable=False)
-    total_today_brl = models.FloatField(editable=False)
-
-    def save(self, *args, **kwargs):
-        self.total_cost_brl = round(
-            self.shares_amount * self.share_average_price_brl, 2)
-        self.total_today_brl = round(
-            self.shares_amount * self.portfolio_asset.asset.price, 2)
-        super(BrokerAsset, self).save(*args, **kwargs)
-
-    @property
-    def ticker(self):
-        return self.portfolio_asset.asset.ticker
-
-    def __str__(self):
-        return ' {} | {} '.format(self.portfolio_asset.asset.ticker, self.broker)
-
-    class Meta:
-        verbose_name_plural = "  Portfolio Assets (per Broker)"
-
-
 class Transaction(models.Model):
     id = models.AutoField(primary_key=True)
     OrderChoices = (
@@ -113,8 +86,6 @@ class Transaction(models.Model):
     portfolio_asset = models.ForeignKey(
         PortfolioAsset, on_delete=models.CASCADE, editable=False)
     portfolio_avarage_price = models.FloatField(editable=False)
-    broker_asset = models.ForeignKey(
-        BrokerAsset, on_delete=models.CASCADE, default=1, editable=False)
     broker_average_price = models.FloatField(editable=False)
 
     def save(self, *args, **kwargs):
@@ -140,22 +111,6 @@ class Transaction(models.Model):
             self.portfolio_avarage_price = self.share_cost_brl
             self.portfolio_asset.save()
         # Atualiza BrokerAsset
-        try:
-            self.broker_asset = BrokerAsset.objects.get(
-                portfolio_asset=self.portfolio_asset, broker=self.broker)
-            self.broker_average_price = round((self.broker_asset.share_average_price_brl * self.broker_asset.shares_amount +
-                                              self.shares_amount * self.share_cost_brl) / (self.broker_asset.shares_amount + self.shares_amount), 2)
-            if self.order == 'Buy':
-                self.broker_asset.shares_amount += self.shares_amount
-                self.broker_asset.share_average_price_brl = self.broker_average_price
-            if self.order == 'Sell':
-                self.broker_asset.shares_amount -= self.shares_amount
-            self.broker_asset.save()
-        except BrokerAsset.DoesNotExist:
-            self.broker_asset = BrokerAsset.objects.create(
-                broker=self.broker, portfolio_asset=self.portfolio_asset, shares_amount=self.shares_amount, share_average_price_brl=self.share_cost_brl)
-            self.broker_average_price = self.share_cost_brl
-            self.broker_asset.save()
 
         super(Transaction, self).save(*args, **kwargs)
         # Cria PortfolioToken

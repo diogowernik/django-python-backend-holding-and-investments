@@ -38,28 +38,6 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
         )
 
 
-class BrokerAssetSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(
-        source='portfolio_asset.asset.category.name')
-    broker = serializers.CharField(source='broker.name')
-
-    class Meta:
-        model = models.BrokerAsset
-        fields = (
-            'id',
-            'ticker',
-            'broker',
-            'shares_amount',
-            'share_average_price_brl',
-            'total_cost_brl',
-            'total_today_brl',
-            'category',
-            # 'profit',
-            # 'dividends_profit',
-            # 'trade_profit',
-        )
-
-
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
