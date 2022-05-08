@@ -115,8 +115,9 @@ class Transaction(models.Model):
         super(Transaction, self).save(*args, **kwargs)
         # Cria PortfolioToken
 
-        if PortfolioToken.objects.exists():
-            last = PortfolioToken.objects.latest('id')
+        if PortfolioToken.objects.filter(portfolio=self.portfolio).exists():
+            last = PortfolioToken.objects.filter(
+                portfolio=self.portfolio).latest('id')
             if self.order == 'Buy':
                 PortfolioToken.objects.create(
                     # transaction_id=self.id,
@@ -168,9 +169,10 @@ class PortfolioToken(models.Model):
         verbose_name_plural = " Porftolio Tokens"
 
     def save(self, *args, **kwargs):
-
-        if PortfolioToken.objects.exists():
-            last = PortfolioToken.objects.latest('id')
+        # save object filtered by portfolio
+        if PortfolioToken.objects.filter(portfolio=self.portfolio).exists():
+            last = PortfolioToken.objects.filter(
+                portfolio=self.portfolio).latest('id')
             self.tokens_amount = round(
                 last.tokens_amount+(self.order_value/last.token_price), 2)
             if self.tokens_amount > 0:
