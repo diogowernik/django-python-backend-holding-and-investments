@@ -26,11 +26,12 @@ class PortfolioAssetSum(ChangeList):
 
 
 class PortfolioAssetAdmin(admin.ModelAdmin):
-    list_display = ('asset', 'shares_amount', 'share_average_price_brl', 'total_cost_brl',
-                    'total_today_brl', 'trade_profit', 'dividends_profit', 'profit', 'category')
+    list_display = ('asset', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl',
+                    'total_today_brl', 'trade_profit', 'dividends_profit', 'profit', 'portfolio', 'category')
     list_editable = ['shares_amount', 'share_average_price_brl',
-                     'trade_profit', 'dividends_profit']
-    list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter), ]
+                     'trade_profit', 'dividends_profit', 'portfolio', 'broker']
+    list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter),
+                   ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), ]
 
     def get_changelist(self, request):
         return PortfolioAssetSum

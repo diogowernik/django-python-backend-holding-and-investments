@@ -19,6 +19,7 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
 
 class PortfolioAssetSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
+    broker = serializers.CharField(source='broker.name')
 
     class Meta:
         model = models.PortfolioAsset
@@ -33,6 +34,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'profit',
             'dividends_profit',
             'trade_profit',
+            'broker',
         )
 
 

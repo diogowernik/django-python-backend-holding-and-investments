@@ -24,6 +24,7 @@ class PortfolioAsset(models.Model):
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
     share_average_price_brl = models.FloatField(default=0)
     dividends_profit = models.FloatField(default=0)
@@ -34,7 +35,7 @@ class PortfolioAsset(models.Model):
     def validate_unique(self, *args, **kwargs):
         super().validate_unique(*args, **kwargs)
         if self.__class__.objects.\
-                filter(portfolio=self.portfolio, asset=self.asset).\
+                filter(portfolio=self.portfolio, asset=self.asset, broker=self.broker).\
                 exclude(id=self.id).\
                 exists():
             raise ValidationError(
