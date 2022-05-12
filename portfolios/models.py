@@ -86,7 +86,6 @@ class Transaction(models.Model):
     portfolio_asset = models.ForeignKey(
         PortfolioAsset, on_delete=models.CASCADE, editable=False)
     portfolio_avarage_price = models.FloatField(editable=False)
-    broker_average_price = models.FloatField(editable=False)
 
     def save(self, *args, **kwargs):
         self.share_cost_brl = round(self.share_cost_brl, 2)

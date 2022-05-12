@@ -2,7 +2,7 @@ from rest_framework import generics
 from . import permissions, serializers
 from . import models
 from rest_framework.response import Response
-from investments.models import Category
+from investments.models import Category, Asset, Fii
 
 
 # Create your views here.
@@ -29,7 +29,11 @@ class PortfolioAssetList(generics.ListAPIView):
     serializer_class = serializers.PortfolioAssetSerializer
 
     def get_queryset(self):
-        return models.PortfolioAsset.objects.filter(portfolio_id=self.kwargs['pk'])
+        return models.PortfolioAsset.objects.filter(
+            portfolio_id=self.kwargs['pk'],
+        ).select_related(
+            'asset__fii__setor_fii',
+        )
 
 
 class CategoryList(generics.ListAPIView):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from . import models
-from investments.models import Category
+from investments.models import Category, Asset, Fii
 
 # Minha Holding
 
@@ -20,6 +20,7 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
 class PortfolioAssetSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
     broker = serializers.CharField(source='broker.name')
+    setor_fii = serializers.CharField(source='asset.fii.setor_fii')
 
     class Meta:
         model = models.PortfolioAsset
@@ -35,6 +36,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'dividends_profit',
             'trade_profit',
             'broker',
+            'setor_fii',
         )
 
 
