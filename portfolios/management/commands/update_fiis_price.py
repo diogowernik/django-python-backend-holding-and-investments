@@ -18,16 +18,28 @@ class Command(BaseCommand):
         # get price from yfinance (only from fiis in db)
         yahoo_df = yf.download(app_list, period="1min")["Adj Close"]
         yahoo_df = yahoo_df.T.reset_index()
-        # try in case of error
-        try:
-            yahoo_df.columns = ["ticker",  "price"]
-            yahoo_df["price"] = yahoo_df["price"].round(2)
-            yahoo_df['ticker'] = yahoo_df['ticker'].map(
-                lambda x: x.rstrip('.SA'))
-            yahoo_df = yahoo_df.set_index('ticker')
-        except Exception as e:
-            print(f' Key Exception - {e}')
-            pass
+        if yahoo_df.shape[1] == 3:
+            try:
+                yahoo_df.columns = ["ticker",  "price", "price2"]
+                yahoo_df["price"] = yahoo_df["price"].fillna(
+                    yahoo_df["price2"])
+                yahoo_df['ticker'] = yahoo_df['ticker'].map(
+                    lambda x: x.rstrip('.SA'))
+                yahoo_df = yahoo_df.set_index('ticker')
+            except Exception as e:
+                print(f' Key Exception - {e}')
+                pass
+        else:
+            try:
+
+                yahoo_df.columns = ["ticker",  "price"]
+                yahoo_df["price"] = yahoo_df["price"].round(2)
+                yahoo_df['ticker'] = yahoo_df['ticker'].map(
+                    lambda x: x.rstrip('.SA'))
+                yahoo_df = yahoo_df.set_index('ticker')
+            except Exception as e:
+                print(f' Key Exception - {e}')
+                pass
         # print(yahoo_df)
 
         # config app_df to merge
@@ -50,3 +62,7 @@ class Command(BaseCommand):
                 print(f' Key Exception - {e}')
                 pass
         print("Fiis price updated")
+
+        queryset = Fii.objects.values_list("ticker", "price")
+        updated_df = pd.DataFrame(list(queryset), columns=["ticker", "price"])
+        # print(updated_df)
