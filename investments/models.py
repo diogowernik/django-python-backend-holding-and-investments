@@ -10,7 +10,7 @@ class Asset(models.Model):
     price = models.FloatField()
 
     def __str__(self):
-        return '{}'.format(self.ticker)
+        return '{} | {}'.format(self.ticker, self.price)
 
     class Meta:
         verbose_name_plural = "  Assets"

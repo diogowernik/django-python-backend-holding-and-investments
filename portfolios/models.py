@@ -1,7 +1,10 @@
 from datetime import date
+from email import message
 from hashlib import new
+from django import forms
 from django.db import models
 from django.contrib.auth.models import User
+from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
 from django.core.exceptions import ValidationError
@@ -86,61 +89,108 @@ class Transaction(models.Model):
     portfolio_asset = models.ForeignKey(
         PortfolioAsset, on_delete=models.CASCADE, editable=False)
     portfolio_avarage_price = models.FloatField(editable=False)
+    profit = models.FloatField(editable=False, default=0)
 
     def save(self, *args, **kwargs):
-        self.share_cost_brl = round(self.share_cost_brl, 2)
-        self.total_cost_brl = round(
-            self.shares_amount * self.share_cost_brl, 2)
-        # Atualiza PortfolioAsset
         try:
             self.portfolio_asset = PortfolioAsset.objects.get(
-                portfolio=self.portfolio, asset=self.asset)
-            self.portfolio_avarage_price = round((self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount +
-                                                 self.shares_amount * self.share_cost_brl) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
+                portfolio=self.portfolio, asset=self.asset, broker=self.broker)
 
             if self.order == 'Buy':
+                self.share_cost_brl = round(
+                    self.share_cost_brl, 2)
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2)
+                # avarage price is wrong have to fix it
+                self.portfolio_avarage_price = round(
+                    (self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount +
+                     self.share_cost_brl * self.shares_amount) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
+                self.profit = 0
+
                 self.portfolio_asset.shares_amount += self.shares_amount
                 self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
-            if self.order == 'Sell':
-                self.portfolio_asset.shares_amount -= self.shares_amount
-            self.portfolio_asset.save()
-        except PortfolioAsset.DoesNotExist:
-            self.portfolio_asset = PortfolioAsset.objects.create(
-                portfolio=self.portfolio, asset=self.asset, shares_amount=self.shares_amount, share_average_price_brl=self.share_cost_brl)
-            self.portfolio_avarage_price = self.share_cost_brl
-            self.portfolio_asset.save()
-        # Atualiza BrokerAsset
 
+            if self.order == 'Sell':
+                if self.portfolio_asset.shares_amount < self.shares_amount:
+                    raise ValidationError(
+                        message='You do not have enough shares to sell.',
+                        code='unique_together',
+                    )
+                last_transaction = Transaction.objects.filter(
+                    portfolio=self.portfolio, asset=self.asset).order_by('-id').first()
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2) * -1
+                self.portfolio_avarage_price = round(
+                    last_transaction.portfolio_avarage_price, 2)
+                self.profit = round(
+                    (self.total_cost_brl * -1) - (self.portfolio_avarage_price * self.shares_amount), 2)
+
+                # update portfolio asset
+                self.portfolio_asset.shares_amount -= self.shares_amount
+                self.portfolio_asset.trade_profit += self.profit
+
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
+
+        except PortfolioAsset.DoesNotExist:
+            if self.order == 'Buy':
+                self.portfolio_asset = PortfolioAsset.objects.create(
+                    portfolio=self.portfolio,
+                    asset=self.asset,
+                    shares_amount=self.shares_amount,
+                    share_average_price_brl=self.share_cost_brl
+                )
+                self.portfolio_avarage_price = self.share_cost_brl
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2)
+                self.portfolio_asset.save()
+            if self.order == 'Sell':
+                # not save transaction because it's not a valid transaction
+                raise forms.ValidationError(
+                    message='This asset does not exist in this portfolio.',
+                    code='unique_together',
+                )
+
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
         super(Transaction, self).save(*args, **kwargs)
+
         # Cria PortfolioToken
 
         if PortfolioToken.objects.filter(portfolio=self.portfolio).exists():
             last = PortfolioToken.objects.filter(
                 portfolio=self.portfolio).latest('id')
-            if self.order == 'Buy':
-                PortfolioToken.objects.create(
-                    # transaction_id=self.id,
-                    portfolio=self.portfolio,
-                    date=self.date,
-                    total_today_brl=self.total_cost_brl + last.total_today_brl,
-                    order_value=self.total_cost_brl
-                )
-            if self.order == 'Sell':
-                PortfolioToken.objects.create(
-                    # transaction_id=self.id,
-                    portfolio=self.portfolio,
-                    date=self.date,
-                    total_today_brl=last.total_today_brl - self.total_cost_brl,
-                    order_value=- self.total_cost_brl
-                )
+            PortfolioToken.objects.create(
+                portfolio=self.portfolio,
+                date=self.date,
+                total_today_brl=self.total_cost_brl + last.total_today_brl,
+                order_value=self.total_cost_brl
+            )
         else:
             PortfolioToken.objects.create(
-                # transaction_id=self.id,
                 portfolio=self.portfolio,
                 date=self.date,
                 total_today_brl=self.total_cost_brl,
                 order_value=self.total_cost_brl
             )
+
+    # def delete undo the transaction
+    def delete(self, *args, **kwargs):
+        if self.order == 'Buy':
+            self.portfolio_asset.shares_amount -= self.shares_amount
+            self.portfolio_asset.trade_profit -= self.profit
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
+        if self.order == 'Sell':
+            self.portfolio_asset.shares_amount += self.shares_amount
+            self.portfolio_asset.trade_profit += self.profit
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
+        # delete PortfolioToken
+        PortfolioToken.objects.filter(
+            portfolio=self.portfolio).latest('id').delete()
+
+        super(Transaction, self).delete(*args, **kwargs)
 
     def __str__(self):
         return '{}'.format(self.portfolio_asset.asset.ticker)

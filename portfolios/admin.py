@@ -39,10 +39,10 @@ class PortfolioAssetAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('date', 'portfolio', 'broker', 'asset', 'shares_amount',
-                    'share_cost_brl', 'total_cost_brl', 'order', 'portfolio_avarage_price')
+                    'share_cost_brl', 'total_cost_brl', 'order', 'portfolio_avarage_price', 'profit')
     list_editable = ['shares_amount', 'share_cost_brl', 'order', 'broker']
     list_filter = (('portfolio_asset__asset__category',
-                   RelatedFieldListFilter), ('broker', RelatedFieldListFilter),)
+                   RelatedFieldListFilter), ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter),)
 
 
 class PortfolioTokenAdmin(admin.ModelAdmin):
