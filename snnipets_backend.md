@@ -4,6 +4,7 @@ python3 -m venv backend_env
 source backend_env/bin/activate
 
 # install django
+
 pip install django==3.0.2
 
 python -m pip install -r requirements.txt
@@ -22,8 +23,12 @@ python manage.py createsuperuser
 
 # create fixtures
 
-python manage.py dumpdata --indent 4 > fixtures.json
+python manage.py dumpdata --indent 4 --exclude admin.logentry --exclude auth.permission --exclude contenttypes --exclude sessions > fixtures.json
 python manage.py loaddata fixtures.json
+
+# clean database django before load fixtures
+
+python manage.py flush
 
 # create app with django
 
