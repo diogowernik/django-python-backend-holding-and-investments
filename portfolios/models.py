@@ -101,10 +101,9 @@ class Transaction(models.Model):
                     self.share_cost_brl, 2)
                 self.total_cost_brl = round(
                     self.shares_amount * self.share_cost_brl, 2)
-                # avarage price is wrong have to fix it
                 self.portfolio_avarage_price = round(
-                    (self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount +
-                     self.share_cost_brl * self.shares_amount) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
+                    ((self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount) +
+                     (self.share_cost_brl * self.shares_amount)) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
                 self.profit = 0
 
                 self.portfolio_asset.shares_amount += self.shares_amount
@@ -227,10 +226,12 @@ class PortfolioToken(models.Model):
             if self.tokens_amount > 0:
                 self.token_price = round(
                     self.total_today_brl/self.tokens_amount, 4)
+                # remove historical average price
                 self.historical_average_price = (last.tokens_amount*last.historical_average_price+(
                     self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
+                # historical profit = (self.token_price/1 -1) *100
                 self.historical_profit = round(
-                    (self.token_price-self.historical_average_price)/self.historical_average_price, 4)
+                    (self.token_price/1 - 1) * 100, 4)
             else:
                 self.token_price = 1
                 self.historical_average_price = 1
