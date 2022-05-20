@@ -231,7 +231,7 @@ class PortfolioToken(models.Model):
                     self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
                 # historical profit = (self.token_price/1 -1) *100
                 self.historical_profit = round(
-                    (self.token_price/1 - 1) * 100, 4)
+                    (self.token_price/1 - 1), 4)
             else:
                 self.token_price = 1
                 self.historical_average_price = 1

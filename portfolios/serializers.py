@@ -62,3 +62,16 @@ class TransactionSerializer(serializers.ModelSerializer):
             'shares_amount',
             'share_cost_brl',
         )
+
+
+class PortfolioTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PortfolioToken
+        fields = (
+            'date',
+            'portfolio',
+            'total_today_brl',
+            'order_value',
+            'tokens_amount',
+            'token_price',
+        )
