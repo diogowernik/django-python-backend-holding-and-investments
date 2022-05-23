@@ -21,6 +21,8 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
     broker = serializers.CharField(source='broker.name')
     setor_fii = serializers.CharField(source='asset.fii.setor_fii')
+    p_vpa_fii = serializers.CharField(source='asset.fii.p_vpa')
+    asset_price = serializers.FloatField(source='asset.price')
 
     class Meta:
         model = models.PortfolioAsset
@@ -28,6 +30,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'id',
             'ticker',
             'shares_amount',
+            'asset_price',
             'share_average_price_brl',
             'total_cost_brl',
             'total_today_brl',
@@ -37,6 +40,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'trade_profit',
             'broker',
             'setor_fii',
+            'p_vpa_fii',
         )
 
 
