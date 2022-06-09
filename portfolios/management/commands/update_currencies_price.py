@@ -25,6 +25,7 @@ class Command(BaseCommand):
             f'https://economia.awesomeapi.com.br/json/last/{app_list}').T.reset_index()
         economia_df = economia_df[['code', 'bid']]
         economia_df.columns = ['ticker', 'price']
+        economia_df['price'] = economia_df['price'].astype(float).round(2)
 
         # print(economia_df)
 

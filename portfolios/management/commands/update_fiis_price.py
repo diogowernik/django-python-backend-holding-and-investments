@@ -22,7 +22,7 @@ class Command(BaseCommand):
             try:
                 yahoo_df.columns = ["ticker",  "price", "price2"]
                 yahoo_df["price"] = yahoo_df["price"].fillna(
-                    yahoo_df["price2"])
+                    yahoo_df["price2"]).round(2)
                 yahoo_df['ticker'] = yahoo_df['ticker'].map(
                     lambda x: x.rstrip('.SA'))
                 yahoo_df = yahoo_df.set_index('ticker')

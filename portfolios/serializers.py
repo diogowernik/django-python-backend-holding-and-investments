@@ -23,6 +23,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
     setor_fii = serializers.CharField(source='asset.fii.setor_fii')
     p_vpa_fii = serializers.CharField(source='asset.fii.p_vpa')
     asset_price = serializers.FloatField(source='asset.price')
+    twelve_m_yield = serializers.FloatField(source='asset.fii.twelve_m_yield')
 
     class Meta:
         model = models.PortfolioAsset
@@ -41,6 +42,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'broker',
             'setor_fii',
             'p_vpa_fii',
+            'twelve_m_yield'
         )
 
 

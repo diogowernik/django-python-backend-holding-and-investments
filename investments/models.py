@@ -1,4 +1,5 @@
 from django.db import models
+from numpy import product
 from categories.models import Category, SetorFii, SetorCrypto
 
 
@@ -47,11 +48,44 @@ class Currency(Asset):
 
 
 class FixedIncome(Asset):
-    default_currency = models.ForeignKey(
-        Currency, related_name='currencies', on_delete=models.CASCADE)
+    kindChoices = (
+        ('Pre-Fixado', 'Pre-Fixado'),
+        ('Pos-Fixado', 'Pos-Fixado'),
+        ('Misto', 'Misto'),
+    )
+    indexerChoises = (
+        ('IPCA', 'IPCA'),
+        ('CDI', 'CDI'),
+        ('Selic', 'Selic'),
+        ('IGPM', 'IGPM'),
+    )
+    creditChoices = (
+        ('Bancario', 'Bancario'),
+        ('Soberano', 'Soberano'),
+        ('Privado', 'Privado'),
+    )
+    kind = models.CharField(
+        max_length=255, choices=kindChoices, default='Pre-Fixado')
+    indexer = models.CharField(
+        max_length=255, choices=indexerChoises, default='IPCA')
+    credit_type = models.CharField(
+        max_length=255, choices=creditChoices, default='Bancario')
+    issuer = models.CharField(max_length=255, default='')
+    interest_rate = models.FloatField(default=0)
+    is_Ir = models.BooleanField(default=False)
+    deadline = models.DateField(default=None, null=True)
 
     class Meta:
         verbose_name_plural = "    Fixed Incomes"
+
+
+class InvestmentFunds(Asset):
+    ambima_code = models.CharField(max_length=255, unique=True)
+    twelve_m_profit = models.FloatField(default=0)
+    liquidity = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name_plural = "    Investment Funds"
 
 
 class Crypto(Asset):

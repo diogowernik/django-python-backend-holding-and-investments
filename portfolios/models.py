@@ -120,7 +120,7 @@ class Transaction(models.Model):
                 self.total_cost_brl = round(
                     self.shares_amount * self.share_cost_brl, 2) * -1
                 self.portfolio_avarage_price = round(
-                    last_transaction.portfolio_avarage_price, 2)
+                    self.portfolio_asset.share_average_price_brl, 2)
                 self.profit = round(
                     (self.total_cost_brl * -1) - (self.portfolio_avarage_price * self.shares_amount), 2)
 

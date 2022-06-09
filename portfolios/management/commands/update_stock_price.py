@@ -22,7 +22,7 @@ class Command(BaseCommand):
             try:
                 yahoo_df.columns = ["ticker",  "price", "price2"]
                 yahoo_df["price"] = yahoo_df["price"].fillna(
-                    yahoo_df["price2"])
+                    yahoo_df["price2"]).round(2)
                 yahoo_df = yahoo_df.set_index('ticker')
             except Exception as e:
                 print(f' Key Exception - {e}')
@@ -46,7 +46,7 @@ class Command(BaseCommand):
         usd_value = usd_price.bid[0]
         # print(usd_value)
 
-        yahoo_df['price'] = yahoo_df['price'] * usd_value
+        yahoo_df['price'] = (yahoo_df['price'] * usd_value).round(2)
         # print(yahoo_df)
 
         # config app_df to merge

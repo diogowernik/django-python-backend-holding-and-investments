@@ -49,6 +49,12 @@ class FixedIncomeAdmin(admin.ModelAdmin):
     list_editable = ['price', 'category', ]
 
 
+class InvestmentFundsAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'price', 'category')
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['price', 'category', ]
+
+
 class PrivateAssetAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'price', 'category')
     prepopulated_fields = {'slug': ('ticker',)}
@@ -61,4 +67,5 @@ admin.site.register(models.Stocks, StocksAdmin)
 admin.site.register(models.Crypto, CryptoAdmin)
 admin.site.register(models.Currency, CurrencyAdmin)
 admin.site.register(models.FixedIncome, FixedIncomeAdmin)
+admin.site.register(models.InvestmentFunds, InvestmentFundsAdmin)
 admin.site.register(models.PrivateAsset, PrivateAssetAdmin)
