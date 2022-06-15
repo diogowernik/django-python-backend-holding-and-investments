@@ -78,6 +78,9 @@ class FixedIncome(Asset):
     class Meta:
         verbose_name_plural = "    Fixed Incomes"
 
+    def __str__(self):
+        return '{} | {}'.format(self.ticker, self.deadline)
+
 
 class InvestmentFunds(Asset):
     ambima_code = models.CharField(max_length=255, unique=True)
