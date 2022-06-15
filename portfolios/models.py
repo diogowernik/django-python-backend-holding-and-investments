@@ -106,6 +106,7 @@ class Transaction(models.Model):
                      (self.share_cost_brl * self.shares_amount)) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
                 self.profit = 0
 
+                self.portfolio_asset.broker = self.broker
                 self.portfolio_asset.shares_amount += self.shares_amount
                 self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
 
