@@ -1,6 +1,6 @@
 from django.db import models
 from numpy import product
-from categories.models import Category, SetorFii, SetorCrypto
+from categories.models import Category, SetorFii, SetorCrypto, SetorBrStocks
 
 
 class Asset(models.Model):
@@ -8,7 +8,7 @@ class Asset(models.Model):
         Category, related_name='categories', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
-    price = models.FloatField()
+    price = models.FloatField(default=0)
 
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.price)
@@ -40,6 +40,20 @@ class Stocks(Asset):
 
     class Meta:
         verbose_name_plural = "   Stocks"
+
+
+class BrStocks(Asset):
+    setor_br_stocks = models.ForeignKey(
+        SetorBrStocks, null=True, default=None, on_delete=models.CASCADE, related_name="setor_br_stocks")
+    twelve_m_yield = models.FloatField(default=0)
+    ev_ebit = models.FloatField(default=0)
+    roic = models.FloatField(default=0)
+    pl = models.FloatField(default=0)
+    roe = models.FloatField(default=0)
+    p_vpa = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name_plural = "   Brazilian Stocks"
 
 
 class Currency(Asset):

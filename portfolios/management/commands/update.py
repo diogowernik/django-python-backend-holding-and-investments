@@ -11,6 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         call_command('update_fiis_price')
+        call_command('update_br_stocks_price')
         call_command('update_cripto_price')
         call_command('update_currencies_price')
         call_command('update_stock_price')

@@ -25,3 +25,23 @@ class FiiSerializer(serializers.ModelSerializer):
             'twelve_m_yield',
             'p_vpa'
         )
+
+
+class BrStocksSerializer(serializers.ModelSerializer):
+    setor_br_stocks = serializers.CharField(source='setor_br_stocks.name')
+
+    class Meta:
+        model = models.BrStocks
+        fields = (
+            'id',
+            'ticker',
+            'slug',
+            'price',
+            'setor_br_stocks',
+            'twelve_m_yield',
+            'ev_ebit',
+            'roic',
+            'roe',
+            'pl',
+            'p_vpa'
+        )

@@ -137,6 +137,7 @@ class Transaction(models.Model):
                 self.portfolio_asset = PortfolioAsset.objects.create(
                     portfolio=self.portfolio,
                     asset=self.asset,
+                    broker=self.broker,
                     shares_amount=self.shares_amount,
                     share_average_price_brl=self.share_cost_brl
                 )
@@ -175,22 +176,22 @@ class Transaction(models.Model):
             )
 
     # def delete undo the transaction
-    def delete(self, *args, **kwargs):
-        if self.order == 'Buy':
-            self.portfolio_asset.shares_amount -= self.shares_amount
-            self.portfolio_asset.trade_profit -= self.profit
-            self.portfolio_asset.save()
-            self.portfolio_asset.portfolio.save()
-        if self.order == 'Sell':
-            self.portfolio_asset.shares_amount += self.shares_amount
-            self.portfolio_asset.trade_profit += self.profit
-            self.portfolio_asset.save()
-            self.portfolio_asset.portfolio.save()
-        # delete PortfolioToken
-        PortfolioToken.objects.filter(
-            portfolio=self.portfolio).latest('id').delete()
+    # def delete(self, *args, **kwargs):
+    #     if self.order == 'Buy':
+    #         self.portfolio_asset.shares_amount -= self.shares_amount
+    #         self.portfolio_asset.trade_profit -= self.profit
+    #         self.portfolio_asset.save()
+    #         self.portfolio_asset.portfolio.save()
+    #     if self.order == 'Sell':
+    #         self.portfolio_asset.shares_amount += self.shares_amount
+    #         self.portfolio_asset.trade_profit += self.profit
+    #         self.portfolio_asset.save()
+    #         self.portfolio_asset.portfolio.save()
+    #     # delete PortfolioToken
+    #     PortfolioToken.objects.filter(
+    #         portfolio=self.portfolio).latest('id').delete()
 
-        super(Transaction, self).delete(*args, **kwargs)
+    #     super(Transaction, self).delete(*args, **kwargs)
 
     def __str__(self):
         return '{}'.format(self.portfolio_asset.asset.ticker)

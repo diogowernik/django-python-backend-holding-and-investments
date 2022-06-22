@@ -29,6 +29,15 @@ class StocksAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'price', 'category')
 
 
+class BrStocksAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'setor_br_stocks', 'price',
+                    'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa')
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['price', 'setor_br_stocks',
+                     'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa']
+    list_filter = (('setor_br_stocks', RelatedFieldListFilter),)
+
+
 class CryptoAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'slug', 'price', 'category',
                     'setor_crypto', 'marketcap', 'circulating_supply')
@@ -69,3 +78,4 @@ admin.site.register(models.Currency, CurrencyAdmin)
 admin.site.register(models.FixedIncome, FixedIncomeAdmin)
 admin.site.register(models.InvestmentFunds, InvestmentFundsAdmin)
 admin.site.register(models.PrivateAsset, PrivateAssetAdmin)
+admin.site.register(models.BrStocks, BrStocksAdmin)

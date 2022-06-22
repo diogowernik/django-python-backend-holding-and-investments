@@ -50,5 +50,6 @@ urlpatterns = [
     path('api/brokers/', broker_views.BrokerList.as_view()),
     path('api/assets/', investment_views.AssetList.as_view()),
     path('api/fiis/', investment_views.FiiList.as_view()),
+    path('api/br_stocks/', investment_views.BrStocksList.as_view()),
     url(r'^$', home, name='home'),
 ]

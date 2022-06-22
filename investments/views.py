@@ -19,3 +19,10 @@ class FiiList(generics.ListAPIView):
 
     def get_queryset(self):
         return models.Fii.objects.all()
+
+
+class BrStocksList(generics.ListAPIView):
+    serializer_class = serializers.BrStocksSerializer
+
+    def get_queryset(self):
+        return models.BrStocks.objects.all()

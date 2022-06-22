@@ -21,6 +21,13 @@ class SetorCryptoAdmin(admin.ModelAdmin):
     list_editable = ['slug']
 
 
+class SetorBrStocksAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    list_editable = ['slug']
+
+
 admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.SetorFii, SetorFiiAdmin)
 admin.site.register(models.SetorCrypto, SetorCryptoAdmin)
+admin.site.register(models.SetorBrStocks, SetorBrStocksAdmin)
