@@ -17,7 +17,7 @@ from . import models
 
 
 class FiiAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'setor_fii', 'price', 'last_dividend',
+    list_display = ('ticker', 'ranking', 'setor_fii', 'price', 'last_dividend',
                     'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'setor_fii', 'last_dividend',
@@ -30,8 +30,10 @@ class StocksAdmin(admin.ModelAdmin):
 
 
 class BrStocksAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'setor_br_stocks', 'price',
-                    'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa')
+    list_display = ('ticker', 'ranking', 'setor_br_stocks', 'price',
+                    'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa',
+                    # 'ranking_all'
+                    )
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'setor_br_stocks',
                      'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa']

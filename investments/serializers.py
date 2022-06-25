@@ -23,7 +23,8 @@ class FiiSerializer(serializers.ModelSerializer):
             'last_yield',
             'six_m_yield',
             'twelve_m_yield',
-            'p_vpa'
+            'p_vpa',
+            'ranking'
         )
 
 
@@ -43,5 +44,7 @@ class BrStocksSerializer(serializers.ModelSerializer):
             'roic',
             'roe',
             'pl',
-            'p_vpa'
+            'p_vpa',
+            'ranking',
+            'ranking_all'
         )

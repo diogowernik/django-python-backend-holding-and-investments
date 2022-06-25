@@ -28,6 +28,7 @@ class Fii(Asset):
     six_m_yield = models.FloatField(default=0)
     twelve_m_yield = models.FloatField(default=0)
     p_vpa = models.FloatField(default=0)
+    ranking = models.FloatField(default=0)
 
     def __str__(self):
         return '{}'.format(self.ticker)
@@ -51,6 +52,8 @@ class BrStocks(Asset):
     pl = models.FloatField(default=0)
     roe = models.FloatField(default=0)
     p_vpa = models.FloatField(default=0)
+    ranking = models.FloatField(default=0)
+    ranking_all = models.FloatField(default=0)
 
     class Meta:
         verbose_name_plural = "   Brazilian Stocks"

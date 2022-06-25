@@ -65,3 +65,55 @@ class Command(BaseCommand):
                 print('Fii not found')
 
         print("Fiis fundmentals data updated!")
+
+        queryset = Fii.objects.values_list(
+            "id", "ticker", "twelve_m_yield", "p_vpa",
+            # "six_m_yield", "last_yield"
+        )
+        ranking_df = pd.DataFrame(list(queryset), columns=[
+                                  "id", "ticker", "twelve_m_yield", "p_vpa"])
+        ranking_df = ranking_df.set_index('ticker')
+        # tweleve_m_yield higher to lower
+        ranking_df['twelve_m_yield'] = pd.to_numeric(
+            ranking_df['twelve_m_yield'])
+        ranking_df['ranking_twelve_m_yield'] = ranking_df['twelve_m_yield'].rank(
+            ascending=False, method='first')
+        # ranking_df = ranking_df.sort_values(by=['ranking_twelve_m_yield'])
+
+        # six_m_yield higher to lower
+        # ranking_df['six_m_yield'] = pd.to_numeric(
+        #     ranking_df['six_m_yield'])
+        # ranking_df['ranking_six_m_yield'] = ranking_df['six_m_yield'].rank(
+        #     ascending=False, method='first')
+        # ranking_df = ranking_df.sort_values(by=['ranking_six_m_yield'])
+
+        # last_yield higher to lower
+        # ranking_df['last_yield'] = pd.to_numeric(
+        #     ranking_df['last_yield'])
+        # ranking_df['ranking_last_yield'] = ranking_df['last_yield'].rank(
+        #     ascending=False, method='first')
+        # ranking_df = ranking_df.sort_values(by=['ranking_last_yield'])
+
+        # p_vpa lower to higher
+        ranking_df['p_vpa'] = pd.to_numeric(ranking_df['p_vpa'])
+        ranking_df['ranking_p_vpa'] = ranking_df['p_vpa'].rank(
+            ascending=True, method='first')
+        # ranking_df = ranking_df.sort_values(by=['ranking_p_vpa'])
+
+        # sum ranking_twelve_m_yield and ranking_p_vpa
+        ranking_df['ranking'] = ranking_df['ranking_twelve_m_yield'] + \
+            ranking_df['ranking_p_vpa']
+        ranking_df = ranking_df.sort_values(by=['ranking'])
+
+        for index, row in ranking_df.iterrows():
+            try:
+                fii = Fii.objects.get(id=row['id'])
+                fii.ranking = row['ranking']
+
+                fii.save()
+            except Fii.DoesNotExist:
+                print('Fii not found')
+
+        print("Fiis ranking updated!")
+
+        # print(df)

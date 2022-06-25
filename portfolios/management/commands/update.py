@@ -17,3 +17,4 @@ class Command(BaseCommand):
         call_command('update_stock_price')
         call_command('update_total_today_brl')
         call_command('update_fiis_fundamentals')
+        call_command('update_br_stocks_fundamentals')
