@@ -33,6 +33,7 @@ class PortfolioAssetList(generics.ListAPIView):
             portfolio_id=self.kwargs['pk'],
         ).select_related(
             'asset__fii__setor_fii',
+            'asset__brstocks__setor_br_stocks',
         )
 
 
