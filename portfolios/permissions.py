@@ -2,8 +2,23 @@ import json
 from rest_framework import permissions
 from . import models
 
+
+# Permission only user can CRUD
+
+# class IsOwner(permissions.BasePermission):
+#     """
+#     Custom permission to only allow owners of an object to edit it.
+#     """
+
+#     def has_permission(self, request, view):
+#         return request.user and request.user.is_authenticated()
+
+#     def has_object_permission(self, request, view, obj):
+#         return obj.user == request.user
+
+
 # class IsOwnerOrReadOnly(permissions.BasePermission):
-  
+
 #   def has_object_permission(self, request, view, obj):
 #     # Read permissions are allowed to any request,
 #     # so we'll always allow GET, HEAD or OPTIONS requests.
@@ -14,7 +29,7 @@ from . import models
 #     return obj.owner == request.user
 
 # class PortfolioOwnerOrReadOnly(permissions.BasePermission):
-      
+
 #   def has_object_permission(self, request, view, obj):
 #     # Read permissions are allowed to any request,
 #     # so we'll always allow GET, HEAD or OPTIONS requests.
@@ -33,4 +48,3 @@ from . import models
 #       return True
 #     except:
 #       return False
-

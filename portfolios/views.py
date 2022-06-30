@@ -1,4 +1,7 @@
 from rest_framework import generics
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
 from . import permissions, serializers
 from . import models
 from rest_framework.response import Response
@@ -10,7 +13,9 @@ from investments.models import Category, Asset, Fii
 # Minha Holding
 
 class PortfolioList(generics.ListCreateAPIView):
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioSerializer
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Portfolio.objects.filter(owner_id=self.request.user.id)
@@ -20,13 +25,17 @@ class PortfolioList(generics.ListCreateAPIView):
 
 
 class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = [permissions.IsOwnerOrReadOnly]
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioDetailSerializer
     queryset = models.Portfolio.objects.all()
+    permission_classes = (IsAuthenticated, )
 
 
 class PortfolioAssetList(generics.ListAPIView):
+    """Handles creating, reading and updating portfolios"""
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioAssetSerializer
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.PortfolioAsset.objects.filter(
@@ -38,7 +47,9 @@ class PortfolioAssetList(generics.ListAPIView):
 
 
 class PortfolioTokenList(generics.ListAPIView):
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioTokenSerializer
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.PortfolioToken.objects.filter(
@@ -47,7 +58,9 @@ class PortfolioTokenList(generics.ListAPIView):
 
 
 class CategoryList(generics.ListAPIView):
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.CategorySerializer
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return Category.objects.all()
@@ -59,7 +72,9 @@ class CategoryList(generics.ListAPIView):
 
 
 class TransactionList(generics.ListCreateAPIView):
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.TransactionSerializer
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Transaction.objects.all()

@@ -4,7 +4,9 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls import url
-
+from djoser.views import (
+    TokenCreateView
+)
 
 from portfolios import views as portfolio_views
 from brokers import views as broker_views
@@ -22,8 +24,12 @@ schema_view = get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=[permissions.AllowAny],
+    # permissions only owner
+    permission_classes=(permissions.IsAuthenticated,),
+    # permission_classes=[permissions.AllowAny],
 )
+
+# url permission_classes=[permissions.AllowAny]
 
 urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
@@ -35,8 +41,11 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
+
+    # removed registration
+    # path('auth/', include('djoser.urls')),
+    # path('auth/', include('djoser.urls.authtoken')),
+    path('auth/token/login/', TokenCreateView.as_view(), name='login'),
 
     path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
     path('api/transactions/', portfolio_views.TransactionList.as_view()),

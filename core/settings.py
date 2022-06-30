@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from re import A
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-hi+umw##@%wnjql)r==)#m#9-kut4#^!q6h(pnlx%p!b=2_e_4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+]
 
 # LOGIN_URL = 'rest_framework:login'
 # LOGOUT_URL = 'rest_framework:logout'
@@ -163,3 +167,21 @@ CORS_ALLOWED_ORIGINS = [
     'https://paguecrypto.org',
     'https://mercadocrypto.org'
 ]
+
+# DJOSER = {
+#     'HIDE_USERS': False,
+#     'PERMISSIONS': {
+#         'user': ['rest_framework.permissions.IsAuthenticated'],
+#         'user_list': ['rest_framework.permissions.IsAuthenticated'],
+#     },
+#     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+#     'ACTIVATION_URL': '#/activate/{uid}/{token}',
+#     'ACTIVATION_CONFIRM_URL': '#/activate/confirm/{uid}/{token}',
+#     'SETTINGS_URL': '#/settings/{uid}',
+#     'PASSWORD_CHANGE_URL': '#/password/change/{uid}',
+#     'LOGOUT_URL': '#/logout/{token}',
+#     'LOGOUT_REDIRECT_URL': '#/login',
+#     # disable registration
+#     'REGISTER_URL': None,
+
+# }
