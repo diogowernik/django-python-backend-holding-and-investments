@@ -9,7 +9,7 @@ class Category(models.Model):
         return "{}".format(self.name)
 
     class Meta:
-        verbose_name_plural = "Categories"
+        verbose_name_plural = "Categorias"
         ordering = ('-name',)
 
 
@@ -21,13 +21,8 @@ class SubCategory(models.Model):
         return "{}".format(self.name)
 
     class Meta:
-        verbose_name_plural = "SubCategories"
-        ordering = ('-name',)
+        verbose_name_plural = "Áreas de Atuação"
+        ordering = ('name',)
 
     def __str__(self):
         return "{}".format(self.name)
-
-    class Meta:
-        # White spaces organize who comes first
-        verbose_name_plural = "SubCategories"
-        ordering = ('-name',)

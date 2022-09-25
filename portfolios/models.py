@@ -18,7 +18,7 @@ class Portfolio(models.Model):
         return '{}'.format(self.name)
 
     class Meta:
-        verbose_name_plural = "     Portfolios"
+        verbose_name_plural = " Portfolios"
 
 
 class PortfolioAsset(models.Model):
@@ -66,7 +66,7 @@ class PortfolioAsset(models.Model):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
 
     class Meta:
-        verbose_name_plural = "   Portfolio Assets"
+        verbose_name_plural = "  Investimentos do Portfolio"
 
 
 class Transaction(models.Model):
@@ -195,7 +195,7 @@ class Transaction(models.Model):
         return '{}'.format(self.portfolio_asset.asset.ticker)
 
     class Meta:
-        verbose_name_plural = "    Portfolio Transactions"
+        verbose_name_plural = " Transações"
 
 
 class PortfolioToken(models.Model):
@@ -214,7 +214,7 @@ class PortfolioToken(models.Model):
         return ' {} '.format(self.portfolio.name)
 
     class Meta:
-        verbose_name_plural = " Porftolio Tokens"
+        verbose_name_plural = "Evolução do Portfolio"
 
     def save(self, *args, **kwargs):
         # save object filtered by portfolio

@@ -31,15 +31,26 @@ def app_resort(func):
         #import pprint
         # pprint.pprint(app_list)
 
+        # rename the apps names
+        for app in app_list:
+            app['name'] = app['name'].replace('Investments', 'Investmentos')
+            app['name'] = app['name'].replace('Categories', 'Categorias')
+            app['name'] = app['name'].replace('Dividends', 'Dividendos')
+            app['name'] = app['name'].replace('Brokers', 'Corretoras')
+            app['name'] = app['name'].replace(
+                'Authentification and Authorization', 'Autenticação e Autorização')
+            app['name'] = app['name'].replace(
+                'Auth Token', 'Token de Autenticação')
+
         app_sort_key = 'name'
         app_ordering = {
-            'Investments': 1,
+            'Investmentos': 1,
             'Portfolios': 2,
-            'Categories': 3,
-            'Dividends': 4,
-            'Brokers': 5,
-            'Authentification and Authorization': 6,
-            'Auth Token': 7,
+            'Categorias': 3,
+            'Dividendos': 4,
+            'Corretoras': 5,
+            'Autenticação e Autorização': 6,
+            'Token de Autenticação': 7,
         }
 
         resorted_app_list = sorted(
