@@ -1,11 +1,13 @@
 from django.db import models
 from numpy import product
-from categories.models import Category, SetorFii, SetorCrypto, SetorBrStocks
+from categories.models import Category, SetorFii, SubCategory
 
 
 class Asset(models.Model):
     category = models.ForeignKey(
         Category, related_name='categories', on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(
+        SubCategory, related_name='subcategories', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
     price = models.FloatField(default=0)
@@ -34,18 +36,16 @@ class Fii(Asset):
         return '{}'.format(self.ticker)
 
     class Meta:
-        verbose_name_plural = "  Brazilian Reits"
+        verbose_name_plural = "Fundos Imobiliários"
 
 
 class Stocks(Asset):
 
     class Meta:
-        verbose_name_plural = "   Stocks"
+        verbose_name_plural = "Ações Internacionais"
 
 
 class BrStocks(Asset):
-    setor_br_stocks = models.ForeignKey(
-        SetorBrStocks, null=True, default=None, on_delete=models.CASCADE, related_name="setor_br_stocks")
     twelve_m_yield = models.FloatField(default=0)
     ev_ebit = models.FloatField(default=0)
     roic = models.FloatField(default=0)
@@ -56,12 +56,12 @@ class BrStocks(Asset):
     ranking_all = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "   Brazilian Stocks"
+        verbose_name_plural = "Ações Brasileiras"
 
 
 class Currency(Asset):
     class Meta:
-        verbose_name_plural = " Currencies"
+        verbose_name_plural = "Moedas Estrangeiras"
 
 
 class FixedIncome(Asset):
@@ -93,7 +93,7 @@ class FixedIncome(Asset):
     deadline = models.DateField(default=None, null=True)
 
     class Meta:
-        verbose_name_plural = "    Fixed Incomes"
+        verbose_name_plural = "Renda Fixa"
 
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.deadline)
@@ -105,19 +105,17 @@ class InvestmentFunds(Asset):
     liquidity = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "    Investment Funds"
+        verbose_name_plural = "Fundos de Investimentos"
 
 
 class Crypto(Asset):
-    setor_crypto = models.ForeignKey(
-        SetorCrypto, null=True, default=1, on_delete=models.CASCADE, related_name="setor_cryptos")
     marketcap = models.FloatField(default=0)
     circulating_supply = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "Cripto Currencies"
+        verbose_name_plural = "Criptomoedas"
 
 
 class PrivateAsset(Asset):
     class Meta:
-        verbose_name_plural = "  Private Assets"
+        verbose_name_plural = "Ativos Patrimoniais"

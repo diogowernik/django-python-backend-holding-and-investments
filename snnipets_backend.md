@@ -2,6 +2,13 @@
 
 python3 -m venv backend_env
 source backend_env/bin/activate
+cd backend_p
+python manage.py runserver
+
+source backend_env/bin/activate
+cd backend_p
+python manage.py update
+python manage.py update_token
 
 # install django
 

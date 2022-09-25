@@ -25,7 +25,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     # permissions only owner
-    permission_classes=(permissions.IsAuthenticated,),
+    # permission_classes=(permissions.IsAuthenticated,),
     # permission_classes=[permissions.AllowAny],
 )
 

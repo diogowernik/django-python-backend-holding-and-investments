@@ -17,57 +17,60 @@ from . import models
 
 
 class FiiAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'ranking', 'setor_fii', 'price', 'last_dividend',
+    list_display = ('ticker', 'ranking', 'setor_fii', 'subcategory', 'price', 'last_dividend',
                     'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'setor_fii', 'last_dividend',
+    list_editable = ['price', 'setor_fii', 'subcategory', 'last_dividend',
                      'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa']
     list_filter = (('setor_fii', RelatedFieldListFilter),)
 
 
 class StocksAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category')
+    list_display = ('ticker', 'price', 'category', 'subcategory')
+    list_editable = ['price',  'subcategory']
 
+
+# Ações Brasileiras
 
 class BrStocksAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'ranking', 'setor_br_stocks', 'price',
+    list_display = ('ticker', 'ranking', 'subcategory', 'price',
                     'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa',
                     # 'ranking_all'
                     )
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'setor_br_stocks',
+    list_editable = ['price', 'subcategory',
                      'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa']
-    list_filter = (('setor_br_stocks', RelatedFieldListFilter),)
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
 class CryptoAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'slug', 'price', 'category',
-                    'setor_crypto', 'marketcap', 'circulating_supply')
+    list_display = ('ticker', 'slug', 'price', 'category', 'subcategory',
+                    'marketcap', 'circulating_supply')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['slug', 'price', 'category', 'setor_crypto',
+    list_editable = ['slug', 'price', 'category', 'subcategory',
                      'marketcap', 'circulating_supply']
 
 
 class CurrencyAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category')
+    list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'category', ]
 
 
 class FixedIncomeAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category')
+    list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'category', ]
 
 
 class InvestmentFundsAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category')
+    list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'category', ]
 
 
 class PrivateAssetAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category')
+    list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['price', 'category', ]
 

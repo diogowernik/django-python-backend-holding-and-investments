@@ -10,6 +10,7 @@ class AssetSerializer(serializers.ModelSerializer):
 
 class FiiSerializer(serializers.ModelSerializer):
     setor_fii = serializers.CharField(source='setor_fii.name')
+    subcategory = serializers.CharField(source='subcategory.name')
 
     class Meta:
         model = models.Fii
@@ -18,6 +19,7 @@ class FiiSerializer(serializers.ModelSerializer):
             'ticker',
             'slug',
             'price',
+            'subcategory',
             'setor_fii',
             'last_dividend',
             'last_yield',
@@ -29,7 +31,7 @@ class FiiSerializer(serializers.ModelSerializer):
 
 
 class BrStocksSerializer(serializers.ModelSerializer):
-    setor_br_stocks = serializers.CharField(source='setor_br_stocks.name')
+    subcategory = serializers.CharField(source='subcategory.name')
 
     class Meta:
         model = models.BrStocks
@@ -38,7 +40,7 @@ class BrStocksSerializer(serializers.ModelSerializer):
             'ticker',
             'slug',
             'price',
-            'setor_br_stocks',
+            'subcategory',
             'twelve_m_yield',
             'ev_ebit',
             'roic',
