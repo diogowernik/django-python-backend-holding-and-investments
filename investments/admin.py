@@ -17,12 +17,12 @@ from . import models
 
 
 class FiiAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'ranking', 'setor_fii', 'subcategory', 'price', 'last_dividend',
+    list_display = ('ticker', 'ranking', 'subcategory', 'price', 'last_dividend',
                     'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'setor_fii', 'subcategory', 'last_dividend',
+    list_editable = ['price', 'subcategory', 'last_dividend',
                      'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa']
-    list_filter = (('setor_fii', RelatedFieldListFilter),)
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
 class StocksAdmin(admin.ModelAdmin):
@@ -72,7 +72,7 @@ class InvestmentFundsAdmin(admin.ModelAdmin):
 class PrivateAssetAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', ]
+    list_editable = ['price', 'category', 'subcategory', ]
 
 
 # admin.site.register(models.Asset, AssetAdmin)

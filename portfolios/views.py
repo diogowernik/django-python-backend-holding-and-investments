@@ -41,7 +41,6 @@ class PortfolioAssetList(generics.ListAPIView):
         return models.PortfolioAsset.objects.filter(
             portfolio_id=self.kwargs['pk'],
         ).select_related(
-            'asset__fii__setor_fii',
             'asset__subcategory',
         )
 

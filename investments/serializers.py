@@ -9,7 +9,6 @@ class AssetSerializer(serializers.ModelSerializer):
 
 
 class FiiSerializer(serializers.ModelSerializer):
-    setor_fii = serializers.CharField(source='setor_fii.name')
     subcategory = serializers.CharField(source='subcategory.name')
 
     class Meta:
@@ -20,7 +19,6 @@ class FiiSerializer(serializers.ModelSerializer):
             'slug',
             'price',
             'subcategory',
-            'setor_fii',
             'last_dividend',
             'last_yield',
             'six_m_yield',

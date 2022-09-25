@@ -1,6 +1,6 @@
 from django.db import models
 from numpy import product
-from categories.models import Category, SetorFii, SubCategory
+from categories.models import Category, SubCategory
 
 
 class Asset(models.Model):
@@ -16,15 +16,13 @@ class Asset(models.Model):
         return '{} | {}'.format(self.ticker, self.price)
 
     class Meta:
-        verbose_name_plural = "  Assets"
+        verbose_name_plural = "Assets"
         ordering = ('-ticker',)
 
 # Child Classes with ihneritace from Assets
 
 
 class Fii(Asset):
-    setor_fii = models.ForeignKey(
-        SetorFii, null=True, default=None, on_delete=models.CASCADE, related_name="setor_fiis")
     last_dividend = models.FloatField(default=0)
     last_yield = models.FloatField(default=0)
     six_m_yield = models.FloatField(default=0)
@@ -36,13 +34,13 @@ class Fii(Asset):
         return '{}'.format(self.ticker)
 
     class Meta:
-        verbose_name_plural = "Fundos Imobiliários"
+        verbose_name_plural = " Fundos Imobiliários"
 
 
 class Stocks(Asset):
 
     class Meta:
-        verbose_name_plural = "Ações Internacionais"
+        verbose_name_plural = "Internacional / Stocks"
 
 
 class BrStocks(Asset):
@@ -56,12 +54,12 @@ class BrStocks(Asset):
     ranking_all = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "Ações Brasileiras"
+        verbose_name_plural = " Ações Brasileiras"
 
 
 class Currency(Asset):
     class Meta:
-        verbose_name_plural = "Moedas Estrangeiras"
+        verbose_name_plural = "Internacional / Moedas"
 
 
 class FixedIncome(Asset):
@@ -93,7 +91,7 @@ class FixedIncome(Asset):
     deadline = models.DateField(default=None, null=True)
 
     class Meta:
-        verbose_name_plural = "Renda Fixa"
+        verbose_name_plural = " Renda Fixa"
 
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.deadline)
@@ -105,7 +103,7 @@ class InvestmentFunds(Asset):
     liquidity = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "Fundos de Investimentos"
+        verbose_name_plural = " Fundos de Investimentos"
 
 
 class Crypto(Asset):
@@ -113,9 +111,9 @@ class Crypto(Asset):
     circulating_supply = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = "Criptomoedas"
+        verbose_name_plural = "Internacional / Criptomoedas"
 
 
 class PrivateAsset(Asset):
     class Meta:
-        verbose_name_plural = "Ativos Patrimoniais"
+        verbose_name_plural = "Patrimônio Particular"

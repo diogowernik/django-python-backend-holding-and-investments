@@ -1,6 +1,4 @@
 from datetime import date
-from email import message
-from hashlib import new
 from django import forms
 from django.db import models
 from django.contrib.auth.models import User
@@ -8,7 +6,7 @@ from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
 from django.core.exceptions import ValidationError
-from django.db.models import Sum
+# from django.db.models import Sum
 
 
 class Portfolio(models.Model):
