@@ -11,6 +11,9 @@ class Asset(models.Model):
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
     price = models.FloatField(default=0)
+    twelve_m_dividend = models.FloatField(default=0)
+    twelve_m_yield = models.FloatField(default=0)
+    p_vpa = models.FloatField(default=0)
 
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.price)
@@ -26,8 +29,6 @@ class Fii(Asset):
     last_dividend = models.FloatField(default=0)
     last_yield = models.FloatField(default=0)
     six_m_yield = models.FloatField(default=0)
-    twelve_m_yield = models.FloatField(default=0)
-    p_vpa = models.FloatField(default=0)
     ranking = models.FloatField(default=0)
 
     def __str__(self):
@@ -44,12 +45,10 @@ class Stocks(Asset):
 
 
 class BrStocks(Asset):
-    twelve_m_yield = models.FloatField(default=0)
     ev_ebit = models.FloatField(default=0)
     roic = models.FloatField(default=0)
     pl = models.FloatField(default=0)
     roe = models.FloatField(default=0)
-    p_vpa = models.FloatField(default=0)
     ranking = models.FloatField(default=0)
     ranking_all = models.FloatField(default=0)
 

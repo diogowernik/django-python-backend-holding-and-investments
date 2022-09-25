@@ -21,13 +21,11 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
     subcategory = serializers.CharField(source='asset.subcategory.name')
     broker = serializers.CharField(source='broker.name')
-
-    p_vpa_fii = serializers.CharField(source='asset.fii.p_vpa')
-    p_vpa_br_stocks = serializers.CharField(source='asset.brstocks.p_vpa')
     asset_price = serializers.FloatField(source='asset.price')
-    twelve_m_yield = serializers.FloatField(source='asset.fii.twelve_m_yield')
-    twelve_m_yield_br_stocks = serializers.FloatField(
-        source='asset.brstocks.twelve_m_yield')
+    twelve_m_dividend = serializers.FloatField(
+        source='asset.twelve_m_dividend')
+    twelve_m_yield = serializers.FloatField(source='asset.twelve_m_yield')
+    p_vpa = serializers.FloatField(source='asset.p_vpa')
 
     class Meta:
         model = models.PortfolioAsset
@@ -45,11 +43,9 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'dividends_profit',
             'trade_profit',
             'broker',
-            'p_vpa_fii',
             'twelve_m_yield',
-            'p_vpa_br_stocks',
-            'twelve_m_yield_br_stocks',
-
+            'twelve_m_dividend',
+            'p_vpa',
         )
 
 
