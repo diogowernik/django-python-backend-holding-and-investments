@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'brokers',
     'djoser',
     'rest_framework',
-    # 'rest_framework.authtoken',
+    'rest_framework.authtoken',
     'corsheaders',
     'admin_auto_filters',
 
