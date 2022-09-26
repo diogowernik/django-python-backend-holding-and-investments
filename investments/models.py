@@ -10,10 +10,13 @@ class Asset(models.Model):
         SubCategory, related_name='subcategories', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
+    dividend_frequency = models.FloatField(default=4)
     price = models.FloatField(default=0)
     twelve_m_dividend = models.FloatField(default=0)
-    twelve_m_yield = models.FloatField(default=0)
     p_vpa = models.FloatField(default=0)
+    top_52w = models.FloatField(default=0)
+    bottom_52w = models.FloatField(default=0)
+    twelve_m_yield = models.FloatField(default=0)
 
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.price)
@@ -21,6 +24,11 @@ class Asset(models.Model):
     class Meta:
         verbose_name_plural = "Assets"
         ordering = ('-ticker',)
+
+    # def save(self, *args, **kwargs):
+    #     self.twelve_m_yield = self.twelve_m_dividend / self.price
+    #     super().save(*args, **kwargs)
+
 
 # Child Classes with ihneritace from Assets
 
@@ -36,12 +44,6 @@ class Fii(Asset):
 
     class Meta:
         verbose_name_plural = " Fundos Imobiliários"
-
-
-class Stocks(Asset):
-
-    class Meta:
-        verbose_name_plural = "Internacional / Stocks"
 
 
 class BrStocks(Asset):
@@ -116,3 +118,22 @@ class Crypto(Asset):
 class PrivateAsset(Asset):
     class Meta:
         verbose_name_plural = "Patrimônio Particular"
+
+# class InternationalAssets abstract class
+
+
+class InternationalAssets(Asset):
+    is_dividend_aristocrat = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+
+class Stocks(InternationalAssets):
+    class Meta:
+        verbose_name_plural = "Internacional / Stocks"
+
+
+class Reit(InternationalAssets):
+    class Meta:
+        verbose_name_plural = "Internacional / REIT"
