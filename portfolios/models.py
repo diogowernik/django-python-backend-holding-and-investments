@@ -67,7 +67,7 @@ class PortfolioAsset(models.Model):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
 
     class Meta:
-        verbose_name_plural = "  Investimentos do Portfolio"
+        verbose_name_plural = "  Investimentos por Portfolio"
 
 
 class Transaction(models.Model):
@@ -275,4 +275,4 @@ class PortfolioDividend(models.Model):
         return ' {} '.format(self.portfolio.name)
 
     class Meta:
-        verbose_name_plural = "Dividendos"
+        verbose_name_plural = "Dividendos por Portfolio"

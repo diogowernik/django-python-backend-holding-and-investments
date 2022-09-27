@@ -14,4 +14,4 @@ class Dividend(models.Model):
         return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
 
     class Meta:
-        verbose_name_plural = "Dividends"
+        verbose_name_plural = "Dividendos por ativo"

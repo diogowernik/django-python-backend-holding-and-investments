@@ -67,6 +67,6 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioAsset, PortfolioAssetAdmin)
-admin.site.register(models.Transaction, TransactionAdmin)
-admin.site.register(models.PortfolioToken, PortfolioTokenAdmin)
+# admin.site.register(models.Transaction, TransactionAdmin)
+# admin.site.register(models.PortfolioToken, PortfolioTokenAdmin)
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)

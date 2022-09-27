@@ -49,7 +49,7 @@ class CryptoAdmin(admin.ModelAdmin):
 class CurrencyAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'price', 'category', 'subcategory')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', ]
+    list_editable = ['price', 'category', 'subcategory']
 
 
 class FixedIncomeAdmin(admin.ModelAdmin):
