@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
+from dividends.models import Dividend
 from django.core.exceptions import ValidationError
 # from django.db.models import Sum
 
@@ -248,3 +249,30 @@ class PortfolioToken(models.Model):
             self.historical_profit = self.profit
 
         super(PortfolioToken, self).save(*args, **kwargs)
+
+
+class PortfolioDividend(models.Model):
+    portfolio = models.ForeignKey(
+        Portfolio, on_delete=models.CASCADE, default=1)
+    dividend = models.ForeignKey(
+        Dividend, on_delete=models.CASCADE, default=1)
+    portfolio_asset = models.ForeignKey(
+        PortfolioAsset, on_delete=models.CASCADE, default=1)
+
+    @property
+    def total_dividend_brl(self):
+        return round(self.dividend.value_per_share_brl * self.portfolio_asset.shares_amount, 2)
+
+    @property
+    def average_price_brl(self):
+        return round(self.portfolio_asset.share_average_price_brl, 2)
+
+    @property
+    def yield_on_cost(self):
+        return round(self.dividend.value_per_share_brl/self.average_price_brl, 4) * 100
+
+    def __str__(self):
+        return ' {} '.format(self.portfolio.name)
+
+    class Meta:
+        verbose_name_plural = "Dividendos"

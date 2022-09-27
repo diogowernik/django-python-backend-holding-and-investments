@@ -59,7 +59,14 @@ class PortfolioTokenAdmin(admin.ModelAdmin):
         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
 
 
-admin.site.register(models.Portfolio, PortfolioAdmin)
+class PortfolioDividendAdmin(admin.ModelAdmin):
+    list_display = ('dividend', 'portfolio_asset',
+                    'portfolio', 'total_dividend_brl', 'average_price_brl', 'yield_on_cost')
+    list_editable = ['portfolio_asset']
+
+
+# admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioAsset, PortfolioAssetAdmin)
 admin.site.register(models.Transaction, TransactionAdmin)
 admin.site.register(models.PortfolioToken, PortfolioTokenAdmin)
+admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
