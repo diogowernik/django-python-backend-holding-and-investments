@@ -18,6 +18,9 @@ class Asset(models.Model):
     bottom_52w = models.FloatField(default=0)
     twelve_m_yield = models.FloatField(default=0)
 
+    price_usd = models.FloatField(default=0)
+    price_brl = models.FloatField(default=0)
+
     def __str__(self):
         return '{} | {}'.format(self.ticker, self.price)
 

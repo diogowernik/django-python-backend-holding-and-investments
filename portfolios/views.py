@@ -33,9 +33,9 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class PortfolioAssetList(generics.ListAPIView):
     """Handles creating, reading and updating portfolios"""
-    # authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioAssetSerializer
-    # permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.PortfolioAsset.objects.filter(
@@ -43,6 +43,14 @@ class PortfolioAssetList(generics.ListAPIView):
         ).select_related(
             'asset__subcategory',
         )
+
+
+class PortfolioAssetDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Handles creating, reading and updating portfolios"""
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.PortfolioAssetSerializer
+    queryset = models.PortfolioAsset.objects.all()
+    permission_classes = (IsAuthenticated, )
 
 
 class PortfolioTokenList(generics.ListAPIView):

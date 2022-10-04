@@ -19,3 +19,5 @@ class Command(BaseCommand):
         call_command('update_br_stocks_fundamentals')
         call_command('update_stock')
         call_command('update_reit')
+        call_command('update_usd_price')
+        call_command('update_total_today_usd')

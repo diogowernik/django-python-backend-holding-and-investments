@@ -28,11 +28,16 @@ class PortfolioAsset(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
-    share_average_price_brl = models.FloatField(default=0)
     dividends_profit = models.FloatField(default=0)
     trade_profit = models.FloatField(default=0)
+
+    share_average_price_brl = models.FloatField(default=0)
     total_cost_brl = models.FloatField(editable=False)
     total_today_brl = models.FloatField(editable=False)
+
+    share_average_price_usd = models.FloatField(default=0)
+    total_cost_usd = models.FloatField(default=0)
+    total_today_usd = models.FloatField(default=0)
 
     def validate_unique(self, *args, **kwargs):
         super().validate_unique(*args, **kwargs)
@@ -84,14 +89,14 @@ class Transaction(models.Model):
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
     share_cost_brl = models.FloatField()
+
     total_cost_brl = models.FloatField(editable=False)
     portfolio_asset = models.ForeignKey(
         PortfolioAsset, on_delete=models.CASCADE, editable=False)
-    portfolio_avarage_price = models.FloatField(editable=False)
-    profit = models.FloatField(editable=False, default=0)
 
     def save(self, *args, **kwargs):
         try:
+            # Get the portfolio asset
             self.portfolio_asset = PortfolioAsset.objects.get(
                 portfolio=self.portfolio, asset=self.asset, broker=self.broker)
 
@@ -100,14 +105,11 @@ class Transaction(models.Model):
                     self.share_cost_brl, 2)
                 self.total_cost_brl = round(
                     self.shares_amount * self.share_cost_brl, 2)
-                self.portfolio_avarage_price = round(
-                    ((self.portfolio_asset.share_average_price_brl * self.portfolio_asset.shares_amount) +
-                     (self.share_cost_brl * self.shares_amount)) / (self.portfolio_asset.shares_amount + self.shares_amount), 2)
-                self.profit = 0
 
                 self.portfolio_asset.broker = self.broker
                 self.portfolio_asset.shares_amount += self.shares_amount
-                self.portfolio_asset.share_average_price_brl = self.portfolio_avarage_price
+                # need to update the average price from asset in portfolio asset
+                # create a worker for that
 
             if self.order == 'Sell':
                 if self.portfolio_asset.shares_amount < self.shares_amount:
@@ -115,18 +117,11 @@ class Transaction(models.Model):
                         message='You do not have enough shares to sell.',
                         code='unique_together',
                     )
-                last_transaction = Transaction.objects.filter(
-                    portfolio=self.portfolio, asset=self.asset).order_by('-id').first()
                 self.total_cost_brl = round(
                     self.shares_amount * self.share_cost_brl, 2) * -1
-                self.portfolio_avarage_price = round(
-                    self.portfolio_asset.share_average_price_brl, 2)
-                self.profit = round(
-                    (self.total_cost_brl * -1) - (self.portfolio_avarage_price * self.shares_amount), 2)
 
                 # update portfolio asset
                 self.portfolio_asset.shares_amount -= self.shares_amount
-                self.portfolio_asset.trade_profit += self.profit
 
             self.portfolio_asset.save()
             self.portfolio_asset.portfolio.save()
@@ -140,7 +135,6 @@ class Transaction(models.Model):
                     shares_amount=self.shares_amount,
                     share_average_price_brl=self.share_cost_brl
                 )
-                self.portfolio_avarage_price = self.share_cost_brl
                 self.total_cost_brl = round(
                     self.shares_amount * self.share_cost_brl, 2)
                 self.portfolio_asset.save()
@@ -155,43 +149,6 @@ class Transaction(models.Model):
             self.portfolio_asset.portfolio.save()
         super(Transaction, self).save(*args, **kwargs)
 
-        # Cria PortfolioToken
-
-        if PortfolioToken.objects.filter(portfolio=self.portfolio).exists():
-            last = PortfolioToken.objects.filter(
-                portfolio=self.portfolio).latest('id')
-            PortfolioToken.objects.create(
-                portfolio=self.portfolio,
-                date=self.date,
-                total_today_brl=self.total_cost_brl + last.total_today_brl,
-                order_value=self.total_cost_brl
-            )
-        else:
-            PortfolioToken.objects.create(
-                portfolio=self.portfolio,
-                date=self.date,
-                total_today_brl=self.total_cost_brl,
-                order_value=self.total_cost_brl
-            )
-
-    # def delete undo the transaction
-    # def delete(self, *args, **kwargs):
-    #     if self.order == 'Buy':
-    #         self.portfolio_asset.shares_amount -= self.shares_amount
-    #         self.portfolio_asset.trade_profit -= self.profit
-    #         self.portfolio_asset.save()
-    #         self.portfolio_asset.portfolio.save()
-    #     if self.order == 'Sell':
-    #         self.portfolio_asset.shares_amount += self.shares_amount
-    #         self.portfolio_asset.trade_profit += self.profit
-    #         self.portfolio_asset.save()
-    #         self.portfolio_asset.portfolio.save()
-    #     # delete PortfolioToken
-    #     PortfolioToken.objects.filter(
-    #         portfolio=self.portfolio).latest('id').delete()
-
-    #     super(Transaction, self).delete(*args, **kwargs)
-
     def __str__(self):
         return '{}'.format(self.portfolio_asset.asset.ticker)
 
@@ -203,6 +160,7 @@ class PortfolioToken(models.Model):
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, default=1)
     total_today_brl = models.FloatField()
+    total_today_usd = models.FloatField(default=0)
     order_value = models.FloatField()
     date = models.DateField(("Date"), default=date.today)
     tokens_amount = models.FloatField(editable=False)
@@ -241,10 +199,10 @@ class PortfolioToken(models.Model):
                 (self.token_price-last.token_price)/last.token_price, 4)
 
         else:
-            self.tokens_amount = self.order_value
-            self.token_price = self.total_today_brl/self.tokens_amount
-            self.profit = (self.total_today_brl -
-                           self.order_value)/self.order_value
+            self.tokens_amount = self.total_today_brl
+            self.token_price = 1
+            # self.token_price = self.total_today_brl/self.tokens_amount
+            self.profit = 0
             self.historical_average_price = 1
             self.historical_profit = self.profit
 

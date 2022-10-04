@@ -8,81 +8,50 @@ from . import models
 # Minha Holding
 
 
-# class AssetAdmin(admin.ModelAdmin):
-#     list_display = ('ticker', 'price', 'category')
-#     prepopulated_fields = {'slug': ('ticker',)}
-#     list_editable = ['price', 'category']
-#     list_filter = (('category', RelatedFieldListFilter),)
-#     search_fields = ['ticker']
-
-
-class FiiAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'ranking', 'subcategory', 'price', 'last_dividend',
-                    'last_yield', 'six_m_yield', 'twelve_m_yield', 'p_vpa')
+class AssetAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'price_brl', 'price_usd', 'category', 'subcategory',
+                    'twelve_m_dividend', 'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'subcategory', 'last_dividend',
-                     'last_yield', 'six_m_yield', 'p_vpa']
+    list_editable = ['category', 'subcategory', 'twelve_m_dividend',
+                     'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w']
+    list_filter = (('category', RelatedFieldListFilter),)
+    search_fields = ['ticker']
+
+
+class FiiAdmin(AssetAdmin):
     list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-# Ações Brasileiras
-
-class BrStocksAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'ranking', 'subcategory', 'price',
-                    'twelve_m_yield', 'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa',
-                    # 'ranking_all'
-                    )
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'subcategory',
-                     'ev_ebit', 'roic', 'pl', 'roe', 'p_vpa']
+class BrStocksAdmin(AssetAdmin):
     list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class CryptoAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'slug', 'price', 'category', 'subcategory',
-                    'marketcap', 'circulating_supply')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['slug', 'price', 'category', 'subcategory',
-                     'marketcap', 'circulating_supply']
+class CryptoAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class CurrencyAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'subcategory']
+class CurrencyAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class FixedIncomeAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', ]
+class FixedIncomeAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class InvestmentFundsAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', ]
+class InvestmentFundsAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class PrivateAssetAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'subcategory', ]
+class PrivateAssetAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class StocksAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory',
-                    'dividend_frequency', 'twelve_m_dividend', 'is_dividend_aristocrat')
-    list_editable = ['price', 'category', 'subcategory',
-                     'dividend_frequency', 'twelve_m_dividend', 'is_dividend_aristocrat']
+class StocksAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class ReitAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'price', 'category', 'subcategory',
-                    'dividend_frequency', 'twelve_m_dividend', 'is_dividend_aristocrat')
-    prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['price', 'category', 'subcategory',
-                     'dividend_frequency', 'twelve_m_dividend', 'is_dividend_aristocrat']
+class ReitAdmin(AssetAdmin):
+    list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
 # admin.site.register(models.Asset, AssetAdmin)
