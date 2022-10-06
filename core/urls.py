@@ -56,6 +56,8 @@ urlpatterns = [
          portfolio_views.CategoryList.as_view()),
     path('api/portfolios/<pk>/quotas',
          portfolio_views.PortfolioTokenList.as_view()),
+    path('api/portfolios/<pk>/dividends',
+         portfolio_views.PortfolioDividendList.as_view()),
     path('api/portfolio_assets/<pk>',
          portfolio_views.PortfolioAssetDetail.as_view()),
     path('api/brokers/', broker_views.BrokerList.as_view()),

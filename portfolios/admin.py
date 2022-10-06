@@ -60,9 +60,12 @@ class PortfolioTokenAdmin(admin.ModelAdmin):
 
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
-    list_display = ('dividend', 'portfolio_asset',
-                    'portfolio', 'total_dividend_brl', 'average_price_brl', 'yield_on_cost')
-    list_editable = ['portfolio_asset']
+    list_display = ('ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
+                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
+                    'usd_on_pay_date')
+    # filter by portfolio
+    list_filter = (('portfolio', RelatedFieldListFilter),
+                   'category', 'subcategory',)
 
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)

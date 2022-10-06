@@ -88,3 +88,14 @@ class TransactionList(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save()
+
+
+class PortfolioDividendList(generics.ListAPIView):
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.PortfolioDividendSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        return models.PortfolioDividend.objects.filter(
+            portfolio_id=self.kwargs['pk'],
+        ).order_by('-pay_date')

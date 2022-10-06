@@ -1,4 +1,6 @@
 from datetime import date
+from email.policy import default
+from unicodedata import category
 from django import forms
 from django.db import models
 from django.contrib.auth.models import User
@@ -210,24 +212,47 @@ class PortfolioToken(models.Model):
 
 
 class PortfolioDividend(models.Model):
+    # portfolio_asset = models.ForeignKey(
+    #     PortfolioAsset, on_delete=models.CASCADE, default=1)
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.CASCADE, default=1)
-    dividend = models.ForeignKey(
-        Dividend, on_delete=models.CASCADE, default=1)
-    portfolio_asset = models.ForeignKey(
-        PortfolioAsset, on_delete=models.CASCADE, default=1)
+        Portfolio, on_delete=models.CASCADE, default=2)
 
-    @property
-    def total_dividend_brl(self):
-        return round(self.dividend.value_per_share_brl * self.portfolio_asset.shares_amount, 2)
+    ticker = models.CharField(max_length=10, default='0')
+    categoryChoice = (
+        ('Ação', 'BrStocks'),
+        ('FII', 'Fii'),
+        ('ETF', 'ETF'),
+        ('Stocks', 'Stocks'),
+        ('Reit', 'Reit'),
+        ('PrivateAsset', 'PrivateAsset'),
+    )
+    category = models.CharField(
+        max_length=100, choices=categoryChoice, default='Ação')
+    subcategoryChoice = (
+        ('R', 'Rendimentos'),
+        ('J', 'JCP'),
+        ('D', 'Dividendos'),
+        ('A', 'Aluguel'),
+    )
+    subcategory = models.CharField(
+        max_length=10, choices=subcategoryChoice, default='R')
 
-    @property
-    def average_price_brl(self):
-        return round(self.portfolio_asset.share_average_price_brl, 2)
+    record_date = models.DateField(null=True, blank=True)
+    pay_date = models.DateField(null=True, blank=True)
+    shares_amount = models.FloatField(default=0)
 
-    @property
-    def yield_on_cost(self):
-        return round(self.dividend.value_per_share_brl/self.average_price_brl, 4) * 100
+    value_per_share_brl = models.FloatField(default=0)
+    total_dividend_brl = models.FloatField(default=0)
+    average_price_brl = models.FloatField(default=0)
+    dividend_tax = models.FloatField(default=0)
+
+    usd_on_pay_date = models.FloatField(default=0)
+
+    value_per_share_usd = models.FloatField(default=0)
+    total_dividend_usd = models.FloatField(default=0)
+    average_price_usd = models.FloatField(default=0)
+
+    yield_on_cost = models.FloatField(default=0)
 
     def __str__(self):
         return ' {} '.format(self.portfolio.name)

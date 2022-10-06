@@ -87,3 +87,13 @@ class PortfolioTokenSerializer(serializers.ModelSerializer):
             'tokens_amount',
             'token_price',
         )
+
+
+class PortfolioDividendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PortfolioDividend
+        fields = (
+            'id', 'ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
+            'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
+            'usd_on_pay_date'
+        )
