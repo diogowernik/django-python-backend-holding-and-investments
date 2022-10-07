@@ -30,8 +30,13 @@ class PortfolioAsset(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
-    dividends_profit = models.FloatField(default=0)
-    trade_profit = models.FloatField(default=0)
+
+    # have to create dividend profit brl and usd
+    dividends_profit_brl = models.FloatField(default=0)
+    dividends_profit_usd = models.FloatField(default=0)
+
+    trade_profit_brl = models.FloatField(default=0)
+    trade_profit_usd = models.FloatField(default=0)
 
     share_average_price_brl = models.FloatField(default=0)
     total_cost_brl = models.FloatField(editable=False)
@@ -64,7 +69,7 @@ class PortfolioAsset(models.Model):
 
     @property
     def profit(self):
-        return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit + self.trade_profit, 2)
+        return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit_brl + self.trade_profit_brl, 2)
 
     @property
     def category(self):
