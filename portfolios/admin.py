@@ -27,7 +27,8 @@ class PortfolioAssetSum(ChangeList):
 
 class PortfolioAssetAdmin(admin.ModelAdmin):
     list_display = ('asset', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl',
-                    'total_today_brl', 'total_today_usd', 'trade_profit_brl', 'trade_profit_usd', 'dividends_profit_brl', 'dividends_profit_usd', 'profit', 'portfolio', 'category')
+                    'total_today_brl', 'total_today_usd', 'trade_profit_brl', 'trade_profit_usd', 'dividends_profit_brl', 'dividends_profit_usd',
+                    'total_profit_brl', 'portfolio', 'category')
     list_editable = ['shares_amount', 'share_average_price_brl',
                      'trade_profit_brl', 'trade_profit_usd', 'dividends_profit_brl', 'dividends_profit_usd', 'portfolio', 'broker']
     list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter),

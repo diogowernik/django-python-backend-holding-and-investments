@@ -42,7 +42,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'total_today_usd',
             'category',
             'subcategory',
-            'profit',
+            'total_profit_brl',
             'dividends_profit_brl',
             'dividends_profit_usd',
             'trade_profit_brl',
@@ -51,6 +51,12 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
             'twelve_m_yield',
             'twelve_m_dividend',
             'p_vpa',
+            'av_price_brl_minus_div_brl',
+            'portfolio_percentage',
+            'yield_on_cost',
+            'profit_without_div_trade',
+            'profit_with_div_trade',
+
         )
 
 

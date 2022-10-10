@@ -68,12 +68,34 @@ class PortfolioAsset(models.Model):
         return self.asset.ticker
 
     @property
-    def profit(self):
+    def total_profit_brl(self):
         return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit_brl + self.trade_profit_brl, 2)
 
     @property
     def category(self):
         return self.asset.category
+
+    @property
+    def av_price_brl_minus_div_brl(self):
+        return round(self.share_average_price_brl - (self.dividends_profit_brl/self.shares_amount if self.shares_amount > 0 else 0), 2)
+
+    @property
+    def portfolio_percentage(self):
+        total_portfolio = PortfolioAsset.objects.filter(
+            portfolio=self.portfolio).aggregate(models.Sum('total_today_brl'))
+        return round((self.total_today_brl / total_portfolio['total_today_brl__sum']), 4)
+
+    @property
+    def yield_on_cost(self):
+        return round((self.dividends_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
+
+    @property
+    def profit_without_div_trade(self):
+        return round((self.total_today_brl - self.total_cost_brl) / self.total_cost_brl if self.total_cost_brl > 0 else 0, 4)
+
+    @property
+    def profit_with_div_trade(self):
+        return round((self.total_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
 
     def __str__(self):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
@@ -224,12 +246,12 @@ class PortfolioDividend(models.Model):
 
     ticker = models.CharField(max_length=10, default='0')
     categoryChoice = (
-        ('Ação', 'BrStocks'),
-        ('FII', 'Fii'),
-        ('ETF', 'ETF'),
+        ('Ação', 'Ações Brasileiras'),
+        ('FII', 'Fundos Imobiliários'),
+        ('ETF', 'ETFs'),
         ('Stocks', 'Stocks'),
-        ('Reit', 'Reit'),
-        ('PrivateAsset', 'PrivateAsset'),
+        ('Reit', 'REITs'),
+        ('PrivateAsset', 'Ativos Privados'),
     )
     category = models.CharField(
         max_length=100, choices=categoryChoice, default='Ação')
