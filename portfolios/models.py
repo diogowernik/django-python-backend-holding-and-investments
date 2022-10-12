@@ -72,12 +72,20 @@ class PortfolioAsset(models.Model):
         return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit_brl + self.trade_profit_brl, 2)
 
     @property
+    def total_profit_usd(self):
+        return round(self.total_today_usd - self.total_cost_usd + self.dividends_profit_usd + self.trade_profit_usd, 2)
+
+    @property
     def category(self):
         return self.asset.category
 
     @property
-    def av_price_brl_minus_div_brl(self):
+    def av_price_minus_div_brl(self):
         return round(self.share_average_price_brl - (self.dividends_profit_brl/self.shares_amount if self.shares_amount > 0 else 0), 2)
+
+    @property
+    def av_price_minus_div_usd(self):
+        return round(self.share_average_price_usd - (self.dividends_profit_usd/self.shares_amount if self.shares_amount > 0 else 0), 2)
 
     @property
     def portfolio_percentage(self):
@@ -86,16 +94,28 @@ class PortfolioAsset(models.Model):
         return round((self.total_today_brl / total_portfolio['total_today_brl__sum']), 4)
 
     @property
-    def yield_on_cost(self):
+    def yield_on_cost_brl(self):
         return round((self.dividends_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
 
     @property
-    def profit_without_div_trade(self):
+    def yield_on_cost_usd(self):
+        return round((self.dividends_profit_usd / self.total_cost_usd) if self.total_cost_usd > 0 else 0, 4)
+
+    @property
+    def profit_without_div_trade_brl(self):
         return round((self.total_today_brl - self.total_cost_brl) / self.total_cost_brl if self.total_cost_brl > 0 else 0, 4)
 
     @property
-    def profit_with_div_trade(self):
+    def profit_without_div_trade_usd(self):
+        return round((self.total_today_usd - self.total_cost_usd) / self.total_cost_usd if self.total_cost_usd > 0 else 0, 4)
+
+    @property
+    def profit_with_div_trade_brl(self):
         return round((self.total_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
+
+    @property
+    def profit_with_div_trade_usd(self):
+        return round((self.total_profit_usd / self.total_cost_usd) if self.total_cost_usd > 0 else 0, 4)
 
     def __str__(self):
         return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
@@ -286,3 +306,11 @@ class PortfolioDividend(models.Model):
 
     class Meta:
         verbose_name_plural = "Dividendos por Portfolio"
+
+    @property
+    def pay_date_by_month_year(self):
+        return self.pay_date.strftime('%m/%Y')
+
+    @property
+    def pay_date_by_year(self):
+        return self.pay_date.strftime('%Y')

@@ -31,6 +31,7 @@ python manage.py createsuperuser
 # create fixtures
 
 python manage.py dumpdata --indent 4 --exclude admin.logentry --exclude auth.permission --exclude contenttypes --exclude sessions > fixtures.json
+
 python manage.py loaddata fixtures.json
 
 # clean database django before load fixtures

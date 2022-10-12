@@ -27,7 +27,7 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
         try:
-            call_command('update_total_today_brl')
+            call_command('update_total_today')
         except Exception as e:
             print(e)
         try:
@@ -46,11 +46,11 @@ class Command(BaseCommand):
             call_command('update_reit')
         except Exception as e:
             print(e)
-        try:
-            call_command('update_usd_price')
-        except Exception as e:
-            print(e)
-        try:
-            call_command('update_total_today_usd')
-        except Exception as e:
-            print(e)
+        # try:
+        #     call_command('update_usd_price')
+        # except Exception as e:
+        #     print(e)
+        # try:
+        #     call_command('update_total_today_usd')
+        # except Exception as e:
+        #     print(e)

@@ -32,10 +32,10 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PortfolioAssetList(generics.ListAPIView):
-    """Handles creating, reading and updating portfolios"""
-    authentication_classes = (TokenAuthentication,)
+    # """Handles creating, reading and updating portfolios"""
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, )
     serializer_class = serializers.PortfolioAssetSerializer
-    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.PortfolioAsset.objects.filter(
@@ -91,9 +91,9 @@ class TransactionList(generics.ListCreateAPIView):
 
 
 class PortfolioDividendList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, )
     serializer_class = serializers.PortfolioDividendSerializer
-    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.PortfolioDividend.objects.filter(
