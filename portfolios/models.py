@@ -32,19 +32,19 @@ class PortfolioAsset(models.Model):
     shares_amount = models.FloatField()
 
     # have to create dividend profit brl and usd
-    dividends_profit_brl = models.FloatField(default=0)
-    dividends_profit_usd = models.FloatField(default=0)
+    dividends_profit_brl = models.FloatField(default=0, editable=False)
+    dividends_profit_usd = models.FloatField(default=0, editable=False)
 
-    trade_profit_brl = models.FloatField(default=0)
-    trade_profit_usd = models.FloatField(default=0)
+    trade_profit_brl = models.FloatField(default=0, editable=False)
+    trade_profit_usd = models.FloatField(default=0, editable=False)
 
     share_average_price_brl = models.FloatField(default=0)
     total_cost_brl = models.FloatField(editable=False)
     total_today_brl = models.FloatField(editable=False)
 
     share_average_price_usd = models.FloatField(default=0)
-    total_cost_usd = models.FloatField(default=0)
-    total_today_usd = models.FloatField(default=0)
+    total_cost_usd = models.FloatField(default=0, editable=False)
+    total_today_usd = models.FloatField(default=0, editable=False)
 
     def validate_unique(self, *args, **kwargs):
         super().validate_unique(*args, **kwargs)
@@ -60,7 +60,14 @@ class PortfolioAsset(models.Model):
     def save(self, *args, **kwargs):
         self.total_cost_brl = round(
             self.shares_amount * self.share_average_price_brl, 2)
-        self.total_today_brl = round(self.shares_amount * self.asset.price, 2)
+        self.total_today_brl = round(
+            self.shares_amount * self.asset.price_brl, 2)
+
+        self.total_cost_usd = round(
+            self.shares_amount * self.share_average_price_usd, 2)
+        self.total_today_usd = round(
+            self.shares_amount * self.asset.price_usd, 2)
+
         super(PortfolioAsset, self).save(*args, **kwargs)
 
     @property
@@ -70,10 +77,6 @@ class PortfolioAsset(models.Model):
     @property
     def total_profit_brl(self):
         return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit_brl + self.trade_profit_brl, 2)
-
-    @property
-    def total_profit_usd(self):
-        return round(self.total_today_usd - self.total_cost_usd + self.dividends_profit_usd + self.trade_profit_usd, 2)
 
     @property
     def category(self):
@@ -103,15 +106,19 @@ class PortfolioAsset(models.Model):
 
     @property
     def profit_without_div_trade_brl(self):
-        return round((self.total_today_brl - self.total_cost_brl) / self.total_cost_brl if self.total_cost_brl > 0 else 0, 4)
+        return round((self.asset.price_brl - self.share_average_price_brl) / self.asset.price_brl, 4)
 
     @property
     def profit_without_div_trade_usd(self):
-        return round((self.total_today_usd - self.total_cost_usd) / self.total_cost_usd if self.total_cost_usd > 0 else 0, 4)
+        return round((self.asset.price_usd - self.share_average_price_usd) / self.asset.price_usd if self.asset.price > 0 else 0, 4)
 
     @property
     def profit_with_div_trade_brl(self):
         return round((self.total_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
+
+    @property
+    def total_profit_usd(self):
+        return round(self.total_today_usd - self.total_cost_usd + self.dividends_profit_usd + self.trade_profit_usd, 2)
 
     @property
     def profit_with_div_trade_usd(self):

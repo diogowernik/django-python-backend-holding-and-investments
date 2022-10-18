@@ -20,7 +20,7 @@ class Command(BaseCommand):
         # get crypto price from coingecko
         coingecko_df = pd.read_json(
             f'https://api.coingecko.com/api/v3/simple/price?ids={app_list}&vs_currencies=brl').T.reset_index()
-        coingecko_df.columns = ["slug", "price"]
+        coingecko_df.columns = ["slug", "price_brl"]
         coingecko_df = coingecko_df.set_index('slug')
         # print(coingecko_df)
 
@@ -33,11 +33,22 @@ class Command(BaseCommand):
                           right_on="slug", how='inner')
         # print(df)
 
+        # get usd price today
+        economia_df = pd.read_json(
+            f'https://economia.awesomeapi.com.br/json/last/USD-BRL').T.reset_index()
+        usd_brl_price = economia_df['bid'].astype(float)[0]
+
+        # add new column price_usd = price_brl * usd_brl_price
+        df['price_usd'] = df['price_brl'] / usd_brl_price
+        df['price_usd'] = df['price_usd'].round(4)
+        print(df)
+
         # Update Crypto price
         for index, row in df.iterrows():
             try:
                 asset = Asset.objects.get(id=df.loc[index]['id'])
-                asset.price = df.loc[index]['price']
+                asset.price_brl = df.loc[index]['price_brl']
+                asset.price_usd = df.loc[index]['price_usd']
                 asset.save()
             except Exception as e:
                 print(f' Key Exception - {e}')

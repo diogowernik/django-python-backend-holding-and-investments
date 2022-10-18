@@ -11,11 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            call_command('update_fiis_price')
-        except Exception as e:
-            print(e)
-        try:
-            call_command('update_br_stocks_price')
+            call_command('update_br_price')
         except Exception as e:
             print(e)
         try:
@@ -27,15 +23,15 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
         try:
-            call_command('update_total_today')
+            call_command('update_fundamentals_br_stocks')
         except Exception as e:
             print(e)
         try:
-            call_command('update_fiis_fundamentals')
+            call_command('update_fundamentals_fiis')
         except Exception as e:
             print(e)
         try:
-            call_command('update_br_stocks_fundamentals')
+            call_command('update_reit')
         except Exception as e:
             print(e)
         try:
@@ -43,14 +39,10 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
         try:
-            call_command('update_reit')
+            call_command('update_total_dividends')
         except Exception as e:
             print(e)
-        # try:
-        #     call_command('update_usd_price')
-        # except Exception as e:
-        #     print(e)
-        # try:
-        #     call_command('update_total_today_usd')
-        # except Exception as e:
-        #     print(e)
+        try:
+            call_command('update_total_today')
+        except Exception as e:
+            print(e)

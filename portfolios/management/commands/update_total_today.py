@@ -14,7 +14,7 @@ class Command(BaseCommand):
             "id", "ticker", "price_brl", "price_usd", "shares_amount", "total_today_br", "total_today_usd"])
         app_df['total_today_brl'] = app_df['shares_amount'] * \
             app_df['price_brl']
-        app_df['total_today_usd'] = app_df['total_today_usd'] * \
+        app_df['total_today_usd'] = app_df['shares_amount'] * \
             app_df['price_usd']
         # set index
         app_df = app_df.set_index('id')

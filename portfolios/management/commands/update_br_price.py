@@ -1,28 +1,31 @@
-# update fiis price
+# update fiis price_brl
 import pandas as pd
 from django.core.management.base import BaseCommand
 import yfinance as yf
-from investments.models import Asset, Fii
+from investments.models import Asset, BrStocks
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        print("Updating FII price from yahoo finance")
+        print("Updating BrStocks and Fiis price_brl and price_usd from yahoo finance")
         # get assets from db that will be updated
-        queryset = Fii.objects.values_list("id", "ticker")
-        app_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
+        queryset = Asset.objects.filter(category__in=['1', '9']).values_list(
+            "id", "ticker")
+        app_df = pd.DataFrame(list(queryset), columns=[
+                              "id", "ticker"])
         app_df['ticker'] = app_df['ticker'].astype(str) + '.SA'
         app_list = app_df["ticker"].astype(str).tolist()
-        # print(app_list)
-        # get price from yfinance (only from fiis in db)
+
+        print(app_list)
+
         yahoo_df = yf.download(app_list, period="1min")["Adj Close"]
         yahoo_df = yahoo_df.T.reset_index()
         if yahoo_df.shape[1] == 3:
             try:
-                yahoo_df.columns = ["ticker",  "price", "price2"]
-                yahoo_df["price"] = yahoo_df["price"].fillna(
-                    yahoo_df["price2"]).round(2)
+                yahoo_df.columns = ["ticker",  "price_brl", "price_brl2"]
+                yahoo_df["price_brl"] = yahoo_df["price_brl"].fillna(
+                    yahoo_df["price_brl2"]).round(2)
                 yahoo_df['ticker'] = yahoo_df['ticker'].map(
                     lambda x: x.rstrip('.SA'))
                 yahoo_df = yahoo_df.set_index('ticker')
@@ -32,8 +35,8 @@ class Command(BaseCommand):
         else:
             try:
 
-                yahoo_df.columns = ["ticker",  "price"]
-                yahoo_df["price"] = yahoo_df["price"].round(2)
+                yahoo_df.columns = ["ticker",  "price_brl"]
+                yahoo_df["price_brl"] = yahoo_df["price_brl"].round(2)
                 yahoo_df['ticker'] = yahoo_df['ticker'].map(
                     lambda x: x.rstrip('.SA'))
                 yahoo_df = yahoo_df.set_index('ticker')
@@ -50,19 +53,25 @@ class Command(BaseCommand):
         # Merge app_df and yahoo_df
         df = app_df.merge(yahoo_df, left_on="ticker",
                           right_on="ticker", how='inner')
-        # print(df)
 
-        # Update Fii price
+        # get usd price today
+        economia_df = pd.read_json(
+            f'https://economia.awesomeapi.com.br/json/last/USD-BRL').T.reset_index()
+        usd_brl_price = economia_df['bid'].astype(float)[0]
+
+        # add new column price_usd = price_brl * usd_brl_price
+        df['price_usd'] = df['price_brl'] / usd_brl_price
+        df['price_usd'] = df['price_usd'].round(2)
+        print(df)
+
+        # Update BrStock price_brl
         for index, row in df.iterrows():
             try:
                 asset = Asset.objects.get(id=df.loc[index]['id'])
-                asset.price = df.loc[index]['price']
+                asset.price_brl = df.loc[index]['price_brl']
+                asset.price_usd = df.loc[index]['price_usd']
                 asset.save()
             except Exception as e:
                 print(f' Key Exception - {e}')
                 pass
-        print("Fiis price updated")
-
-        queryset = Fii.objects.values_list("ticker", "price")
-        updated_df = pd.DataFrame(list(queryset), columns=["ticker", "price"])
-        # print(updated_df)
+        print("BrStocks and Fiis price_brl and price usd_update updated")

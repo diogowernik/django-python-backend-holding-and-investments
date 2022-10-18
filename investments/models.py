@@ -1,3 +1,4 @@
+from multiprocessing import set_forkserver_preload
 from django.db import models
 from numpy import product
 from categories.models import Category, SubCategory
@@ -11,7 +12,6 @@ class Asset(models.Model):
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
     dividend_frequency = models.FloatField(default=4)
-    price = models.FloatField(default=0)
     twelve_m_dividend = models.FloatField(default=0)
     p_vpa = models.FloatField(default=0)
     top_52w = models.FloatField(default=0)
@@ -22,7 +22,7 @@ class Asset(models.Model):
     price_brl = models.FloatField(default=0)
 
     def __str__(self):
-        return '{} | {}'.format(self.ticker, self.price)
+        return '{} | {} | {}'.format(self.ticker, self.price_brl, self.price_usd)
 
     class Meta:
         verbose_name_plural = "Assets"
