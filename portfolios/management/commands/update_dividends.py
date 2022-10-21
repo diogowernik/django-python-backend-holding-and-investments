@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from dividends.models import Dividend
 from investments.models import Asset
 import requests
-from portfolios.models import PortfolioAsset, PortfolioDividend
+from portfolios.models import PortfolioInvestment, PortfolioDividend
 
 # This file updates Dividends from Degiro
 

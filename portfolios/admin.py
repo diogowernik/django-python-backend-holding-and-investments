@@ -11,42 +11,46 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_editable = ['owner']
 
 
-class AssetFilter(AutocompleteFilter):
-    title = 'Asset'  # display title
-    field_name = 'asset'  # name of the foreign key field
-
-
-class PortfolioAssetSum(ChangeList):
+class PortfolioInvestmentSum(ChangeList):
     def get_results(self, *args, **kwargs):
-        super(PortfolioAssetSum, self).get_results(*args, **kwargs)
+        super(PortfolioInvestmentSum, self).get_results(*args, **kwargs)
         if self.result_list:
             q = self.result_list.aggregate(
                 portfolio_asset_sum=Sum('total_today_brl'))
             self.portfolio_asset_sum = round(q['portfolio_asset_sum'], 2)
 
 
-class PortfolioAssetAdmin(admin.ModelAdmin):
-    list_display = ('asset', 'broker', 'shares_amount', 'share_average_price_usd', 'total_cost_usd', 'share_average_price_brl', 'total_cost_brl',
+class PortfolioInvestmentAdmin(admin.ModelAdmin):
+    list_display = ('asset', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl', 'share_average_price_usd', 'total_cost_usd',
                     'total_today_brl', 'total_today_usd', 'trade_profit_brl', 'trade_profit_usd', 'dividends_profit_brl', 'dividends_profit_usd',
                     'total_profit_brl', 'portfolio', 'category')
-    list_editable = ['shares_amount', 'share_average_price_usd', 'share_average_price_brl',
-                     'portfolio', 'broker']
-    list_filter = [AssetFilter, ('asset__category', RelatedFieldListFilter),
-                   ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), ]
+    # list_editable = ['shares_amount', 'share_average_price_usd', 'share_average_price_brl',
+    #                  'portfolio', 'broker']
+    list_filter = [
+        ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), ]
 
     def get_changelist(self, request):
-        return PortfolioAssetSum
+        return PortfolioInvestmentSum
 
 
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('date', 'portfolio', 'broker', 'asset', 'shares_amount',
-                    'share_cost_brl', 'total_cost_brl', 'order')
-    list_editable = ['shares_amount', 'share_cost_brl', 'order', 'broker']
-    list_filter = (('portfolio_asset__asset__category',
-                   RelatedFieldListFilter), ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter),)
+class PortfolioTradeAdmin(admin.ModelAdmin):
+    list_display = ('date',  'asset', 'order', 'broker', 'shares_amount',
+                    'share_cost_brl', 'total_cost_brl', 'total_cost_usd',  'portfolio')
+    # list_editable = ['broker']
+    list_filter = (('broker', RelatedFieldListFilter),
+                   ('portfolio', RelatedFieldListFilter),)
 
 
-class PortfolioTokenAdmin(admin.ModelAdmin):
+class PortfolioDividendAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
+                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
+                    'usd_on_pay_date')
+    # filter by portfolio
+    list_filter = (('portfolio', RelatedFieldListFilter),
+                   'category', 'subcategory',)
+
+
+class PortfolioHistoryAdmin(admin.ModelAdmin):
     list_display = ('date', 'portfolio', 'total_today_brl', 'total_today_usd', 'order_value',
                     'tokens_amount', 'token_price', 'profit_percentage', 'historical_percentage')
     list_filter = (('portfolio', RelatedFieldListFilter),)
@@ -60,17 +64,8 @@ class PortfolioTokenAdmin(admin.ModelAdmin):
         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
 
 
-class PortfolioDividendAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
-                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
-                    'usd_on_pay_date')
-    # filter by portfolio
-    list_filter = (('portfolio', RelatedFieldListFilter),
-                   'category', 'subcategory',)
-
-
 # admin.site.register(models.Portfolio, PortfolioAdmin)
-admin.site.register(models.PortfolioAsset, PortfolioAssetAdmin)
-admin.site.register(models.Transaction, TransactionAdmin)
-admin.site.register(models.PortfolioToken, PortfolioTokenAdmin)
+admin.site.register(models.PortfolioInvestment, PortfolioInvestmentAdmin)
+admin.site.register(models.PortfolioTrade, PortfolioTradeAdmin)
+admin.site.register(models.PortfolioHistory, PortfolioHistoryAdmin)
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)

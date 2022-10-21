@@ -17,7 +17,7 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image')
 
 
-class PortfolioAssetSerializer(serializers.ModelSerializer):
+class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
     subcategory = serializers.CharField(source='asset.subcategory.name')
     broker = serializers.CharField(source='broker.name')
@@ -29,7 +29,7 @@ class PortfolioAssetSerializer(serializers.ModelSerializer):
     p_vpa = serializers.FloatField(source='asset.p_vpa')
 
     class Meta:
-        model = models.PortfolioAsset
+        model = models.PortfolioInvestment
         fields = (
             'id',
             'ticker',
@@ -77,9 +77,9 @@ class CategorySerializer(serializers.ModelSerializer):
         )
 
 
-class TransactionSerializer(serializers.ModelSerializer):
+class PortfolioTradeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Transaction
+        model = models.PortfolioTrade
         fields = (
             'order',
             'date',
@@ -91,9 +91,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         )
 
 
-class PortfolioTokenSerializer(serializers.ModelSerializer):
+class PortfolioHistorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.PortfolioToken
+        model = models.PortfolioHistory
         fields = (
             'date',
             'portfolio',

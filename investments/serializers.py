@@ -5,7 +5,7 @@ from . import models
 class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Asset
-        fields = ('id', 'ticker', 'slug', 'price')
+        fields = ('id', 'ticker', 'slug', 'price_brl', 'price_usd')
 
 
 class FiiSerializer(serializers.ModelSerializer):
@@ -17,7 +17,8 @@ class FiiSerializer(serializers.ModelSerializer):
             'id',
             'ticker',
             'slug',
-            'price',
+            'price_brl',
+            'price_usd',
             'subcategory',
             'last_dividend',
             'last_yield',
@@ -37,7 +38,8 @@ class BrStocksSerializer(serializers.ModelSerializer):
             'id',
             'ticker',
             'slug',
-            'price',
+            'price_brl',
+            'price_usd',
             'subcategory',
             'twelve_m_yield',
             'ev_ebit',

@@ -132,39 +132,81 @@ class PortfolioInvestment(models.Model):
 
 
 class PortfolioTrade(models.Model):
+    id = models.AutoField(primary_key=True)
+    OrderChoices = (
+        ('Buy', 'Buy'),
+        ('Sell', 'Sell'),
+    )
+    date = models.DateField(("Date"), default=date.today)
+    order = models.CharField(max_length=8, choices=OrderChoices)
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, default=1)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
-    asset = models.CharField(max_length=15, default='')
+    shares_amount = models.FloatField()
+    share_cost_brl = models.FloatField()
 
-    OrderChoices = (
-        ('C', 'Compra'),
-        ('V', 'Venda'),
-    )
-    order = models.CharField(max_length=8, choices=OrderChoices, default='C')
-    date = models.DateField(("Date"), default=date.today)
-
-    shares_amount = models.FloatField(default=0)
-
-    share_cost_brl = models.FloatField(default=0)
-    share_cost_usd = models.FloatField(default=0)
-
-    total_cost_brl = models.FloatField(editable=False, default=0)
-    total_cost_usd = models.FloatField(editable=False, default=0)
-
-    tax_brl = models.FloatField(default=0)
-    tax_usd = models.FloatField(default=0)
+    total_cost_brl = models.FloatField(editable=False)
+    portfolio_asset = models.ForeignKey(
+        PortfolioInvestment, on_delete=models.CASCADE, editable=False)
 
     def save(self, *args, **kwargs):
-        self.total_cost_brl = round(
-            self.shares_amount * self.share_cost_brl, 2)
-        self.total_cost_usd = round(
-            self.shares_amount * self.share_cost_usd, 2)
+        try:
+            # Get the portfolio asset
+            self.portfolio_asset = PortfolioInvestment.objects.get(
+                portfolio=self.portfolio, asset=self.asset, broker=self.broker)
 
+            if self.order == 'Buy':
+                self.share_cost_brl = round(
+                    self.share_cost_brl, 2)
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2)
+
+                self.portfolio_asset.broker = self.broker
+                self.portfolio_asset.shares_amount += self.shares_amount
+                # need to update the average price from asset in portfolio asset
+                # create a worker for that
+
+            if self.order == 'Sell':
+                if self.portfolio_asset.shares_amount < self.shares_amount:
+                    raise ValidationError(
+                        message='You do not have enough shares to sell.',
+                        code='unique_together',
+                    )
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2) * -1
+
+                # update portfolio asset
+                self.portfolio_asset.shares_amount -= self.shares_amount
+
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
+
+        except PortfolioInvestment.DoesNotExist:
+            if self.order == 'Buy':
+                self.portfolio_asset = PortfolioInvestment.objects.create(
+                    portfolio=self.portfolio,
+                    asset=self.asset,
+                    broker=self.broker,
+                    shares_amount=self.shares_amount,
+                    share_average_price_brl=self.share_cost_brl
+                )
+                self.total_cost_brl = round(
+                    self.shares_amount * self.share_cost_brl, 2)
+                self.portfolio_asset.save()
+            if self.order == 'Sell':
+                # not save transaction because it's not a valid transaction
+                raise forms.ValidationError(
+                    message='This asset does not exist in this portfolio.',
+                    code='unique_together',
+                )
+
+            self.portfolio_asset.save()
+            self.portfolio_asset.portfolio.save()
         super(PortfolioTrade, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '{}'.format(self.asset)
+        return '{}'.format(self.portfolio_asset.asset.ticker)
 
     class Meta:
         verbose_name_plural = " Transações por Portfolio"
@@ -245,7 +287,7 @@ class PortfolioHistory(models.Model):
         return ' {} '.format(self.portfolio.name)
 
     class Meta:
-        verbose_name_plural = "Evolução do Portfolio"
+        verbose_name_plural = "Histórico do Portfolio"
 
     def save(self, *args, **kwargs):
         # save object filtered by portfolio

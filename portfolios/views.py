@@ -31,35 +31,35 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, )
 
 
-class PortfolioAssetList(generics.ListAPIView):
+class PortfolioInvestmentList(generics.ListAPIView):
     # """Handles creating, reading and updating portfolios"""
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated, )
-    serializer_class = serializers.PortfolioAssetSerializer
+    serializer_class = serializers.PortfolioInvestmentSerializer
 
     def get_queryset(self):
-        return models.PortfolioAsset.objects.filter(
+        return models.PortfolioInvestment.objects.filter(
             portfolio_id=self.kwargs['pk'],
         ).select_related(
             'asset__subcategory',
         )
 
 
-class PortfolioAssetDetail(generics.RetrieveUpdateDestroyAPIView):
+class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):
     """Handles creating, reading and updating portfolios"""
     authentication_classes = (TokenAuthentication,)
-    serializer_class = serializers.PortfolioAssetSerializer
-    queryset = models.PortfolioAsset.objects.all()
+    serializer_class = serializers.PortfolioInvestmentSerializer
+    queryset = models.PortfolioInvestment.objects.all()
     permission_classes = (IsAuthenticated, )
 
 
-class PortfolioTokenList(generics.ListAPIView):
+class PortfolioHistoryList(generics.ListAPIView):
     authentication_classes = (TokenAuthentication,)
-    serializer_class = serializers.PortfolioTokenSerializer
+    serializer_class = serializers.PortfolioHistorySerializer
     permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
-        return models.PortfolioToken.objects.filter(
+        return models.PortfolioHistory.objects.filter(
             portfolio_id=self.kwargs['pk'],
         )
 
@@ -78,13 +78,13 @@ class CategoryList(generics.ListAPIView):
         return response
 
 
-class TransactionList(generics.ListCreateAPIView):
+class PortfolioTradeList(generics.ListCreateAPIView):
     authentication_classes = (TokenAuthentication,)
-    serializer_class = serializers.TransactionSerializer
+    serializer_class = serializers.PortfolioTradeSerializer
     permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
-        return models.Transaction.objects.all()
+        return models.PortfolioTrade.objects.all()
 
     def perform_create(self, serializer):
         serializer.save()

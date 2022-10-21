@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from portfolios.models import PortfolioAsset
+from portfolios.models import PortfolioInvestment
 
 
 class Command(BaseCommand):
@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print("Updating Portfolio total")
         # get portfolio assets from db and update total today
-        queryset = PortfolioAsset.objects.values_list(
+        queryset = PortfolioInvestment.objects.values_list(
             "id", "asset__ticker", "asset__price_brl", "asset__price_usd", "shares_amount", "total_today_brl", "total_today_usd")
         app_df = pd.DataFrame(list(queryset), columns=[
             "id", "ticker", "price_brl", "price_usd", "shares_amount", "total_today_br", "total_today_usd"])
@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         for index, row in app_df.iterrows():
             try:
-                portfolio_asset = PortfolioAsset.objects.get(id=index)
+                portfolio_asset = PortfolioInvestment.objects.get(id=index)
                 portfolio_asset.total_today_brl = row['total_today_brl']
                 portfolio_asset.total_today_usd = row['total_today_usd']
                 portfolio_asset.save()

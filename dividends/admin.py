@@ -14,4 +14,4 @@ class DividendAdmin(admin.ModelAdmin):
     # search_fields = ('asset__ticker', 'asset__name')
 
 
-admin.site.register(models.Dividend, DividendAdmin)
+# admin.site.register(models.Dividend, DividendAdmin)

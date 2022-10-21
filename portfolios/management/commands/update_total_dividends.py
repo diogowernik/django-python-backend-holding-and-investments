@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from portfolios.models import PortfolioAsset, PortfolioDividend
+from portfolios.models import PortfolioInvestment, PortfolioDividend
 
 
 class Command(BaseCommand):
@@ -19,7 +19,7 @@ class Command(BaseCommand):
         df = df.reset_index()
         print(df)
 
-        queryset = PortfolioAsset.objects.values_list(
+        queryset = PortfolioInvestment.objects.values_list(
             "id", "asset__ticker", "dividends_profit_brl", "dividends_profit_usd")
         app_df = pd.DataFrame(list(queryset), columns=[
             "id", "ticker", "dividends_profit_brl", "dividends_profit_usd"])
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         for index, row in df.iterrows():
             try:
-                portfolio_asset = PortfolioAsset.objects.get(id=index)
+                portfolio_asset = PortfolioInvestment.objects.get(id=index)
                 portfolio_asset.dividends_profit_brl = row['total_dividend_brl']
                 portfolio_asset.dividends_profit_usd = row['total_dividend_usd']
                 portfolio_asset.save()
