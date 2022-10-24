@@ -43,11 +43,20 @@ class PortfolioTradeAdmin(admin.ModelAdmin):
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
-                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
-                    'usd_on_pay_date')
+                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl',
+                    'usd_on_pay_date', 'yield_brl', 'yield_usd')
+    # list_editable = ['shares_amount', 'value_per_share_usd', 'value_per_share_brl',
+    #                  'average_price_usd', 'average_price_brl', 'usd_on_pay_date']
+
     # filter by portfolio
     list_filter = (('portfolio', RelatedFieldListFilter),
                    'category', 'subcategory',)
+
+    def yield_brl(self, obj):
+        return str(format(float(obj.yield_on_cost_brl * 100), '.2f') + '%')
+
+    def yield_usd(self, obj):
+        return str(format(float(obj.yield_on_cost_usd * 100), '.2f') + '%')
 
 
 class PortfolioHistoryAdmin(admin.ModelAdmin):
@@ -56,11 +65,9 @@ class PortfolioHistoryAdmin(admin.ModelAdmin):
     list_filter = (('portfolio', RelatedFieldListFilter),)
 
     def profit_percentage(self, obj):
-        # Return the profit as percentage string
         return str(format(float(obj.profit * 100), '.2f') + ' %')
 
     def historical_percentage(self, obj):
-        # Return the profit as percentage string
         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
 
 

@@ -76,7 +76,11 @@ class PortfolioInvestment(models.Model):
 
     @property
     def total_profit_brl(self):
-        return round(self.total_today_brl - self.total_cost_brl + self.dividends_profit_brl + self.trade_profit_brl, 2)
+        return round((self.total_today_brl + self.dividends_profit_brl + self.trade_profit_brl) - self.total_cost_brl, 2)
+
+    @property
+    def total_profit_usd(self):
+        return round((self.total_today_usd + self.dividends_profit_usd + self.trade_profit_usd) - self.total_cost_usd, 2)
 
     @property
     def category(self):
@@ -106,19 +110,15 @@ class PortfolioInvestment(models.Model):
 
     @property
     def profit_without_div_trade_brl(self):
-        return round((self.asset.price_brl - self.share_average_price_brl) / self.asset.price_brl, 4)
+        return round((self.total_today_brl - self.total_cost_brl)/self.total_cost_brl if self.total_cost_brl > 0 else 0, 4)
 
     @property
     def profit_without_div_trade_usd(self):
-        return round((self.asset.price_usd - self.share_average_price_usd) / self.asset.price_usd if self.asset.price > 0 else 0, 4)
+        return round((self.total_today_usd - self.total_cost_usd)/self.total_cost_usd if self.total_cost_usd > 0 else 0, 4)
 
     @property
     def profit_with_div_trade_brl(self):
         return round((self.total_profit_brl / self.total_cost_brl) if self.total_cost_brl > 0 else 0, 4)
-
-    @property
-    def total_profit_usd(self):
-        return round(self.total_today_usd - self.total_cost_usd + self.dividends_profit_usd + self.trade_profit_usd, 2)
 
     @property
     def profit_with_div_trade_usd(self):
@@ -226,6 +226,14 @@ class PortfolioDividend(models.Model):
     @property
     def pay_date_by_year(self):
         return self.pay_date.strftime('%Y')
+
+    @property
+    def yield_on_cost_brl(self):
+        return round((self.value_per_share_brl / self.average_price_brl), 4)
+
+    @property
+    def yield_on_cost_usd(self):
+        return round((self.value_per_share_usd / self.average_price_usd), 4)
 
 
 class PortfolioHistory(models.Model):

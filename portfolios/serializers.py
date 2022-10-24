@@ -110,5 +110,5 @@ class PortfolioDividendSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
             'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl', 'yield_on_cost',
-            'usd_on_pay_date', 'pay_date_by_month_year', 'pay_date_by_year'
+            'usd_on_pay_date', 'pay_date_by_month_year', 'pay_date_by_year',
         )
