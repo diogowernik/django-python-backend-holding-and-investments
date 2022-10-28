@@ -31,7 +31,6 @@ class PortfolioInvestment(models.Model):
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
 
-    # have to create dividend profit brl and usd
     dividends_profit_brl = models.FloatField(default=0, editable=False)
     dividends_profit_usd = models.FloatField(default=0, editable=False)
 
@@ -136,7 +135,17 @@ class PortfolioTrade(models.Model):
         Portfolio, on_delete=models.CASCADE, default=1)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     asset = models.CharField(max_length=15, default='')
-
+    CategoryChoices = (
+        ('Criptomoeda', 'Criptomoeda'),
+        ('Ação', 'Ação'),
+        ('FII', 'FII'),
+        ('Stock', 'Stock'),
+        ('REIT', 'REIT'),
+        ('ETF', 'ETF'),
+        ('Currency', 'Currency'),
+    )
+    category = models.CharField(
+        max_length=15, choices=CategoryChoices, default='Ação')
     OrderChoices = (
         ('C', 'Compra'),
         ('V', 'Venda'),
@@ -154,6 +163,8 @@ class PortfolioTrade(models.Model):
 
     tax_brl = models.FloatField(default=0)
     tax_usd = models.FloatField(default=0)
+
+    usd_on_date = models.FloatField(default=0)
 
     def save(self, *args, **kwargs):
         self.total_cost_brl = round(
@@ -229,25 +240,29 @@ class PortfolioDividend(models.Model):
 
     @property
     def yield_on_cost_brl(self):
-        return round((self.value_per_share_brl / self.average_price_brl), 4)
+        if self.average_price_brl > 0:
+            return round((self.value_per_share_brl / self.average_price_brl), 4)
 
     @property
     def yield_on_cost_usd(self):
-        return round((self.value_per_share_usd / self.average_price_usd), 4)
+        if self.average_price_usd > 0:
+            return round((self.value_per_share_usd / self.average_price_usd), 4)
 
 
 class PortfolioHistory(models.Model):
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.CASCADE, default=1)
-    total_today_brl = models.FloatField()
-    total_today_usd = models.FloatField(default=0)
-    order_value = models.FloatField()
-    date = models.DateField(("Date"), default=date.today)
-    tokens_amount = models.FloatField(editable=False)
-    token_price = models.FloatField(editable=False)
-    profit = models.FloatField(editable=False, default=1)
-    historical_average_price = models.FloatField(editable=False, default=1)
-    historical_profit = models.FloatField(editable=False)
+        Portfolio, on_delete=models.CASCADE, default=2)
+    trade = models.ForeignKey(
+        PortfolioTrade, on_delete=models.CASCADE, default=1)
+    asset = models.CharField(max_length=15, default='HGLG11')
+
+    total_shares = models.FloatField(default=0)
+
+    share_average_price_brl = models.FloatField(default=0, editable=False)
+    share_average_price_usd = models.FloatField(default=0, editable=False)
+
+    trade_profit_brl = models.FloatField(default=0, editable=False)
+    trade_profit_usd = models.FloatField(default=0, editable=False)
 
     def __str__(self):
         return ' {} '.format(self.portfolio.name)
@@ -255,35 +270,81 @@ class PortfolioHistory(models.Model):
     class Meta:
         verbose_name_plural = "Evolução do Portfolio"
 
-    def save(self, *args, **kwargs):
-        # save object filtered by portfolio
-        if PortfolioHistory.objects.filter(portfolio=self.portfolio).exists():
-            last = PortfolioHistory.objects.filter(
-                portfolio=self.portfolio).latest('id')
-            self.tokens_amount = round(
-                last.tokens_amount+(self.order_value/last.token_price), 2)
-            if self.tokens_amount > 0:
-                self.token_price = round(
-                    self.total_today_brl/self.tokens_amount, 4)
-                # remove historical average price
-                self.historical_average_price = (last.tokens_amount*last.historical_average_price+(
-                    self.tokens_amount-last.tokens_amount)*last.token_price)/self.tokens_amount
-                # historical profit = (self.token_price/1 -1) *100
-                self.historical_profit = round(
-                    (self.token_price/1 - 1), 4)
-            else:
-                self.token_price = 1
-                self.historical_average_price = 1
-                self.historical_profit = 0
-            self.profit = round(
-                (self.token_price-last.token_price)/last.token_price, 4)
+    @property
+    def order(self):
+        return self.trade.order
 
+    @property
+    def date(self):
+        return self.trade.date
+
+    @property
+    def shares_amount(self):
+        return self.trade.shares_amount
+
+    @property
+    def share_cost_brl(self):
+        return self.trade.share_cost_brl
+
+    @property
+    def total_cost_brl(self):
+        return self.trade.total_cost_brl
+
+    @property
+    def total_on_date_brl(self):
+        return round(self.total_shares * self.share_average_price_brl, 2)
+
+    @property
+    def total_on_date_usd(self):
+        return round(self.total_shares * self.share_average_price_usd, 2)
+
+    @property
+    def tax_brl(self):
+        return self.trade.tax_brl
+
+    @property
+    def share_cost_usd(self):
+        return self.trade.share_cost_usd
+
+    @property
+    def total_cost_usd(self):
+        return self.trade.total_cost_usd
+
+    @property
+    def tax_usd(self):
+        return self.trade.tax_usd
+
+    def save(self, *args, **kwargs):
+        # if order == 'C':
+        if self.order == 'C':
+            if PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.trade.asset).exists():
+                last_portfolio_history = PortfolioHistory.objects.filter(
+                    portfolio=self.portfolio, asset=self.asset).last()
+                self.total_shares = last_portfolio_history.total_shares + self.trade.shares_amount
+                self.share_average_price_brl = round(
+                    (last_portfolio_history.total_shares * last_portfolio_history.share_average_price_brl + (self.trade.total_cost_brl + self.trade.tax_brl)) / self.total_shares, 2)
+                self.share_average_price_usd = round(
+                    (last_portfolio_history.total_shares * last_portfolio_history.share_average_price_usd + (self.trade.total_cost_usd + self.trade.tax_usd)) / self.total_shares, 2)
+                self.trade_profit_brl = 0
+                self.trade_profit_usd = 0
+            else:
+                self.total_shares = self.trade.shares_amount
+                self.share_average_price_brl = round(
+                    (self.trade.total_cost_brl + self.trade.tax_brl) / self.trade.shares_amount, 2)
+                self.share_average_price_usd = round(
+                    (self.trade.total_cost_usd + self.trade.tax_usd) / self.trade.shares_amount, 2)
+                self.trade_profit_brl = 0
+                self.trade_profit_usd = 0
         else:
-            self.tokens_amount = self.total_today_brl
-            self.token_price = 1
-            # self.token_price = self.total_today_brl/self.tokens_amount
-            self.profit = 0
-            self.historical_average_price = 1
-            self.historical_profit = self.profit
+            last_portfolio_history = PortfolioHistory.objects.filter(
+                portfolio=self.portfolio, asset=self.asset).last()
+            self.total_shares = last_portfolio_history.total_shares - self.trade.shares_amount
+
+            self.share_average_price_brl = last_portfolio_history.share_average_price_brl
+            self.share_average_price_usd = last_portfolio_history.share_average_price_usd
+            self.trade_profit_brl = round(
+                self.trade.total_cost_brl - ((self.trade.shares_amount * self.share_average_price_brl) + self.trade.tax_brl), 2)
+            self.trade_profit_usd = round(
+                self.trade.total_cost_usd - ((self.trade.shares_amount * self.share_average_price_usd) + self.trade.tax_usd), 2)
 
         super(PortfolioHistory, self).save(*args, **kwargs)

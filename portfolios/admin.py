@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django.contrib.admin import RelatedFieldListFilter
+from django.contrib.admin import RelatedFieldListFilter, SimpleListFilter, TabularInline, ModelAdmin, StackedInline
 from . import models
-from admin_auto_filters.filters import AutocompleteFilter
 from django.contrib.admin.views.main import ChangeList
 from django.db.models import Count, Sum
 
@@ -21,36 +20,97 @@ class PortfolioInvestmentSum(ChangeList):
 
 
 class PortfolioInvestmentAdmin(admin.ModelAdmin):
-    list_display = ('asset', 'broker', 'shares_amount', 'share_average_price_brl', 'total_cost_brl', 'share_average_price_usd', 'total_cost_usd',
-                    'total_today_brl', 'total_today_usd', 'trade_profit_brl', 'trade_profit_usd', 'dividends_profit_brl', 'dividends_profit_usd',
-                    'total_profit_brl', 'portfolio', 'category')
+    list_display = (
+        'asset',
+        'broker',
+        'shares_amount',
+        'share_average_price_brl',
+        'total_cost_brl',
+        'share_average_price_usd',
+        'total_cost_usd',
+        'total_today_brl',
+        'total_today_usd',
+        'trade_profit_brl',
+        'trade_profit_usd',
+        'div_profit_brl',
+        'div_profit_usd',
+        'total_profit_brl',
+        'portfolio',
+        'category'
+    )
     # list_editable = ['shares_amount', 'share_average_price_usd', 'share_average_price_brl',
     #                  'portfolio', 'broker']
     list_filter = [
-        ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), ]
+        ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), 'asset__category', ]
+
+    # override dividend_profit_brl and dividend_profit_usd to round the values
+
+    def div_profit_brl(self, obj):
+        return round(obj.dividends_profit_brl, 2)
+
+    def div_profit_usd(self, obj):
+        return round(obj.dividends_profit_usd, 2)
 
     def get_changelist(self, request):
         return PortfolioInvestmentSum
 
 
 class PortfolioTradeAdmin(admin.ModelAdmin):
-    list_display = ('date',  'asset', 'order', 'broker', 'shares_amount',
-                    'share_cost_brl', 'total_cost_brl', 'total_cost_usd',  'portfolio')
-    # list_editable = ['broker']
-    list_filter = (('broker', RelatedFieldListFilter),
-                   ('portfolio', RelatedFieldListFilter),)
+    list_display = (
+        'date',
+        'asset',
+        'category',
+        'order',
+        'broker',
+        'shares_amount',
+        'share_cost_brl',
+        'total_cost_brl',
+        'total_cost_usd',
+        'tax_brl',
+        'tax_usd',
+        'usd_on_date',
+        'portfolio'
+    )
+    list_editable = [
+        'broker',
+        'category',
+    ]
+    list_filter = (
+        ('broker', RelatedFieldListFilter),
+        ('portfolio', RelatedFieldListFilter),
+        ('broker', RelatedFieldListFilter),
+        'category',
+        'asset',
+    )
 
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'category', 'subcategory', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_usd',
-                    'value_per_share_brl', 'total_dividend_brl', 'total_dividend_usd', 'average_price_usd', 'average_price_brl',
-                    'usd_on_pay_date', 'yield_brl', 'yield_usd')
+    list_display = (
+        'ticker',
+        'category',
+        'subcategory',
+        'record_date',
+        'pay_date',
+        'shares_amount',
+        'value_per_share_usd',
+        'value_per_share_brl',
+        'total_dividend_brl',
+        'total_dividend_usd',
+        'average_price_usd',
+        'average_price_brl',
+        'usd_on_pay_date',
+        'yield_brl',
+        'yield_usd'
+    )
     # list_editable = ['shares_amount', 'value_per_share_usd', 'value_per_share_brl',
     #                  'average_price_usd', 'average_price_brl', 'usd_on_pay_date']
 
     # filter by portfolio
-    list_filter = (('portfolio', RelatedFieldListFilter),
-                   'category', 'subcategory',)
+    list_filter = (
+        ('portfolio', RelatedFieldListFilter),
+        'category',
+        'subcategory',
+    )
 
     def yield_brl(self, obj):
         return str(format(float(obj.yield_on_cost_brl * 100), '.2f') + '%')
@@ -60,15 +120,39 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
 
 
 class PortfolioHistoryAdmin(admin.ModelAdmin):
-    list_display = ('date', 'portfolio', 'total_today_brl', 'total_today_usd', 'order_value',
-                    'tokens_amount', 'token_price', 'profit_percentage', 'historical_percentage')
-    list_filter = (('portfolio', RelatedFieldListFilter),)
+    list_display = (
+        'date',
+        'asset',
+        'order',
 
-    def profit_percentage(self, obj):
-        return str(format(float(obj.profit * 100), '.2f') + ' %')
+        'shares_amount',
+        'total_shares',
 
-    def historical_percentage(self, obj):
-        return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
+        'share_cost_brl',
+        'share_average_price_brl',
+        'total_cost_brl',
+        'total_on_date_brl',
+        'tax_brl',
+        'trade_profit_brl',
+
+        # 'share_cost_usd',
+        # 'share_average_price_usd',
+        # 'total_cost_usd',
+        # 'total_on_date_usd',
+        # 'tax_usd',
+        # 'trade_profit_usd'
+
+    )
+    list_filter = (
+        ('portfolio', RelatedFieldListFilter),
+        'asset',
+    )
+
+#     def profit_percentage(self, obj):
+#         return str(format(float(obj.profit * 100), '.2f') + ' %')
+
+#     def historical_percentage(self, obj):
+#         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
 
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)
