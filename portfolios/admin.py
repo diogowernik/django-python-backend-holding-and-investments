@@ -63,11 +63,15 @@ class PortfolioTradeAdmin(admin.ModelAdmin):
         'order',
         'broker',
         'shares_amount',
+
         'share_cost_brl',
         'total_cost_brl',
-        'total_cost_usd',
         'tax_brl',
+
+        'share_cost_usd',
+        'total_cost_usd',
         'tax_usd',
+
         'usd_on_date',
         'portfolio'
     )

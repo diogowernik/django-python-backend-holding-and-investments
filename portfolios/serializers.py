@@ -88,6 +88,7 @@ class PortfolioTradeSerializer(serializers.ModelSerializer):
             'broker',
             'shares_amount',
             'share_cost_brl',
+            'share_cost_usd',
         )
 
 

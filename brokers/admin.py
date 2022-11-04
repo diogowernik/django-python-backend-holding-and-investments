@@ -5,9 +5,9 @@ from . import models
 
 
 class BrokerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
+    list_display = ('name', 'slug', 'tax_brl', 'tax_usd', 'tax_percent')
     prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['slug']
+    list_editable = ['slug', 'tax_brl', 'tax_usd', 'tax_percent']
 
 
 admin.site.register(models.Broker, BrokerAdmin)

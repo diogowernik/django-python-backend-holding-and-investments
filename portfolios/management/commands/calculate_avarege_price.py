@@ -3,7 +3,7 @@ from tokenize import group
 import pandas as pd
 from django.core.management.base import BaseCommand
 import requests
-from portfolios.models import PortfolioTrade, PortfolioInvestment
+from portfolios.models import PortfolioTrade, PortfolioInvestment, PortfolioHistory
 
 # This file updates Trades from Degiro
 
@@ -16,43 +16,14 @@ class Command(BaseCommand):
         # get PortfolioTrade where category is 'FII' or 'ETF' or 'Ação'
 
         # print(investments)
-        trades = PortfolioTrade.objects.filter(
-            category__in=['FII', 'Ação'], portfolio_id=2)
+        trades = PortfolioHistory.objects.filter(portfolio_id=2)
 
-        trades = trades.values('id', 'asset', 'share_cost_brl',
-                               'share_cost_usd', 'total_cost_brl', 'total_cost_usd', 'order',
-                               'tax_brl', 'tax_usd', 'shares_amount', 'portfolio', 'date')
+        trades = trades.values(
+            'id', 'asset', 'share_average_price_brl', 'share_average_price_usd')
         trades = pd.DataFrame(trades)
 
-        # trades = trades[trades['asset'] == 'HGLG11']
-
-        trades = trades.sort_values(by=['date'])
-        # get only trades with order 'Compra'
-        trades = trades[trades['order'] == 'C']
-
-        # sum all total cost brl and all shares ammount sum tax brl and usd
-        trades = trades.groupby('asset').agg(
-            {'total_cost_brl': 'sum', 'total_cost_usd': 'sum', 'shares_amount': 'sum', 'tax_brl': 'sum', 'tax_usd': 'sum'})
-
-        # average price = total cost sum + tax brl sum / shares amount sum
-
-        trades['share_average_price_brl'] = trades['total_cost_brl'] + \
-            trades['tax_brl']
-        trades['share_average_price_brl'] = trades['share_average_price_brl'] / \
-            trades['shares_amount']
-        trades['share_average_price_brl'] = trades['share_average_price_brl'].round(
-            2)
-
-        trades['share_average_price_usd'] = trades['total_cost_usd'] + \
-            trades['tax_usd']
-        trades['share_average_price_usd'] = trades['share_average_price_usd'] / \
-            trades['shares_amount']
-        trades['share_average_price_usd'] = trades['share_average_price_usd'].round(
-            2)
-
-        # set index == asset
-
-        # trades = trades.set_index('asset')
+        # get the last trade for each asset
+        trades = trades.groupby('asset').last()
 
         print(trades)
 
@@ -75,6 +46,6 @@ class Command(BaseCommand):
         # show updated PortfolioInvestment
         investments = PortfolioInvestment.objects.filter(portfolio_id=2)
         investments = investments.values(
-            'id', 'asset__ticker', 'share_average_price_brl', 'share_average_price_usd', 'trade_profit_brl', 'trade_profit_usd')
+            'id', 'asset__ticker', 'share_average_price_brl', 'share_average_price_usd')
         investments = pd.DataFrame(investments)
         print(investments)

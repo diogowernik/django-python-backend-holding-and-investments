@@ -161,8 +161,8 @@ class PortfolioTrade(models.Model):
     total_cost_brl = models.FloatField(editable=False, default=0)
     total_cost_usd = models.FloatField(editable=False, default=0)
 
-    tax_brl = models.FloatField(default=0)
-    tax_usd = models.FloatField(default=0)
+    tax_brl = models.FloatField(default=0, editable=False)
+    tax_usd = models.FloatField(default=0, editable=False)
 
     usd_on_date = models.FloatField(default=0)
 
@@ -171,8 +171,19 @@ class PortfolioTrade(models.Model):
             self.shares_amount * self.share_cost_brl, 2)
         self.total_cost_usd = round(
             self.shares_amount * self.share_cost_usd, 2)
+        self.usd_on_date = round(
+            self.share_cost_brl / self.share_cost_usd, 2)
+        self.tax_brl = round(
+            (self.total_cost_brl * self.broker.tax_percent) + self.broker.tax_brl, 2)
+        self.tax_usd = round(
+            (self.total_cost_usd * self.broker.tax_percent) + self.broker.tax_usd, 2)
 
         super(PortfolioTrade, self).save(*args, **kwargs)
+        # then create a PortfolioHistory object
+        PortfolioHistory.objects.create(
+            portfolio=self.portfolio,
+            trade=self,
+            asset=self.asset)
 
     def __str__(self):
         return '{}'.format(self.asset)
@@ -256,7 +267,7 @@ class PortfolioHistory(models.Model):
         PortfolioTrade, on_delete=models.CASCADE, default=1)
     asset = models.CharField(max_length=15, default='HGLG11')
 
-    total_shares = models.FloatField(default=0)
+    total_shares = models.FloatField(default=0, editable=False)
 
     share_average_price_brl = models.FloatField(default=0, editable=False)
     share_average_price_usd = models.FloatField(default=0, editable=False)
@@ -348,3 +359,38 @@ class PortfolioHistory(models.Model):
                 self.trade.total_cost_usd - ((self.trade.shares_amount * self.share_average_price_usd) + self.trade.tax_usd), 2)
 
         super(PortfolioHistory, self).save(*args, **kwargs)
+
+        # if self.trade.order == C
+        # than create or Update PortfolioInvestement
+        if self.trade.order == 'C':
+            if PortfolioInvestment.objects.filter(portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset)).exists():
+                portfolio_investment = PortfolioInvestment.objects.get(
+                    portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset))
+                portfolio_investment.total_shares = self.total_shares
+                portfolio_investment.share_average_price_brl = self.share_average_price_brl
+                portfolio_investment.share_average_price_usd = self.share_average_price_usd
+                portfolio_investment.save()
+            else:
+                PortfolioInvestment.objects.create(
+                    portfolio=self.portfolio,
+                    asset=Asset.objects.get(ticker=self.asset),
+                    total_shares=self.total_shares,
+                    share_average_price_brl=self.share_average_price_brl,
+                    share_average_price_usd=self.share_average_price_usd,
+                )
+        else:
+            portfolio_investment = PortfolioInvestment.objects.get(
+                portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset))
+            portfolio_investment.shares_amount = self.total_shares
+            portfolio_investment.share_average_price_brl = self.share_average_price_brl
+            portfolio_investment.share_average_price_usd = self.share_average_price_usd
+            portfolio_investment.save()
+
+        # PortfolioInvestment.objects.create(
+        #     portfolio=self.portfolio,
+        #     asset=Asset.objects.get(ticker=self.asset),
+        #     broker=self.trade.broker,
+        #     shares_amount=self.total_shares,
+        #     share_average_price_brl=self.share_average_price_brl,
+        #     share_average_price_usd=self.share_average_price_usd,
+        # )

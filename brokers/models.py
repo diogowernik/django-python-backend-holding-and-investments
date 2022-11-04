@@ -6,6 +6,9 @@ from django.db import models
 class Broker(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
+    tax_brl = models.FloatField(default=0.0)
+    tax_usd = models.FloatField(default=0.0)
+    tax_percent = models.FloatField(default=0.0)
 
     def __str__(self):
         return "{}".format(self.name)
