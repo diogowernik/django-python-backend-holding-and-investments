@@ -23,25 +23,6 @@ class Command(BaseCommand):
                                'EV/EBIT', 'ROIC', 'ROE']]
         br_stocks.columns = ['ticker', 'pl', 'p_vpa', 'twelve_m_yield', 'ev_ebit',
                              'roic', 'roe']
-        # br_stocks.columns = ['ticker', 'setor', 'last_dividend', 'last_yield',
-        #                      'six_m_yield', 'twelve_m_yield', 'p_vpa', 'assets']
-        # br_stocks['last_dividend'] = br_stocks['last_dividend'].str[3:]
-        # br_stocks['last_dividend'] = br_stocks['last_dividend'].str.replace(
-        #     ',', '.')
-        # br_stocks['last_yield'] = br_stocks['last_yield'].str.replace(',', '.')
-        # br_stocks['last_yield'] = br_stocks['last_yield'].str.replace('%', '')
-        # br_stocks['six_m_yield'] = br_stocks['six_m_yield'].str.replace(
-        #     ',', '.')
-        # br_stocks['six_m_yield'] = br_stocks['six_m_yield'].str.replace(
-        #     '%', '')
-        # br_stocks['twelve_m_yield'] = br_stocks['twelve_m_yield'].str.replace(
-        #     ',', '.')
-        # br_stocks['twelve_m_yield'] = br_stocks['twelve_m_yield'].str.replace(
-        #     '%', '')
-        # br_stocks['p_vpa'] = br_stocks['p_vpa'] / 100
-        # # br_stocks['setor'] = br_stocks['setor'].str.replace('Títulos e Val. Mob.', 'TVM')
-        # # br_stocks['setor'] = br_stocks['setor'].str.replace(
-        # #     'Lajes Corporativas', 'Lajes')
         br_stocks = br_stocks.set_index('ticker')
 
         # print(br_stocks)
@@ -55,8 +36,14 @@ class Command(BaseCommand):
         df = app_df.merge(br_stocks, left_on="ticker",
                           right_on="ticker", how='inner')
         # fields to float and save
+        # pl to number
+        df['pl'] = df['pl'].str.replace('.', '', regex=False)
+        df['pl'] = df['pl'].str.replace(',', '.')
         df['pl'] = df['pl'].astype(float) / 100
         df['pl'] = df['pl'].round(2)
+        # p_vpa to number
+        df['p_vpa'] = df['p_vpa'].str.replace('.', '', regex=False)
+        df['p_vpa'] = df['p_vpa'].str.replace(',', '.')
         df['p_vpa'] = df['p_vpa'].astype(float) / 100
         df['p_vpa'] = df['p_vpa'].round(2)
         df['ev_ebit'] = df['ev_ebit'].astype(float) / 100
@@ -125,8 +112,9 @@ class Command(BaseCommand):
         # df = df.sort_values(by=['ranking_pl'])
 
         # ranking sum pl, p_vpa, roe, twelve_m_yield
-        df['ranking'] = df[['ranking_pl', 'ranking_p_vpa',
-                            'ranking_roe', 'ranking_twelve_m_yield']].sum(axis=1)
+        df['ranking'] = df[['ranking_pl',
+                            'ranking_roe']].sum(axis=1)
+
         # df = df.sort_values(by=['ranking_sum'])
 
         # ranking sum pl, p_vpa, roe, twelve_m_yield, ev_ebit, roic

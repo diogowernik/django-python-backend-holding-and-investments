@@ -19,18 +19,18 @@ class AssetList(generics.ListAPIView):
 
 
 class FiiList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.FiiSerializer
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Fii.objects.all()
 
 
 class BrStocksList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.BrStocksSerializer
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.BrStocks.objects.all()

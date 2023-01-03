@@ -363,10 +363,10 @@ class PortfolioHistory(models.Model):
         # if self.trade.order == C
         # than create or Update PortfolioInvestement
         if self.trade.order == 'C':
-            if PortfolioInvestment.objects.filter(portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset)).exists():
+            if PortfolioInvestment.objects.filter(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset)).exists():
                 portfolio_investment = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset))
-                portfolio_investment.total_shares = self.total_shares
+                    portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
+                portfolio_investment.shares_ammount = self.total_shares
                 portfolio_investment.share_average_price_brl = self.share_average_price_brl
                 portfolio_investment.share_average_price_usd = self.share_average_price_usd
                 portfolio_investment.save()
@@ -374,14 +374,16 @@ class PortfolioHistory(models.Model):
                 PortfolioInvestment.objects.create(
                     portfolio=self.portfolio,
                     asset=Asset.objects.get(ticker=self.asset),
-                    total_shares=self.total_shares,
+                    broker=self.trade.broker,
+                    shares_amount=self.total_shares,
                     share_average_price_brl=self.share_average_price_brl,
                     share_average_price_usd=self.share_average_price_usd,
                 )
         else:
             portfolio_investment = PortfolioInvestment.objects.get(
-                portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset))
+                portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset))
             portfolio_investment.shares_amount = self.total_shares
+            portfolio_investment.broker = self.trade.broker
             portfolio_investment.share_average_price_brl = self.share_average_price_brl
             portfolio_investment.share_average_price_usd = self.share_average_price_usd
             portfolio_investment.save()
