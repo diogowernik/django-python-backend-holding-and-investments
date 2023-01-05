@@ -52,7 +52,7 @@ class Command(BaseCommand):
         df['price_usd'] = df['price_brl'].astype(float) / usd_brl_price
         df['price_usd'] = df['price_usd'].round(2)
         # print('df')
-        print(df)
+        # print(df)
 
         for index, row in df.iterrows():
             try:

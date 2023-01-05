@@ -32,7 +32,7 @@ class Command(BaseCommand):
         # get only trades with order 'Compra'
         # trades = trades[trades['order'] == 'C']
 
-        print(trades)
+        # print(trades)
 
         for index, row in trades.iterrows():
 

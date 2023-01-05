@@ -10,9 +10,9 @@ from rest_framework.response import Response
 
 
 class AssetList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.AssetSerializer
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Asset.objects.all()

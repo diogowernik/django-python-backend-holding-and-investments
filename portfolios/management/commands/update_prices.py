@@ -17,7 +17,7 @@ class Command(BaseCommand):
         app_df['ticker'] = app_df['ticker'].astype(str) + '.SA'
         app_list = app_df["ticker"].astype(str).tolist()
 
-        print(app_list)
+        # print(app_list)
 
         yahoo_df = yf.download(app_list, period="1min")["Adj Close"]
         yahoo_df = yahoo_df.T.reset_index()
@@ -30,7 +30,9 @@ class Command(BaseCommand):
                     lambda x: x.rstrip('.SA'))
                 yahoo_df = yahoo_df.set_index('ticker')
             except Exception as e:
-                print(f' Key Exception - {e}')
+                print(f' Key Exception 1 - {e}')
+                # show ticker that has problem
+                print(yahoo_df["ticker"])
                 pass
         else:
             try:
@@ -41,7 +43,7 @@ class Command(BaseCommand):
                     lambda x: x.rstrip('.SA'))
                 yahoo_df = yahoo_df.set_index('ticker')
             except Exception as e:
-                print(f' Key Exception - {e}')
+                print(f' Key Exception 2 - {e}')
                 pass
         # print(yahoo_df)
 
@@ -62,7 +64,7 @@ class Command(BaseCommand):
         # add new column price_usd = price_brl * usd_brl_price
         df['price_usd'] = df['price_brl'] / usd_brl_price
         df['price_usd'] = df['price_usd'].round(2)
-        print(df)
+        # print(df)
 
         # Update BrStock price_brl
         for index, row in df.iterrows():
@@ -72,6 +74,8 @@ class Command(BaseCommand):
                 asset.price_usd = df.loc[index]['price_usd']
                 asset.save()
             except Exception as e:
-                print(f' Key Exception - {e}')
+                print(f' Key Exception 3 - {e}')
+                # show ticker that has problem
+                print(df.loc[index]['id'])
                 pass
         print("BrStocks and Fiis price_brl and price usd_update updated")

@@ -41,7 +41,7 @@ class Command(BaseCommand):
         # add new column price_usd = price_brl * usd_brl_price
         df['price_usd'] = df['price_brl'] / usd_brl_price
         df['price_usd'] = df['price_usd'].round(4)
-        print(df)
+        # print(df)
 
         # Update Crypto price
         for index, row in df.iterrows():

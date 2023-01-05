@@ -3,9 +3,28 @@ from . import models
 
 
 class AssetSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='category.name')
+    subcategory = serializers.CharField(source='subcategory.name')
+
     class Meta:
         model = models.Asset
-        fields = ('id', 'ticker', 'slug', 'price_brl', 'price_usd')
+        fields = (
+            'category',
+            'subcategory',
+            'ticker',
+            'slug',
+            'dividend_frequency',
+            'twelve_m_dividend',
+            'p_vpa',
+            'top_52w',
+            'bottom_52w',
+            'twelve_m_yield',
+            'price_brl',
+            'price_usd',
+            'id',
+            'percentage_top_52w',
+            'percentage_bottom_52w'
+        )
 
 
 class FiiSerializer(serializers.ModelSerializer):

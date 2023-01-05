@@ -28,9 +28,19 @@ class Asset(models.Model):
         verbose_name_plural = "Assets"
         ordering = ('-ticker',)
 
-    # def save(self, *args, **kwargs):
-    #     self.twelve_m_yield = self.twelve_m_dividend / self.price
-    #     super().save(*args, **kwargs)
+    @property
+    def percentage_top_52w(self):
+      # if zero division error, return 0
+        try:
+            return round((self.price_brl - self.top_52w) / self.top_52w * 100, 2)
+        except ZeroDivisionError:
+            return 0
+
+    def percentage_bottom_52w(self):
+        try:
+            return round((self.price_brl - self.bottom_52w) / self.bottom_52w * 100, 2)
+        except ZeroDivisionError:
+            return 0
 
 
 # Child Classes with ihneritace from Assets

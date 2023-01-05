@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            call_command('update_br_price')
+            call_command('update_prices')
         except Exception as e:
             print(e)
         try:

@@ -28,17 +28,20 @@ class Command(BaseCommand):
         economia_df['price_brl'] = economia_df['price_brl'].astype(
             float).round(2)
         # add line index = BRL and price_brl = 1.0
-        economia_df = economia_df.append(
-            {'ticker': 'BRL', 'price_brl': 1.0}, ignore_index=True)
-        print('economia_df')
-        print(economia_df)
+        # economia_df = economia_df.append(
+        #     {'ticker': 'BRL', 'price_brl': 1.0}, ignore_index=True)
+        economia_df = pd.concat([economia_df, pd.DataFrame(
+            {'ticker': ['BRL'], 'price_brl': [1.0]})])
+
+        # print('economia_df')
+        # print(economia_df)
 
         # config app_df to merge and economia_df
         queryset = Currency.objects.values_list("id", "ticker")
         currencies_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
         # add line index = BRL and price_brl = 1.0
-        print('currencies_df')
-        print(currencies_df)
+        # print('currencies_df')
+        # print(currencies_df)
 
         # Merge app_df and economia_df
         df = currencies_df.merge(economia_df, left_on="ticker",
@@ -53,8 +56,8 @@ class Command(BaseCommand):
         # add new column price_usd = price_brl * usd_brl_price
         df['price_usd'] = df['price_brl'] / usd_brl_price
         df['price_usd'] = df['price_usd'].round(2)
-        print('df')
-        print(df)
+        # print('df')
+        # print(df)
 
         # Update Currency price_brl
         for index, row in df.iterrows():
@@ -66,4 +69,4 @@ class Command(BaseCommand):
             except Exception as e:
                 print(f' Key Exception - {e}')
                 pass
-        print("Currency price_brl updated")
+        print("Done")

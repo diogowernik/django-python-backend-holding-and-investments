@@ -17,19 +17,19 @@ class Command(BaseCommand):
                           ])
         df = df.groupby("ticker").sum()
         df = df.reset_index()
-        print(df)
+        # print(df)
 
         queryset = PortfolioInvestment.objects.values_list(
             "id", "asset__ticker", "dividends_profit_brl", "dividends_profit_usd")
         app_df = pd.DataFrame(list(queryset), columns=[
             "id", "ticker", "dividends_profit_brl", "dividends_profit_usd"])
         app_df = app_df.set_index('ticker')
-        print(app_df)
+        # print(app_df)
 
         df = df.merge(app_df, on="ticker", how="left")
         df = df.dropna()
         df = df.set_index('id')
-        print(df)
+        # print(df)
 
         for index, row in df.iterrows():
             try:

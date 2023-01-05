@@ -366,7 +366,7 @@ class PortfolioHistory(models.Model):
             if PortfolioInvestment.objects.filter(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset)).exists():
                 portfolio_investment = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
-                portfolio_investment.shares_ammount = self.total_shares
+                portfolio_investment.shares_amount = self.total_shares
                 portfolio_investment.share_average_price_brl = self.share_average_price_brl
                 portfolio_investment.share_average_price_usd = self.share_average_price_usd
                 portfolio_investment.save()
@@ -377,7 +377,7 @@ class PortfolioHistory(models.Model):
                     broker=self.trade.broker,
                     shares_amount=self.total_shares,
                     share_average_price_brl=self.share_average_price_brl,
-                    share_average_price_usd=self.share_average_price_usd,
+                    share_average_price_usd=self.share_average_price_usd
                 )
         else:
             portfolio_investment = PortfolioInvestment.objects.get(
@@ -387,12 +387,3 @@ class PortfolioHistory(models.Model):
             portfolio_investment.share_average_price_brl = self.share_average_price_brl
             portfolio_investment.share_average_price_usd = self.share_average_price_usd
             portfolio_investment.save()
-
-        # PortfolioInvestment.objects.create(
-        #     portfolio=self.portfolio,
-        #     asset=Asset.objects.get(ticker=self.asset),
-        #     broker=self.trade.broker,
-        #     shares_amount=self.total_shares,
-        #     share_average_price_brl=self.share_average_price_brl,
-        #     share_average_price_usd=self.share_average_price_usd,
-        # )
