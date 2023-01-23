@@ -266,6 +266,8 @@ class PortfolioHistory(models.Model):
     trade = models.ForeignKey(
         PortfolioTrade, on_delete=models.CASCADE, default=1)
     asset = models.CharField(max_length=15, default='HGLG11')
+    broker = models.ForeignKey(
+        Broker, on_delete=models.CASCADE, default=1)
 
     total_shares = models.FloatField(default=0, editable=False)
 
@@ -326,6 +328,7 @@ class PortfolioHistory(models.Model):
         return self.trade.tax_usd
 
     def save(self, *args, **kwargs):
+        self.broker = self.trade.broker
         # if order == 'C':
         if self.order == 'C':
             if PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.trade.asset).exists():
@@ -346,9 +349,10 @@ class PortfolioHistory(models.Model):
                     (self.trade.total_cost_usd + self.trade.tax_usd) / self.trade.shares_amount, 2)
                 self.trade_profit_brl = 0
                 self.trade_profit_usd = 0
+        # elif order == 'V':
         else:
             last_portfolio_history = PortfolioHistory.objects.filter(
-                portfolio=self.portfolio, asset=self.asset).last()
+                portfolio=self.portfolio, asset=self.asset, broker=self.trade.broker).last()
             self.total_shares = last_portfolio_history.total_shares - self.trade.shares_amount
 
             self.share_average_price_brl = last_portfolio_history.share_average_price_brl
@@ -379,6 +383,7 @@ class PortfolioHistory(models.Model):
                     share_average_price_brl=self.share_average_price_brl,
                     share_average_price_usd=self.share_average_price_usd
                 )
+        # elif self.trade.order == V
         else:
             portfolio_investment = PortfolioInvestment.objects.get(
                 portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset))
@@ -386,4 +391,5 @@ class PortfolioHistory(models.Model):
             portfolio_investment.broker = self.trade.broker
             portfolio_investment.share_average_price_brl = self.share_average_price_brl
             portfolio_investment.share_average_price_usd = self.share_average_price_usd
+            portfolio_investment.trade_profit_brl = self.trade_profit_brl
             portfolio_investment.save()
