@@ -368,14 +368,14 @@ class PortfolioHistory(models.Model):
         # if self.trade.order == C
         # than create or Update PortfolioInvestement
         if self.trade.order == 'C':
-            try:
+            if PortfolioInvestment.objects.filter(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset)).exists():
                 portfolio_investment = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
                 portfolio_investment.shares_amount = self.total_shares
                 portfolio_investment.share_average_price_brl = self.share_average_price_brl
                 portfolio_investment.share_average_price_usd = self.share_average_price_usd
                 portfolio_investment.save()
-            except PortfolioInvestment.DoesNotExist:
+            else:
                 PortfolioInvestment.objects.create(
                     portfolio=self.portfolio,
                     asset=Asset.objects.get(ticker=self.asset),
@@ -386,13 +386,13 @@ class PortfolioHistory(models.Model):
                 )
             # Update Portfolio Balance if asset is not USD will update USD balance
             current_asset = Asset.objects.get(ticker=self.asset)
-            if current_asset.ticker == 'USD':
+            if current_asset.ticker != 'USD':
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
                     self.trade.total_cost_usd
                 portfolio_balance.save()
-            elif current_asset.ticker == 'BRL':
+            if current_asset.ticker != 'BRL':
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
