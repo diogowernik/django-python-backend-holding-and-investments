@@ -43,8 +43,8 @@ urlpatterns = [
 
 
     # removed registration
-    # path('auth/', include('djoser.urls')),
-    # path('auth/', include('djoser.urls.authtoken')),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
     path('auth/token/login/', TokenCreateView.as_view(), name='login'),
 
     path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
