@@ -9,6 +9,7 @@ class Broker(models.Model):
     tax_brl = models.FloatField(default=0.0)
     tax_usd = models.FloatField(default=0.0)
     tax_percent = models.FloatField(default=0.0)
+    main_currency = models.CharField(max_length=3, default="BRL")
 
     def __str__(self):
         return "{}".format(self.name)

@@ -377,9 +377,9 @@ class PortfolioHistory(models.Model):
                 if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
                     portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
                         self.trade.total_cost_usd
-                elif portfolio_investment.asset == Asset.objects.get(ticker='BRL'):
-                    portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
-                        self.trade.total_cost_brl
+                # elif portfolio_investment.asset == Asset.objects.get(ticker='BRL'):
+                #     portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
+                #         self.trade.total_cost_brl
                 else:
                     portfolio_investment.shares_amount = self.total_shares
 
@@ -395,13 +395,13 @@ class PortfolioHistory(models.Model):
                 )
             # Update Portfolio Balance if asset is not USD will update USD balance
             current_asset = Asset.objects.get(ticker=self.asset)
-            if current_asset.ticker != 'USD':
+            if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
                     self.trade.total_cost_usd
                 portfolio_balance.save()
-            elif current_asset.ticker != 'BRL':
+            elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
@@ -423,9 +423,17 @@ class PortfolioHistory(models.Model):
 
             # Update Portfolio Balance if asset is not USD will update USD balance
             current_asset = Asset.objects.get(ticker=self.asset)
-            if current_asset.ticker != 'USD':
+            if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
                     self.trade.total_cost_usd
                 portfolio_balance.save()
+            elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
+                portfolio_balance = PortfolioInvestment.objects.get(
+                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
+                portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
+                    self.trade.total_cost_brl
+                portfolio_balance.save()
+            else:
+                pass
