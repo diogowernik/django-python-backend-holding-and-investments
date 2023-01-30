@@ -367,13 +367,19 @@ class PortfolioHistory(models.Model):
 
         # if self.trade.order == C
         # than create or Update PortfolioInvestement
+        # falta criar uma logica para o USD e BRL diferente da para outros ativos. Considerando que USD e BRL são caixa do portfolio
         if self.trade.order == 'C':
             if PortfolioInvestment.objects.filter(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset)).exists():
                 portfolio_investment = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
-                portfolio_investment.shares_amount = self.total_shares
                 portfolio_investment.share_average_price_brl = self.share_average_price_brl
                 portfolio_investment.share_average_price_usd = self.share_average_price_usd
+                if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
+                    portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
+                        self.trade.total_cost_usd
+                else:
+                    portfolio_investment.shares_amount = self.total_shares
+
                 portfolio_investment.save()
             else:
                 PortfolioInvestment.objects.create(
@@ -392,12 +398,7 @@ class PortfolioHistory(models.Model):
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
                     self.trade.total_cost_usd
                 portfolio_balance.save()
-            if current_asset.ticker != 'BRL':
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
-                    self.trade.total_cost_brl
-                portfolio_balance.save()
+            # need to create a parameter to set if the broker is using BRL or USD
 
         # elif self.trade.order == V
         else:
@@ -417,10 +418,4 @@ class PortfolioHistory(models.Model):
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
                     self.trade.total_cost_usd
-                portfolio_balance.save()
-            if current_asset.ticker != 'BRL':
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
-                    self.trade.total_cost_brl
                 portfolio_balance.save()
