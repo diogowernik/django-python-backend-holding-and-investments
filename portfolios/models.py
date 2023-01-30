@@ -200,12 +200,12 @@ class PortfolioDividend(models.Model):
 
     ticker = models.CharField(max_length=10, default='0')
     categoryChoice = (
-        ('Ação', 'Ações Brasileiras'),
-        ('FII', 'Fundos Imobiliários'),
-        ('ETF', 'ETFs'),
+        ('Ações Brasileiras', 'Ações Brasileiras'),
+        ('Fundos Imobiliários', 'Fundos Imobiliários'),
+        ('ETFs', 'ETFs'),
         ('Stocks', 'Stocks'),
-        ('Reit', 'REITs'),
-        ('PrivateAsset', 'Ativos Privados'),
+        ('REITs', 'REITs'),
+        ('Propriedades', 'Propriedades'),
     )
     category = models.CharField(
         max_length=100, choices=categoryChoice, default='Ação')
@@ -377,6 +377,9 @@ class PortfolioHistory(models.Model):
                 if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
                     portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
                         self.trade.total_cost_usd
+                elif portfolio_investment.asset == Asset.objects.get(ticker='BRL'):
+                    portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
+                        self.trade.total_cost_brl
                 else:
                     portfolio_investment.shares_amount = self.total_shares
 
@@ -398,7 +401,14 @@ class PortfolioHistory(models.Model):
                 portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
                     self.trade.total_cost_usd
                 portfolio_balance.save()
-            # need to create a parameter to set if the broker is using BRL or USD
+            elif current_asset.ticker != 'BRL':
+                portfolio_balance = PortfolioInvestment.objects.get(
+                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
+                portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
+                    self.trade.total_cost_brl
+                portfolio_balance.save()
+            else:
+                pass  # pass because the asset is USD or BRL
 
         # elif self.trade.order == V
         else:
