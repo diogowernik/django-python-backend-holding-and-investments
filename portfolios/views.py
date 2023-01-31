@@ -99,3 +99,14 @@ class PortfolioDividendList(generics.ListAPIView):
         return models.PortfolioDividend.objects.filter(
             portfolio_id=self.kwargs['pk'],
         ).order_by('-pay_date')
+
+
+class PortfolioEvolutionList(generics.ListAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, )
+    serializer_class = serializers.PortfolioEvolutionSerializer
+
+    def get_queryset(self):
+        return models.PortfolioEvolution.objects.filter(
+            portfolio_id=self.kwargs['pk'],
+        ).order_by('-date')

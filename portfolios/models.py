@@ -8,8 +8,9 @@ from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
 from dividends.models import Dividend
+from categories.models import Category
 from django.core.exceptions import ValidationError
-# from django.db.models import Sum
+from django.db.models import Sum
 
 
 class Portfolio(models.Model):
@@ -281,7 +282,7 @@ class PortfolioHistory(models.Model):
         return ' {} '.format(self.portfolio.name)
 
     class Meta:
-        verbose_name_plural = "Evolução do Portfolio"
+        verbose_name_plural = "Trade History"
 
     @property
     def order(self):
@@ -437,3 +438,20 @@ class PortfolioHistory(models.Model):
                 portfolio_balance.save()
             else:
                 pass
+
+
+# Evolução do Patrimonio do Portfolio em USD e BRL
+
+class PortfolioEvolution(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    date = models.DateField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category_total_brl = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
+    category_total_usd = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = 'Evolução do Patrimonio'
+        verbose_name_plural = 'Evolução do Patrimonio'

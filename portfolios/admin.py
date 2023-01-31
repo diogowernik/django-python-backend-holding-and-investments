@@ -159,8 +159,23 @@ class PortfolioHistoryAdmin(admin.ModelAdmin):
 #         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
 
 
+class PortfolioEvolutionAdmin(admin.ModelAdmin):
+    list_display = (
+        'date',
+        'portfolio',
+        'category',
+        'category_total_brl',
+        'category_total_usd')
+    list_editable = ['category', 'category_total_brl',
+                     'category_total_usd']
+    list_filter = (
+        ('portfolio', RelatedFieldListFilter),
+    )
+
+
 # admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioInvestment, PortfolioInvestmentAdmin)
 admin.site.register(models.PortfolioTrade, PortfolioTradeAdmin)
 admin.site.register(models.PortfolioHistory, PortfolioHistoryAdmin)
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
+admin.site.register(models.PortfolioEvolution, PortfolioEvolutionAdmin)

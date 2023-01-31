@@ -128,3 +128,17 @@ class PortfolioDividendSerializer(serializers.ModelSerializer):
             'pay_date_by_month_year',
             'pay_date_by_year',
         )
+
+
+class PortfolioEvolutionSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='category.name')
+
+    class Meta:
+        model = models.PortfolioEvolution
+        fields = (
+            'id',
+            'category',
+            'category_total_brl',
+            'category_total_usd',
+            'date',
+        )
