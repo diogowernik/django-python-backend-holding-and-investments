@@ -446,12 +446,9 @@ class PortfolioEvolution(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    category_total_brl = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0)
-    category_total_usd = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0)
-
+    category_total_brl = models.FloatField(default=0)
+    category_total_usd = models.FloatField(default=0)
     class Meta:
-        ordering = ['-date']
+        ordering = ['date']
         verbose_name = 'Evolução do Patrimonio'
         verbose_name_plural = 'Evolução do Patrimonio'

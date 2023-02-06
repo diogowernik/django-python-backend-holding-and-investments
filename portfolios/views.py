@@ -109,4 +109,4 @@ class PortfolioEvolutionList(generics.ListAPIView):
     def get_queryset(self):
         return models.PortfolioEvolution.objects.filter(
             portfolio_id=self.kwargs['pk'],
-        ).order_by('-date')
+        ).order_by('date')
