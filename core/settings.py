@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'categories',
     'dividends',
     'brokers',
+    'cashflow',
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',

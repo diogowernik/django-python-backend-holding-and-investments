@@ -53,3 +53,8 @@ python manage.py startapp <app_name>
 # install openyxl
 
     pip install openpyxl
+
+# create app inside django project
+
+    python manage.py startapp cashflow
+

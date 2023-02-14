@@ -440,8 +440,6 @@ class PortfolioHistory(models.Model):
                 pass
 
 
-# Evolução do Patrimonio do Portfolio em USD e BRL
-
 class PortfolioEvolution(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
