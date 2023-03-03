@@ -339,122 +339,85 @@ class PortfolioHistory(models.Model):
     @property
     def tax_usd(self):
         return self.trade.tax_usd
-
+    
     def save(self, *args, **kwargs):
         self.broker = self.trade.broker
-        # if order == 'C':
         if self.order == 'C':
             if PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.trade.asset).exists():
-                last_portfolio_history = PortfolioHistory.objects.filter(
-                    portfolio=self.portfolio, asset=self.asset).last()
-                self.total_shares = last_portfolio_history.total_shares + self.trade.shares_amount
-                self.share_average_price_brl = round(
-                    (last_portfolio_history.total_shares * last_portfolio_history.share_average_price_brl + (self.trade.total_cost_brl + self.trade.tax_brl)) / self.total_shares, 2)
-                self.share_average_price_usd = round(
-                    (last_portfolio_history.total_shares * last_portfolio_history.share_average_price_usd + (self.trade.total_cost_usd + self.trade.tax_usd)) / self.total_shares, 2)
-                self.trade_profit_brl = 0
-                self.trade_profit_usd = 0
+                self.update_existing_portfolio_history()
             else:
-                self.total_shares = self.trade.shares_amount
-                self.share_average_price_brl = round(
-                    (self.trade.total_cost_brl + self.trade.tax_brl) / self.trade.shares_amount, 2)
-                self.share_average_price_usd = round(
-                    (self.trade.total_cost_usd + self.trade.tax_usd) / self.trade.shares_amount, 2)
-                self.trade_profit_brl = 0
-                self.trade_profit_usd = 0
-
-        # elif order == 'V':
+                self.create_new_portfolio_history()
         else:
-            last_portfolio_history = PortfolioHistory.objects.filter(
-                portfolio=self.portfolio, asset=self.asset, broker=self.trade.broker).last()
-            self.total_shares = last_portfolio_history.total_shares - self.trade.shares_amount
-
-            self.share_average_price_brl = last_portfolio_history.share_average_price_brl
-            self.share_average_price_usd = last_portfolio_history.share_average_price_usd
-            self.trade_profit_brl = round(
-                self.trade.total_cost_brl - ((self.trade.shares_amount * self.share_average_price_brl) + self.trade.tax_brl), 2)
-            self.trade_profit_usd = round(
-                self.trade.total_cost_usd - ((self.trade.shares_amount * self.share_average_price_usd) + self.trade.tax_usd), 2)
-
+            self.calculate_trade_profit()
         super(PortfolioHistory, self).save(*args, **kwargs)
 
-        # if self.trade.order == C
-        # than create or Update PortfolioInvestement
-        # falta criar uma logica para o USD e BRL diferente da para outros ativos. Considerando que USD e BRL são caixa do portfolio
         if self.trade.order == 'C':
             if PortfolioInvestment.objects.filter(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset)).exists():
-                portfolio_investment = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
-                portfolio_investment.share_average_price_brl = self.share_average_price_brl
-                portfolio_investment.share_average_price_usd = self.share_average_price_usd
-                if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
-                    portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
-                        self.trade.total_cost_usd
-                # elif portfolio_investment.asset == Asset.objects.get(ticker='BRL'):
-                #     portfolio_investment.shares_amount = portfolio_investment.shares_amount + \
-                #         self.trade.total_cost_brl
-                else:
-                    portfolio_investment.shares_amount = self.total_shares
-
-                portfolio_investment.save()
+                self.update_portfolio_investment()
             else:
-                PortfolioInvestment.objects.create(
-                    portfolio=self.portfolio,
-                    asset=Asset.objects.get(ticker=self.asset),
-                    broker=self.trade.broker,
-                    shares_amount=self.total_shares,
-                    share_average_price_brl=self.share_average_price_brl,
-                    share_average_price_usd=self.share_average_price_usd
-                )
-            # Update Portfolio Balance if asset is not USD will update USD balance
+                self.create_portfolio_investment()
             current_asset = Asset.objects.get(ticker=self.asset)
             if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
-                portfolio_balance.shares_amount = round((portfolio_balance.shares_amount - \
-                    self.trade.total_cost_usd), 2)
-                portfolio_balance.save()
+                self.update_portfolio_investment_usd()
             elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-                portfolio_balance.shares_amount = round((portfolio_balance.shares_amount - \
-                    self.trade.total_cost_brl), 2)
-                portfolio_balance.save()
+                self.update_portfolio_investment_brl()
             else:
-                # show if error the main currency for self.trade.broker.name is self.trade.broker.main_currency
                 pass
-                print(f'Warning: Main Currency for {self.trade.broker.name} is {self.trade.broker.main_currency}') # will continue execution but will show a warning
+                print(f'Warning: Main Currency for {self.trade.broker.name} is {self.trade.broker.main_currency}') 
 
+    def update_existing_portfolio_history(self):
+        last_portfolio_history = PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.asset).last()
+        self.total_shares = last_portfolio_history.total_shares + self.trade.shares_amount
+        self.share_average_price_brl = round((last_portfolio_history.total_shares * last_portfolio_history.share_average_price_brl + (self.trade.total_cost_brl + self.trade.tax_brl)) / self.total_shares, 2)
+        self.share_average_price_usd = round((last_portfolio_history.total_shares * last_portfolio_history.share_average_price_usd + (self.trade.total_cost_usd + self.trade.tax_usd)) / self.total_shares, 2)
+        self.trade_profit_brl = 0
+        self.trade_profit_usd = 0
 
+    def create_new_portfolio_history(self):
+        self.total_shares = self.trade.shares_amount
+        self.share_average_price_brl = round((self.trade.total_cost_brl + self.trade.tax_brl) / self.trade.shares_amount, 2)
+        self.share_average_price_usd = round((self.trade.total_cost_usd + self.trade.tax_usd) / self.trade.shares_amount, 2)
+        self.trade_profit_brl = 0
+        self.trade_profit_usd = 0
 
+    def calculate_trade_profit(self):
+        last_portfolio_history = PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.asset).last()
+        self.total_shares = last_portfolio_history.total_shares - self.trade.shares_amount
+        self.share_average_price_brl = last_portfolio_history.share_average_price_brl
+        self.share_average_price_usd = last_portfolio_history.share_average_price_usd
+        self.trade_profit_brl = round(self.trade.total_cost_brl - ((self.trade.shares_amount * self.share_average_price_brl) + self.trade.tax_brl), 2)
+        self.trade_profit_usd = round(self.trade.total_cost_usd - ((self.trade.shares_amount * self.share_average_price_usd) + self.trade.tax_usd), 2)
 
-        # elif self.trade.order == V
+    def update_portfolio_investment(self):
+        portfolio_investment = PortfolioInvestment.objects.get(portfolio=self.portfolio, asset=Asset.objects.get(ticker=self.asset), broker=self.trade.broker)
+        portfolio_investment.share_average_price_brl = self.share_average_price_brl
+        portfolio_investment.share_average_price_usd = self.share_average_price_usd
+        if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
+            portfolio_investment.shares_amount = portfolio_investment.shares_amount + self.trade.total_cost_usd
         else:
-            portfolio_investment = PortfolioInvestment.objects.get(
-                portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker=self.asset))
             portfolio_investment.shares_amount = self.total_shares
-            portfolio_investment.broker = self.trade.broker
-            portfolio_investment.share_average_price_brl = self.share_average_price_brl
-            portfolio_investment.share_average_price_usd = self.share_average_price_usd
-            portfolio_investment.trade_profit_brl = self.trade_profit_brl
-            portfolio_investment.save()
-
-            # Update Portfolio Balance if asset is not USD will update USD balance
-            current_asset = Asset.objects.get(ticker=self.asset)
-            if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
-                    self.trade.total_cost_usd
-                portfolio_balance.save()
-            elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
-                portfolio_balance = PortfolioInvestment.objects.get(
-                    portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount + \
-                    self.trade.total_cost_brl
-                portfolio_balance.save()
-            else:
-                pass
+        portfolio_investment.save()
+    
+    def create_portfolio_investment(self):
+        PortfolioInvestment.objects.create(
+            portfolio=self.portfolio,
+            asset=Asset.objects.get(ticker=self.asset),
+            broker=self.trade.broker,
+            shares_amount=self.total_shares,
+            share_average_price_brl=self.share_average_price_brl,
+            share_average_price_usd=self.share_average_price_usd
+        )
+    
+    def update_portfolio_balance_brl(self):
+        portfolio_balance = PortfolioInvestment.objects.get(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
+        portfolio_balance.shares_amount = portfolio_balance.shares_amount - self.trade.total_cost_brl
+        portfolio_balance.save()
+    
+    def update_portfolio_balance_usd(self):
+        portfolio_balance = PortfolioInvestment.objects.get(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
+        portfolio_balance.shares_amount = portfolio_balance.shares_amount - self.trade.total_cost_usd
+        portfolio_balance.save()
+        
 
 
 class PortfolioEvolution(models.Model):
