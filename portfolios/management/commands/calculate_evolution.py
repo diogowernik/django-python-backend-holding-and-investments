@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand
 import requests
 from portfolios.models import PortfolioHistory, PortfolioInvestment, PortfolioEvolution
 from categories.models import Category
+# date '2021-03-01'
+from datetime import datetime, timedelta
 
 # This file updates Trades from Degiro
 
@@ -33,5 +35,6 @@ class Command(BaseCommand):
                 category_id=index,
                 category_total_brl=row['total_today_brl'],
                 category_total_usd=row['total_today_usd'],
-                date='2023-02-01'
+                # date='2023-03-01' today
+                date=datetime.today().strftime('%Y-%m-%d')
             )

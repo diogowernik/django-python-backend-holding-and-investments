@@ -8,7 +8,7 @@ from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
 from dividends.models import Dividend
-from categories.models import Category
+from categories.models import Category, Tag
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 
@@ -46,6 +46,11 @@ class PortfolioInvestment(models.Model):
     total_cost_usd = models.FloatField(default=0, editable=False)
     total_today_usd = models.FloatField(default=0, editable=False)
 
+    # user can add tags to the investment
+    tags = models.ManyToManyField(Tag, blank=True)
+
+    
+
     def validate_unique(self, *args, **kwargs):
         super().validate_unique(*args, **kwargs)
         if self.__class__.objects.\
@@ -67,6 +72,13 @@ class PortfolioInvestment(models.Model):
             self.shares_amount * self.share_average_price_usd, 2)
         self.total_today_usd = round(
             self.shares_amount * self.asset.price_usd, 2)
+        # when save, if tag is not in the database, create it
+        for tag in self.tags.all():
+            if not Tag.objects.filter(name=tag.name).exists():
+                Tag.objects.create(name=tag.name)
+
+
+
 
         super(PortfolioInvestment, self).save(*args, **kwargs)
 
@@ -399,17 +411,22 @@ class PortfolioHistory(models.Model):
             if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
-                    self.trade.total_cost_usd
+                portfolio_balance.shares_amount = round((portfolio_balance.shares_amount - \
+                    self.trade.total_cost_usd), 2)
                 portfolio_balance.save()
             elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
                 portfolio_balance = PortfolioInvestment.objects.get(
                     portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-                portfolio_balance.shares_amount = portfolio_balance.shares_amount - \
-                    self.trade.total_cost_brl
+                portfolio_balance.shares_amount = round((portfolio_balance.shares_amount - \
+                    self.trade.total_cost_brl), 2)
                 portfolio_balance.save()
             else:
-                pass  # pass because the asset is USD or BRL
+                # show if error the main currency for self.trade.broker.name is self.trade.broker.main_currency
+                pass
+                print(f'Warning: Main Currency for {self.trade.broker.name} is {self.trade.broker.main_currency}') # will continue execution but will show a warning
+
+
+
 
         # elif self.trade.order == V
         else:
@@ -450,3 +467,4 @@ class PortfolioEvolution(models.Model):
         ordering = ['date']
         verbose_name = 'Evolução do Patrimonio'
         verbose_name_plural = 'Evolução do Patrimonio'
+
