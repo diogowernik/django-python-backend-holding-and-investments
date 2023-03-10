@@ -47,8 +47,8 @@ class PortfolioInvestment(models.Model):
     total_today_usd = models.FloatField(default=0, editable=False)
 
     # user can add tags to the investment
-    tags = models.ManyToManyField(Tag, blank=True)
-
+    # default = blank
+    tags = models.ManyToManyField(Tag, blank=True, default=None)
     
 
     def validate_unique(self, *args, **kwargs):
@@ -72,10 +72,6 @@ class PortfolioInvestment(models.Model):
             self.shares_amount * self.share_average_price_usd, 2)
         self.total_today_usd = round(
             self.shares_amount * self.asset.price_usd, 2)
-        # when save, if tag is not in the database, create it
-        for tag in self.tags.all():
-            if not Tag.objects.filter(name=tag.name).exists():
-                Tag.objects.create(name=tag.name)
 
 
 
@@ -219,6 +215,9 @@ class PortfolioDividend(models.Model):
         ('Stocks', 'Stocks'),
         ('REITs', 'REITs'),
         ('Propriedades', 'Propriedades'),
+        ('FII', 'Fundos Imobiliários'),
+        ('FI-Infra', 'Fundos Imobiliários'),
+        ('Ação', 'Ações Brasileiras'),
     )
     category = models.CharField(
         max_length=100, choices=categoryChoice, default='Ação')
@@ -358,12 +357,9 @@ class PortfolioHistory(models.Model):
                 self.create_portfolio_investment()
             current_asset = Asset.objects.get(ticker=self.asset)
             if self.trade.broker.main_currency == 'USD' and current_asset != Asset.objects.get(ticker='USD'):
-                self.update_portfolio_investment_usd()
+                self.update_portfolio_balance_usd()
             elif self.trade.broker.main_currency == 'BRL' and current_asset != Asset.objects.get(ticker='BRL'):
-                self.update_portfolio_investment_brl()
-            else:
-                pass
-                print(f'Warning: Main Currency for {self.trade.broker.name} is {self.trade.broker.main_currency}') 
+                self.update_portfolio_balance_brl()
 
     def update_existing_portfolio_history(self):
         last_portfolio_history = PortfolioHistory.objects.filter(portfolio=self.portfolio, asset=self.asset).last()

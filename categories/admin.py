@@ -15,9 +15,13 @@ class SubCategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ['slug']
 
+class TagsAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
 
 admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.SubCategory, SubCategoryAdmin)
+admin.site.register(models.Tag, TagsAdmin)
 # admin.site.unregister(User)
 # admin.site.unregister(Group)
 
