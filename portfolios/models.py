@@ -47,7 +47,6 @@ class PortfolioInvestment(models.Model):
     total_today_usd = models.FloatField(default=0, editable=False)
 
     # user can add tags to the investment
-    # default = blank
     tags = models.ManyToManyField(Tag, blank=True, default=None)
     
 
@@ -389,7 +388,7 @@ class PortfolioHistory(models.Model):
         portfolio_investment.share_average_price_brl = self.share_average_price_brl
         portfolio_investment.share_average_price_usd = self.share_average_price_usd
         if portfolio_investment.asset == Asset.objects.get(ticker='USD'):
-            portfolio_investment.shares_amount = portfolio_investment.shares_amount + self.trade.total_cost_usd
+            portfolio_investment.shares_amount = round(portfolio_investment.shares_amount + self.trade.total_cost_usd, 2)
         else:
             portfolio_investment.shares_amount = self.total_shares
         portfolio_investment.save()
@@ -406,15 +405,14 @@ class PortfolioHistory(models.Model):
     
     def update_portfolio_balance_brl(self):
         portfolio_balance = PortfolioInvestment.objects.get(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='BRL'))
-        portfolio_balance.shares_amount = portfolio_balance.shares_amount - self.trade.total_cost_brl
+        portfolio_balance.shares_amount = round(portfolio_balance.shares_amount - self.trade.total_cost_brl, 2)
         portfolio_balance.save()
     
     def update_portfolio_balance_usd(self):
         portfolio_balance = PortfolioInvestment.objects.get(portfolio=self.portfolio, broker=self.trade.broker, asset=Asset.objects.get(ticker='USD'))
-        portfolio_balance.shares_amount = portfolio_balance.shares_amount - self.trade.total_cost_usd
+        portfolio_balance.shares_amount = round(portfolio_balance.shares_amount - self.trade.total_cost_usd, 2)
         portfolio_balance.save()
         
-
 
 class PortfolioEvolution(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
