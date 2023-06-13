@@ -9,10 +9,10 @@ from . import models
 
 
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('id', 'ticker', 'price_brl', 'price_usd', 'category', 'subcategory',
+    list_display = ('id', 'is_radar', 'ticker', 'price_brl', 'price_usd', 'category', 'subcategory',
                     'twelve_m_dividend', 'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['category', 'subcategory', 'twelve_m_dividend',
+    list_editable = ['is_radar', 'category', 'subcategory', 'twelve_m_dividend',
                      'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w']
     list_filter = (('category', RelatedFieldListFilter),)
     search_fields = ['ticker']
@@ -23,7 +23,7 @@ class FiiAdmin(AssetAdmin):
 
 
 class BrStocksAdmin(AssetAdmin):
-    list_filter = (('subcategory', RelatedFieldListFilter),)
+    list_filter = (('subcategory', RelatedFieldListFilter),'is_radar',)
 
 
 class CryptoAdmin(AssetAdmin):

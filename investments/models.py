@@ -21,6 +21,8 @@ class Asset(models.Model):
     price_usd = models.FloatField(default=0)
     price_brl = models.FloatField(default=0)
 
+    is_radar = models.BooleanField(default=True)
+
     def __str__(self):
         return '{} | {} | {}'.format(self.ticker, self.price_brl, self.price_usd)
 

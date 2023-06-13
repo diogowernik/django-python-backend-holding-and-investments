@@ -23,7 +23,8 @@ class AssetSerializer(serializers.ModelSerializer):
             'price_usd',
             'id',
             'percentage_top_52w',
-            'percentage_bottom_52w'
+            'percentage_bottom_52w',
+            'is_radar'
         )
 
 

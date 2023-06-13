@@ -425,3 +425,4 @@ class PortfolioEvolution(models.Model):
         verbose_name = 'Evolução do Patrimonio'
         verbose_name_plural = 'Evolução do Patrimonio'
 
+
