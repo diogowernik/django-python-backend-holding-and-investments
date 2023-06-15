@@ -1,62 +1,54 @@
-# update fii price_brl
-import pandas as pd
 from django.core.management.base import BaseCommand
 from investments.models import Fii
-import requests
-
-# This file updates the fundamentalist data for Brazilian REITs (Fiis)
+from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe, update_prices_from_yahoo
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        print("Updating Fiis fundmentals data...")
+        newline = "\n"
+        bold_start = "\033[1m"
+        bold_end = "\033[0m"
 
-        # Get the data from the FundExplorer
-        url = 'https://docs.google.com/spreadsheets/d/1aOn6Fw_7arz-XcNB8KPIooK1Xgkg3lanRPh90PkB3O8/edit?usp=sharing'
-        header = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
-        r = requests.get(url, headers=header)
+        print(f"{bold_start}Atualizando Fundos Imobiliários...{bold_end}{newline}")
 
-        fii = pd.read_html(r.text,  decimal=',')[0]
-        fii = fii[['A', 'F', 'G', 'H']]
-        fii.columns = ['ticker', 'price_brl', 'top_52w',
-                        'bottom_52w']
-        fii = fii.drop([0, 1])
-        fii = fii.dropna(subset=['ticker'])
-        fii = fii.set_index('ticker')
+        # Fetching app data
+        app_df = get_app_df(Fii)
 
-        print(fii)
+        # Google fields from google sheets
+        print(f"{bold_start}Atualizando preço em reais, topo e fundo 52 semanas, pela planilha do google... ...{bold_end}{newline}")
 
-        queryset = Fii.objects.values_list("id", "ticker")
-        app_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
-        app_df = app_df.set_index('ticker')
-        print(app_df)
+        google_fiis_df = fetch_data(
+            'https://docs.google.com/spreadsheets/d/1aOn6Fw_7arz-XcNB8KPIooK1Xgkg3lanRPh90PkB3O8/edit?usp=sharing')
+        column_map_google = {'A': 'ticker', 'C': 'price_brl',
+                             'D': 'top_52w', 'E': 'bottom_52w'}
+        google_fiis_df = rename_set_index(google_fiis_df, column_map_google, 'ticker')
+        merged_google_fiis_df = merge_dataframes(app_df, google_fiis_df, "ticker")
+        print(merged_google_fiis_df)
+        update_investment(Fii, merged_google_fiis_df, ['price_brl', 'top_52w', 'bottom_52w'])
 
-        # Merge fii and app_df
-        df = app_df.merge(fii, left_on="ticker",
-                          right_on="ticker", how='inner')
+        print(f"{newline}{bold_start}Feito.{bold_end}")
 
-        # # Update fii
-        economia_df = pd.read_json(
-            f'https://economia.awesomeapi.com.br/json/last/USD-BRL').T.reset_index()
-        usd_brl_price = economia_df['bid'].astype(float)[0]
+        # Fundamentus fileds from fundamentus.com.br
+        print(
+            f"{newline}{bold_start}Atualizando campos do fundamentus.com.br...{bold_end}{newline}")
 
-        # add new column price_usd = price_brl / usd_brl_price
-        df['price_usd'] = df['price_brl'].astype(float) / usd_brl_price
-        df['price_usd'] = df['price_usd'].round(2)
-        print(df)
+        fundamentus_fiis_df = fetch_data(
+            'https://www.fundamentus.com.br/fii_resultado.php')
+        column_map_fundamentus = {'Papel': 'ticker', 'Segmento': 'setor', 'FFO Yield': 'ffo_yield', 'Dividend Yield': 'twelve_m_yield',
+                                  'P/VP': 'p_vpa', 'Valor de Mercado': 'market_cap', 'Liquidez': 'liqudity',
+                                  'Qtd de imóveis': 'assets', 'Preço do m2': 'price_m2', 'Aluguel por m2': 'rent_m2',
+                                  'Cap Rate': 'cap_rate', 'Vacância Média': 'vacancy'}
+        fundamentus_fiis_df = rename_set_index(fundamentus_fiis_df, column_map_fundamentus, 'ticker')
+        merged_google_fiis_df = merge_dataframes(app_df, google_fiis_df, "ticker")
+        transformations_for_fundamentus = {
+            'twelve_m_yield': 'remove_percent',
+            'p_vpa': 'divide_by_100'
+        }
+        merged_fundamentus_fiis_df = merge_dataframes(app_df, fundamentus_fiis_df, "ticker")
+        merged_fundamentus_fiis_df = preprocess_dataframe(merged_fundamentus_fiis_df, transformations_for_fundamentus)
+        print(merged_fundamentus_fiis_df)
+        update_investment(Fii, merged_fundamentus_fiis_df, ['twelve_m_yield', 'p_vpa', 'assets'])
+        update_ranking(Fii, "twelve_m_yield", "p_vpa")
 
-        for index, row in df.iterrows():
-            try:
-                fii = Fii.objects.get(id=row['id'])
-                fii.price_brl = row['price_brl']
-                fii.price_usd = row['price_usd']
-                fii.top_52w = row['top_52w']
-                fii.bottom_52w = row['bottom_52w']
-
-                fii.save()
-            except Fii.DoesNotExist:
-                print('Fii not found')
-
-        print("Fiis price, top, bottom updated!")
+        print(f"{newline}{bold_start}Feito.{bold_end}")

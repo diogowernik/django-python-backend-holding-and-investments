@@ -17,6 +17,7 @@ class Asset(models.Model):
     top_52w = models.FloatField(default=0)
     bottom_52w = models.FloatField(default=0)
     twelve_m_yield = models.FloatField(default=0)
+    ranking = models.FloatField(default=0)
 
     price_usd = models.FloatField(default=0)
     price_brl = models.FloatField(default=0)
@@ -52,7 +53,6 @@ class Fii(Asset):
     last_dividend = models.FloatField(default=0)
     last_yield = models.FloatField(default=0)
     six_m_yield = models.FloatField(default=0)
-    ranking = models.FloatField(default=0)
 
     def __str__(self):
         return '{}'.format(self.ticker)
@@ -66,8 +66,6 @@ class BrStocks(Asset):
     roic = models.FloatField(default=0)
     pl = models.FloatField(default=0)
     roe = models.FloatField(default=0)
-    ranking = models.FloatField(default=0)
-    ranking_all = models.FloatField(default=0)
 
     class Meta:
         verbose_name_plural = " Ações Brasileiras"

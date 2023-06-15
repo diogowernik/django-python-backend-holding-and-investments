@@ -9,7 +9,7 @@ from . import models
 
 
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('id', 'is_radar', 'ticker', 'price_brl', 'price_usd', 'category', 'subcategory',
+    list_display = ('id', 'ranking' ,'is_radar', 'ticker', 'price_brl', 'price_usd', 'category', 'subcategory',
                     'twelve_m_dividend', 'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['is_radar', 'category', 'subcategory', 'twelve_m_dividend',
