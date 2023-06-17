@@ -40,9 +40,12 @@ def preprocess_dataframe(df, transformations):
             df[column] = df[column].str.replace(',', '.')
             df[column] = df[column].str.replace('%', '')
         elif operation == 'divide_by_100':
-            # string to float
-            df[column] = df[column].astype(float)
-            df[column] = df[column] / 100
+            df[column] = df[column].apply(lambda x: str(x).replace('.', '').replace(',', '.') if pd.notnull(x) else x)
+            df[column] = df[column].astype(float) / 100
+            df[column] = df[column].round(2)
+        elif operation == 'remove_dot':
+            df[column] = df[column].apply(lambda x: str(x).replace('.', '') if pd.notnull(x) else x)
+            df[column] = df[column].astype(float) 
     return df
 
 def rename_set_index(df, column_map, index_column):

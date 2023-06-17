@@ -34,3 +34,19 @@ class BrStocksList(generics.ListAPIView):
 
     def get_queryset(self):
         return models.BrStocks.objects.all()
+    
+class ReitsList(generics.ListAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.ReitsSerializer
+    # permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        return models.Reit.objects.all()
+    
+class StocksList(generics.ListAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.StocksSerializer
+    # permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        return models.Stocks.objects.all()

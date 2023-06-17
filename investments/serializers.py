@@ -24,7 +24,8 @@ class AssetSerializer(serializers.ModelSerializer):
             'id',
             'percentage_top_52w',
             'percentage_bottom_52w',
-            'is_radar'
+            'is_radar',
+            'ranking',
         )
 
 
@@ -44,8 +45,20 @@ class FiiSerializer(serializers.ModelSerializer):
             'last_yield',
             'six_m_yield',
             'twelve_m_yield',
+            'ffo_yield',
+            'market_cap',
+            'liquidity',
+            'assets',
+            'price_m2',
+            'rent_m2',
+            'cap_rate',
+            'vacancy',
             'p_vpa',
-            'ranking'
+            'ranking',
+            'percentage_top_52w',
+            'percentage_bottom_52w',
+            'is_radar',
+            'ranking',
         )
 
 
@@ -68,5 +81,47 @@ class BrStocksSerializer(serializers.ModelSerializer):
             'pl',
             'p_vpa',
             'ranking',
-            'ranking_all'
+            'is_radar',
+            'percentage_top_52w',
+            'percentage_bottom_52w',
+        )
+    
+    # reits and stocks
+
+class ReitsSerializer(serializers.ModelSerializer):
+    subcategory = serializers.CharField(source='subcategory.name')
+
+    class Meta:
+        model = models.Reit
+        fields = (
+            'id',
+            'ticker',
+            'slug',
+            'price_brl',
+            'price_usd',
+            'subcategory',
+            'twelve_m_yield',
+            'ranking',
+            'is_radar',
+            'percentage_top_52w',
+            'percentage_bottom_52w',
+        )
+
+class StocksSerializer(serializers.ModelSerializer):
+    subcategory = serializers.CharField(source='subcategory.name')
+
+    class Meta:
+        model = models.Stocks
+        fields = (
+            'id',
+            'ticker',
+            'slug',
+            'price_brl',
+            'price_usd',
+            'subcategory',
+            'twelve_m_yield',
+            'ranking',
+            'is_radar',
+            'percentage_top_52w',
+            'percentage_bottom_52w',
         )

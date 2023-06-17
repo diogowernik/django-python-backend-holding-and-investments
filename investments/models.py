@@ -54,6 +54,17 @@ class Fii(Asset):
     last_yield = models.FloatField(default=0)
     six_m_yield = models.FloatField(default=0)
 
+    # from fundamentus
+    ffo_yield = models.FloatField(default=0)
+    market_cap = models.FloatField(default=0)
+    liquidity = models.FloatField(default=0)
+    assets = models.FloatField(default=0)
+    price_m2 = models.FloatField(default=0)
+    rent_m2 = models.FloatField(default=0)
+    cap_rate = models.FloatField(default=0)
+    vacancy = models.FloatField(default=0)
+
+
     def __str__(self):
         return '{}'.format(self.ticker)
 

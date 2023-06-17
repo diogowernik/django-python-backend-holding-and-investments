@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 # Renomeia colunas
                 {'Papel': 'ticker', 'Segmento': 'setor', 'FFO Yield': 'ffo_yield',
                 'Dividend Yield': 'twelve_m_yield', 'P/VP': 'p_vpa',
-                'Valor de Mercado': 'market_cap', 'Liquidez': 'liqudity',
+                'Valor de Mercado': 'market_cap', 'Liquidez': 'liquidity',
                 'Qtd de imóveis': 'assets', 'Preço do m2': 'price_m2',
                 'Aluguel por m2': 'rent_m2', 'Cap Rate': 'cap_rate',
                 'Vacância Média': 'vacancy'
@@ -41,10 +41,17 @@ class Command(BaseCommand):
                 # Transformações a serem aplicadas a certos campos
                 {
                     'twelve_m_yield': 'remove_percent', 
-                    'p_vpa': 'divide_by_100'
+                    'ffo_yield': 'remove_percent',
+                    'cap_rate': 'remove_percent',
+                    'vacancy': 'remove_percent',
+                    'p_vpa': 'divide_by_100',
+                    'price_m2': 'divide_by_100',
+                    'rent_m2': 'divide_by_100',
+                    'market_cap': 'remove_dot',
+                    'liquidity': 'remove_dot',   
                  }, 
                  # Campos a serem atualizados
-                ['twelve_m_yield', 'p_vpa', 'assets'],
+                ['twelve_m_yield', 'p_vpa', 'assets', 'price_m2', 'rent_m2', 'cap_rate', 'vacancy', 'ffo_yield', 'market_cap', 'liquidity'],
                 # "magic formula" de ranking
                 "twelve_m_yield", "p_vpa"
             )
