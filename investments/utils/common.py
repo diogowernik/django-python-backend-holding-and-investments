@@ -11,8 +11,8 @@ def fetch_data(url):
     return pd.read_html(r.text, decimal=',')[0]
 
 def get_app_df(AppModel): # Ex AppModel = Fii
-    queryset = AppModel.objects.values_list("id", "ticker")
-    app_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
+    queryset = AppModel.objects.values_list("id", "ticker", "is_radar")
+    app_df = pd.DataFrame(list(queryset), columns=["id", "ticker", "is_radar"])
     return app_df.set_index('ticker')
 
 def get_yahoo_prices(ticker_list):
@@ -28,7 +28,7 @@ def get_yahoo_prices(ticker_list):
         df["price_brl"] = df["price_brl"].round(2)
     return df.set_index('ticker')
 
-def get_usd_today():
+def get_usd_to_brl_today():
     economia_df = pd.read_json('https://economia.awesomeapi.com.br/json/last/USD-BRL').T.reset_index()
     return economia_df['bid'].astype(float)[0]
 
@@ -115,12 +115,12 @@ def update_investment_price(AppModel, df, usd_brl_price):
     df['price_usd'] = df['price_usd'].round(2)
     update_investment(AppModel, df, ['price_brl', 'price_usd'])
 
-def update_prices_from_yahoo(AppModel):
-    print(f"Updating {AppModel.__name__} price_brl and price_usd from yahoo finance")
-    app_df = get_app_df(AppModel)
-    ticker_list = app_df.index.tolist()
-    yahoo_df = get_yahoo_prices(ticker_list)
-    merged_df = merge_dataframes(app_df, yahoo_df, on_column="ticker")
-    usd_brl_price = get_usd_today()
-    update_investment_price(AppModel, merged_df, usd_brl_price)
-    print(f"{AppModel.__name__} price_brl and price_usd updated")
+def create_df_from_api(api_key, url, columns, ticker_data_map):
+    df = pd.DataFrame(columns=columns)
+    for ticker in ticker_data_map:
+        response = requests.get(f'{url}/{ticker}?apikey={api_key}')
+        data = response.json()[0]
+        row_data = {'ticker': ticker}
+        row_data.update({key: ticker_data_map[key](data) for key in ticker_data_map})
+        df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
+    return df

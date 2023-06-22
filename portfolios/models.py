@@ -48,6 +48,10 @@ class PortfolioInvestment(models.Model):
 
     # user can add tags to the investment
     tags = models.ManyToManyField(Tag, blank=True, default=None)
+
+    # is_radar and desired_percentage fields
+    is_radar = models.BooleanField(default=False)
+    desired_percentage = models.FloatField(default=0)
     
 
     def validate_unique(self, *args, **kwargs):

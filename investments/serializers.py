@@ -26,6 +26,7 @@ class AssetSerializer(serializers.ModelSerializer):
             'percentage_bottom_52w',
             'is_radar',
             'ranking',
+            'ideal_percentage',
         )
 
 
@@ -59,6 +60,9 @@ class FiiSerializer(serializers.ModelSerializer):
             'percentage_bottom_52w',
             'is_radar',
             'ranking',
+            'is_leveraged',
+            'leverage_percentage',
+            'ideal_percentage',
         )
 
 
@@ -105,6 +109,14 @@ class ReitsSerializer(serializers.ModelSerializer):
             'is_radar',
             'percentage_top_52w',
             'percentage_bottom_52w',
+            'der',
+            'ffo',
+            'p_ffo',
+            'p_vpa',
+            'roic',
+            'earnings_yield',
+            'ffo_yield',
+            'ideal_percentage',  
         )
 
 class StocksSerializer(serializers.ModelSerializer):
@@ -124,4 +136,12 @@ class StocksSerializer(serializers.ModelSerializer):
             'is_radar',
             'percentage_top_52w',
             'percentage_bottom_52w',
+            'der',
+            'ffo',
+            'p_ffo',
+            'p_vpa',
+            'roic',
+            'earnings_yield',
+            'ffo_yield',
+            'ideal_percentage',  
         )

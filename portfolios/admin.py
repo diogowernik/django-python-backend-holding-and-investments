@@ -1,9 +1,9 @@
 from django.contrib import admin
-from django.contrib.admin import RelatedFieldListFilter, SimpleListFilter, TabularInline, ModelAdmin, StackedInline
+from django.contrib.admin import RelatedFieldListFilter
 from . import models
 from django.contrib.admin.views.main import ChangeList
-from django.db.models import Count, Sum
-
+from django.db.models import Sum
+from django import forms
 
 class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner')
@@ -22,6 +22,8 @@ class PortfolioInvestmentSum(ChangeList):
 class PortfolioInvestmentAdmin(admin.ModelAdmin):
     list_display = (
         'asset',
+        'is_radar',
+        'desired_percentage',
         'broker',
         'shares_amount',
         'share_average_price_brl',
@@ -38,8 +40,10 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
         'portfolio',
         'category'
     )
-    # list_editable = ['shares_amount', 'share_average_price_usd', 'share_average_price_brl',
-    #                  'portfolio', 'broker']
+    # list_editable = [
+    #     'is_radar',
+    #     'desired_percentage',
+    # ]
     list_filter = [
         ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), 'asset__category', ]
 

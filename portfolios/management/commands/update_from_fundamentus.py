@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from investments.models import BrStocks, Fii
-from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe, update_prices_from_yahoo
+from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe
 
 def update_data_from_fundamentus(AppModel, fetch_url, column_map, transformations, update_fields, ranking1, ranking2):
     newline = "\n"
@@ -53,7 +53,7 @@ class Command(BaseCommand):
                  # Campos a serem atualizados
                 ['twelve_m_yield', 'p_vpa', 'assets', 'price_m2', 'rent_m2', 'cap_rate', 'vacancy', 'ffo_yield', 'market_cap', 'liquidity'],
                 # "magic formula" de ranking
-                "twelve_m_yield", "p_vpa"
+                "ffo_yield", "p_vpa"
             )
         except Exception as e:
             errors.append(f"Erro ao atualizar Fii: {str(e)}")

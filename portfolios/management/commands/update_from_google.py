@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from investments.models import BrStocks, Fii, Stocks, Reit
-from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe, update_prices_from_yahoo
+from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment
 
 def update_data_from_google(AppModel, sheet_url):
     newline = "\n"

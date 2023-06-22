@@ -24,6 +24,17 @@ class Asset(models.Model):
 
     is_radar = models.BooleanField(default=True)
 
+    leveragedChoices = (
+        ('Sim', 'Sim'),
+        ('Não', 'Não'),
+        ('Sem Classificação', 'Sem Classificação'),
+    )
+    is_leveraged = models.CharField(
+        max_length=255, choices=leveragedChoices, default='Sem Classificação')
+    leverage_percentage = models.FloatField(default=0)
+
+    ideal_percentage = models.FloatField(default=0)
+
     def __str__(self):
         return '{} | {} | {}'.format(self.ticker, self.price_brl, self.price_usd)
 
@@ -56,6 +67,7 @@ class Fii(Asset):
 
     # from fundamentus
     ffo_yield = models.FloatField(default=0)
+    p_ffo = models.FloatField(default=0)
     market_cap = models.FloatField(default=0)
     liquidity = models.FloatField(default=0)
     assets = models.FloatField(default=0)
@@ -63,6 +75,15 @@ class Fii(Asset):
     rent_m2 = models.FloatField(default=0)
     cap_rate = models.FloatField(default=0)
     vacancy = models.FloatField(default=0)
+
+    
+
+    @property
+    def p_ffo(self):
+        try:
+            return round(1 / (self.ffo_yield * 100), 2)
+        except ZeroDivisionError:
+            return 0
 
 
     def __str__(self):
@@ -143,11 +164,17 @@ class PrivateAsset(Asset):
     class Meta:
         verbose_name_plural = "Patrimônio Particular"
 
-# class InternationalAssets abstract class
-
 
 class InternationalAssets(Asset):
     is_dividend_aristocrat = models.BooleanField(default=False)
+    der = models.FloatField(default=0)
+    ffo = models.FloatField(default=0)
+    p_ffo = models.FloatField(default=0)
+    earnings_yield = models.FloatField(default=0)
+    roic = models.FloatField(default=0)
+    ffo_yield = models.FloatField(default=0)
+
+    
 
     class Meta:
         abstract = True
