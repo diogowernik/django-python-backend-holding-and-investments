@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'admin_auto_filters',
+    'radar',
 
 ]
 
