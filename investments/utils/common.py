@@ -1,6 +1,24 @@
 import pandas as pd
 import requests
 import yfinance as yf
+import logging
+
+logging.basicConfig(filename='error.log', level=logging.ERROR)
+
+def create_df_from_api(url, columns, ticker_data_map, api_key, tickers):
+    df = pd.DataFrame(columns=columns)
+    for ticker in tickers:
+        response = requests.get(f'{url}/{ticker}?apikey={api_key}')
+        data = response.json()[0]
+        row_data = {'ticker': ticker}
+        for key in ticker_data_map:
+            try:
+                row_data[key] = ticker_data_map[key](data)
+            except Exception as e:
+                logging.error(f'Error while processing {key} for ticker {ticker}: {e}')
+                print(f'Error while processing {key} for ticker {ticker}: {e}')
+        df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
+    return df
 
 # data fetcher
 def fetch_data(url):
@@ -29,6 +47,8 @@ def get_yahoo_prices(ticker_list):
     return df.set_index('ticker')
 
 def get_usd_to_brl_today():
+    print('preço do dólar hoje from economia awesomeapi')
+
     economia_df = pd.read_json('https://economia.awesomeapi.com.br/json/last/USD-BRL').T.reset_index()
     return economia_df['bid'].astype(float)[0]
 
@@ -115,12 +135,3 @@ def update_investment_price(AppModel, df, usd_brl_price):
     df['price_usd'] = df['price_usd'].round(2)
     update_investment(AppModel, df, ['price_brl', 'price_usd'])
 
-def create_df_from_api(api_key, url, columns, ticker_data_map):
-    df = pd.DataFrame(columns=columns)
-    for ticker in ticker_data_map:
-        response = requests.get(f'{url}/{ticker}?apikey={api_key}')
-        data = response.json()[0]
-        row_data = {'ticker': ticker}
-        row_data.update({key: ticker_data_map[key](data) for key in ticker_data_map})
-        df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
-    return df

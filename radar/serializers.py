@@ -36,6 +36,7 @@ class RadarAssetSerializer(serializers.ModelSerializer):
     portfolio_total_value = serializers.FloatField(source='radar.portfolio_total_value')
     category = serializers.CharField(source='asset.category.name')
     asset = serializers.CharField(source='asset.ticker')
+    category_total_value = serializers.FloatField(source='radar_category.category_total_value')
 
     class Meta:
         model = RadarAsset

@@ -11,6 +11,7 @@ from djoser.views import (
 from portfolios import views as portfolio_views
 from brokers import views as broker_views
 from investments import views as investment_views
+from radar import views as radar_views
 from .views import home
 
 
@@ -68,6 +69,13 @@ urlpatterns = [
      path('api/br_stocks/', investment_views.BrStocksList.as_view()),
      path('api/reits/', investment_views.ReitsList.as_view()),
      path('api/stocks/', investment_views.StocksList.as_view()),
+     path('api/portfolios/<pk>/radars',
+          radar_views.RadarList.as_view()),
+     path('api/radars/<pk>', radar_views.RadarDetail.as_view()),
+     path('api/radars/<pk>/categories',
+          radar_views.RadarCategoryList.as_view()),
+     path('api/radars/<pk>/assets', radar_views.RadarAssetList.as_view()),
+
 
      url(r'^$', home, name='home'),
 
