@@ -19,6 +19,7 @@ class RadarCategoryAdmin(admin.ModelAdmin):
         'category_total_value', 
         'delta_ideal_actual_percentage'
         )
+    list_editable = ['ideal_category_percentage']
 
 class RadarAssetAdmin(admin.ModelAdmin):
     list_display = (

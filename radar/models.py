@@ -59,6 +59,8 @@ class RadarCategory(models.Model):
     
     class Meta:
         unique_together = ['radar', 'category']
+
+    # precisa criar ação que quando atualiza o ideal_category_percentage, atualiza todos ideal_asset_percentage_on_portfolio
     
 class RadarAsset(models.Model):
     radar = models.ForeignKey(Radar, on_delete=models.CASCADE)
