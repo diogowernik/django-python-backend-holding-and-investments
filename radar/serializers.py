@@ -62,7 +62,8 @@ class RadarAssetSerializer(serializers.ModelSerializer):
     portfolio_total_value = serializers.FloatField(source='radar.portfolio_total_value')
     category = serializers.CharField(source='asset.category.name')
     asset = serializers.CharField(source='asset.ticker')
-    category_total_value = serializers.FloatField(source='radar_category.category_total_value')
+    # category_total_value = serializers.FloatField(source='radar_category.category_total_value')
+    category_total_value = serializers.SerializerMethodField()
     radar_id = serializers.IntegerField(source='radar.id')
     id = serializers.IntegerField(source='radar.portfolio.id')
     portfolio = serializers.CharField(source='radar.portfolio.name')
@@ -71,6 +72,13 @@ class RadarAssetSerializer(serializers.ModelSerializer):
 
     delta_ideal_actual_percentage_on_portfolio = serializers.SerializerMethodField()
     delta_ideal_actual_percentage_on_category = serializers.SerializerMethodField()
+
+    def get_category_total_value(self, obj):
+        # Verifica se radar_category é None antes de tentar acessar category_total_value
+        if obj.radar_category is not None:
+            return obj.radar_category.category_total_value
+        else:
+            return 0
 
     class Meta:
         model = RadarAsset

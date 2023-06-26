@@ -76,10 +76,11 @@ class RadarAsset(models.Model):
 
     @property
     def portfolio_investment_percentage_on_category(self):
-        if self.radar_category and self.radar_category.category_total_value != 0:
+        if self.radar_category is not None and self.radar_category.category_total_value != 0:
             return self.portfolio_investment_total_value / self.radar_category.category_total_value
         else:
             return 0
+
 
     @property
     def portfolio_investment_percentage_on_portfolio(self):
