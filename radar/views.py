@@ -20,18 +20,19 @@ class RadarDetail(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = serializers.RadarDetailSerializer
     queryset = Radar.objects.all()
+
     
-
 class RadarCategoryList(generics.ListAPIView):
-
     serializer_class = serializers.RadarCategorySerializer
 
     def get_queryset(self):
-        return RadarCategory.objects.filter(radar_id=self.kwargs['pk']).order_by('-delta_ideal_actual_percentage')
+        queryset = RadarCategory.objects.filter(radar_id=self.kwargs['pk'])
+        return sorted(queryset, key=lambda x: x.delta_ideal_actual_percentage, reverse=True)
+
 
 class RadarAssetList(generics.ListAPIView):
-
     serializer_class = serializers.RadarAssetSerializer
 
     def get_queryset(self):
-        return RadarAsset.objects.filter(radar_id=self.kwargs['pk']).order_by('-delta_ideal_actual_percentage_on_portfolio')
+        queryset = RadarAsset.objects.filter(radar_id=self.kwargs['pk'])
+        return sorted(queryset, key=lambda x: x.delta_ideal_actual_percentage_on_portfolio, reverse=True)

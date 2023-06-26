@@ -23,7 +23,6 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
     list_display = (
         'asset',
         'is_radar',
-        'desired_percentage',
         'broker',
         'shares_amount',
         'share_average_price_brl',
@@ -40,10 +39,6 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
         'portfolio',
         'category'
     )
-    # list_editable = [
-    #     'is_radar',
-    #     'desired_percentage',
-    # ]
     list_filter = [
         ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), 'asset__category', ]
 

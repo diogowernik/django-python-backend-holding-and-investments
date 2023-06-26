@@ -34,7 +34,12 @@ class RadarAssetAdmin(admin.ModelAdmin):
         'delta_ideal_actual_percentage_on_category',
         'delta_ideal_actual_percentage_on_portfolio',
     )
-    list_filter = (('radar', RelatedFieldListFilter),)
+    list_filter = (
+        ('radar', RelatedFieldListFilter),
+        ('asset__category', RelatedFieldListFilter),
+        )
+    list_editable = ['ideal_asset_percentage_on_category']
+    
     search_fields = ['asset__ticker']
 
 admin.site.register(models.Radar, RadarAdmin)
