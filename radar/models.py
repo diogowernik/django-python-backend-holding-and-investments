@@ -3,8 +3,9 @@ from django.db import models
 from portfolios.models import Portfolio, PortfolioInvestment
 from categories.models import Category
 from investments.models import Asset
-
 from django.db.models import Sum
+from django.core.exceptions import ObjectDoesNotExist
+
 
 class Radar(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
@@ -44,7 +45,8 @@ class RadarCategory(models.Model):
         return delta if delta > 0 else 0
 
     def __str__(self):
-        return self.category.name + ' - ' + str(self.category_total_value)
+        # id | radar | category
+        return str(self.id) + ' | ' + self.radar.name + ' | ' + str(self.category.name)
     
     def clean(self):
         if not 0 <= self.ideal_category_percentage <= 1:
@@ -62,12 +64,21 @@ class RadarCategory(models.Model):
 
     
 class RadarAsset(models.Model):
-    radar = models.ForeignKey(Radar, on_delete=models.CASCADE, default=1)
+    radar = models.ForeignKey(Radar, on_delete=models.CASCADE, default=2)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    radar_category = models.ForeignKey(RadarCategory, on_delete=models.CASCADE, editable=False, null=True, blank=True)
-
     ideal_asset_percentage_on_category = models.FloatField(default=0.1)
-    ideal_asset_percentage_on_portfolio = models.FloatField(default=0, editable=False)
+    # Campo definido no save()
+    radar_category = models.ForeignKey(RadarCategory, on_delete=models.CASCADE, default=6)
+
+    # def save(self, *args, **kwargs):
+    #         # Tenta obter o RadarCategory correspondente.
+    #     try:
+    #         if self.asset and self.radar:
+    #             self.radar_category = RadarCategory.objects.get(radar=self.radar, category=self.asset.category)
+    #     except ObjectDoesNotExist:
+    #         raise ValidationError("Você precisa adicionar uma RadarCategory equivalente para adicionar este ativo.")
+            
+    #     super().save(*args, **kwargs)
 
     # Campos calculados automaticamente quando acessados
     @property
@@ -76,11 +87,11 @@ class RadarAsset(models.Model):
 
     @property
     def portfolio_investment_percentage_on_category(self):
-        if self.radar_category is not None and self.radar_category.category_total_value != 0:
-            return self.portfolio_investment_total_value / self.radar_category.category_total_value
-        else:
-            return 0
+            return self.portfolio_investment_total_value * self.radar_category.category_total_value
 
+    @property
+    def ideal_asset_percentage_on_portfolio(self):
+        return self.ideal_asset_percentage_on_category * self.radar_category.ideal_category_percentage
 
     @property
     def portfolio_investment_percentage_on_portfolio(self):
