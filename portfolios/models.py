@@ -8,7 +8,7 @@ from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
 from dividends.models import Dividend
-from categories.models import Category, Tag
+from categories.models import Category
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 
@@ -24,13 +24,11 @@ class Portfolio(models.Model):
     class Meta:
         verbose_name_plural = " Portfolios"
 
-
 class PortfolioInvestment(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     shares_amount = models.FloatField()
-    is_radar = models.BooleanField(default=False) # para saber quais campos vou atualizar nos updates
 
     # Estes campos são calculados com base no PortfolioDividend, será que vale a pena remover eles daqui e criar um classe PortfolioCalculatedValues ou outro nome one-to-one?
     dividends_profit_brl = models.FloatField(default=0, editable=False)
@@ -121,8 +119,6 @@ class PortfolioInvestment(models.Model):
         unique_together = ['portfolio', 'asset', 'broker']
 
 
-
-
 class PortfolioEvolution(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
@@ -133,8 +129,6 @@ class PortfolioEvolution(models.Model):
         ordering = ['date']
         verbose_name = 'Evolução do Patrimonio'
         verbose_name_plural = 'Evolução do Patrimonio'
-
-
 
 class PortfolioDividend(models.Model):
     # portfolio_asset = models.ForeignKey(

@@ -20,7 +20,6 @@ class PortfolioInvestmentSum(ChangeList):
 class PortfolioInvestmentAdmin(admin.ModelAdmin):
     list_display = (
         'asset',
-        'is_radar',
         'broker',
         'shares_amount',
         'share_average_price_brl',
@@ -37,6 +36,7 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
         'portfolio',
         'category'
     )
+    list_editable = ['shares_amount']
     list_filter = [
         ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), 'asset__category', ]
 
@@ -50,8 +50,6 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
 
     def get_changelist(self, request):
         return PortfolioInvestmentSum
-
-
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
     list_display = (
@@ -87,8 +85,6 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
     def yield_usd(self, obj):
         return str(format(float(obj.yield_on_cost_usd * 100), '.2f') + '%')
 
-
-
 class PortfolioEvolutionAdmin(admin.ModelAdmin):
     list_display = (
         'date',
@@ -101,7 +97,6 @@ class PortfolioEvolutionAdmin(admin.ModelAdmin):
     list_filter = (
         ('portfolio', RelatedFieldListFilter),
     )
-
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioInvestment, PortfolioInvestmentAdmin)
