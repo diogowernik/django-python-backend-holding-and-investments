@@ -49,7 +49,6 @@ urlpatterns = [
      path('auth/token/login/', TokenCreateView.as_view(), name='login'),
 
      path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
-     path('api/trade/', portfolio_views.PortfolioTradeList.as_view()),
      path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),
      path('api/portfolios/<pk>/assets',
           portfolio_views.PortfolioInvestmentList.as_view()),

@@ -77,33 +77,6 @@ class CategorySerializer(serializers.ModelSerializer):
         )
 
 
-class PortfolioTradeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PortfolioTrade
-        fields = (
-            'order',
-            'date',
-            'portfolio',
-            'asset',
-            'broker',
-            'shares_amount',
-            'share_cost_brl',
-            'share_cost_usd',
-        )
-
-
-# class PortfolioHistorySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.PortfolioHistory
-#         fields = (
-#             'date',
-#             'portfolio',
-#             'total_brl',
-#             'order_value',
-#             'quotas_amount',
-#             'quota_price',
-#         )
-
 
 class PortfolioDividendSerializer(serializers.ModelSerializer):
     class Meta:

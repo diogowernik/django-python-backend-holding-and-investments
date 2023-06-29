@@ -9,7 +9,6 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner')
     list_editable = ['owner']
 
-
 class PortfolioInvestmentSum(ChangeList):
     def get_results(self, *args, **kwargs):
         super(PortfolioInvestmentSum, self).get_results(*args, **kwargs)
@@ -17,7 +16,6 @@ class PortfolioInvestmentSum(ChangeList):
             q = self.result_list.aggregate(
                 portfolio_asset_sum=Sum('total_today_brl'))
             self.portfolio_asset_sum = round(q['portfolio_asset_sum'], 2)
-
 
 class PortfolioInvestmentAdmin(admin.ModelAdmin):
     list_display = (
@@ -53,38 +51,6 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
     def get_changelist(self, request):
         return PortfolioInvestmentSum
 
-
-class PortfolioTradeAdmin(admin.ModelAdmin):
-    list_display = (
-        'date',
-        'asset',
-        'category',
-        'order',
-        'broker',
-        'shares_amount',
-
-        'share_cost_brl',
-        'total_cost_brl',
-        'tax_brl',
-
-        'share_cost_usd',
-        'total_cost_usd',
-        'tax_usd',
-
-        'usd_on_date',
-        'portfolio'
-    )
-    list_editable = [
-        'broker',
-        'category',
-    ]
-    list_filter = (
-        ('broker', RelatedFieldListFilter),
-        ('portfolio', RelatedFieldListFilter),
-        ('broker', RelatedFieldListFilter),
-        'category',
-        'asset',
-    )
 
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
@@ -122,41 +88,6 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
         return str(format(float(obj.yield_on_cost_usd * 100), '.2f') + '%')
 
 
-class PortfolioHistoryAdmin(admin.ModelAdmin):
-    list_display = (
-        'date',
-        'asset',
-        'order',
-
-        'shares_amount',
-        'total_shares',
-
-        'share_cost_brl',
-        'share_average_price_brl',
-        'total_cost_brl',
-        'total_on_date_brl',
-        'tax_brl',
-        'trade_profit_brl',
-
-        # 'share_cost_usd',
-        # 'share_average_price_usd',
-        # 'total_cost_usd',
-        # 'total_on_date_usd',
-        # 'tax_usd',
-        # 'trade_profit_usd'
-
-    )
-    list_filter = (
-        ('portfolio', RelatedFieldListFilter),
-        'asset',
-    )
-
-#     def profit_percentage(self, obj):
-#         return str(format(float(obj.profit * 100), '.2f') + ' %')
-
-#     def historical_percentage(self, obj):
-#         return str(format(float(obj.historical_profit * 100), '.2f') + ' %')
-
 
 class PortfolioEvolutionAdmin(admin.ModelAdmin):
     list_display = (
@@ -174,7 +105,5 @@ class PortfolioEvolutionAdmin(admin.ModelAdmin):
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)
 admin.site.register(models.PortfolioInvestment, PortfolioInvestmentAdmin)
-admin.site.register(models.PortfolioTrade, PortfolioTradeAdmin)
-admin.site.register(models.PortfolioHistory, PortfolioHistoryAdmin)
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
 admin.site.register(models.PortfolioEvolution, PortfolioEvolutionAdmin)

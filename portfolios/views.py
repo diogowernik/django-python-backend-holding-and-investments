@@ -53,17 +53,6 @@ class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, )
 
 
-# class PortfolioHistoryList(generics.ListAPIView):
-#     authentication_classes = (TokenAuthentication,)
-#     serializer_class = serializers.PortfolioHistorySerializer
-#     permission_classes = (IsAuthenticated, )
-
-#     def get_queryset(self):
-#         return models.PortfolioHistory.objects.filter(
-#             portfolio_id=self.kwargs['pk'],
-#         )
-
-
 class CategoryList(generics.ListAPIView):
     authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.CategorySerializer
@@ -76,18 +65,6 @@ class CategoryList(generics.ListAPIView):
         response = super(CategoryList, self).list(request, *args, **kwargs)
 
         return response
-
-
-class PortfolioTradeList(generics.ListCreateAPIView):
-    authentication_classes = (TokenAuthentication,)
-    serializer_class = serializers.PortfolioTradeSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def get_queryset(self):
-        return models.PortfolioTrade.objects.all()
-
-    def perform_create(self, serializer):
-        serializer.save()
 
 
 class PortfolioDividendList(generics.ListAPIView):
