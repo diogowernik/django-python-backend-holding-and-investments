@@ -28,7 +28,7 @@ class CryptoAdmin(AssetAdmin):
     list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
-class CurrencyAdmin(AssetAdmin):
+class CurrencyHoldingAdmin(AssetAdmin):
     list_filter = (('subcategory', RelatedFieldListFilter),)
 
 
@@ -58,7 +58,7 @@ class ReitAdmin(AssetAdmin):
 admin.site.register(models.Fii, FiiAdmin)
 admin.site.register(models.Stocks, StocksAdmin)
 admin.site.register(models.Crypto, CryptoAdmin)
-admin.site.register(models.Currency, CurrencyAdmin)
+admin.site.register(models.CurrencyHolding, CurrencyHoldingAdmin)
 admin.site.register(models.FixedIncome, FixedIncomeAdmin)
 admin.site.register(models.InvestmentFunds, InvestmentFundsAdmin)
 admin.site.register(models.PrivateAsset, PrivateAssetAdmin)

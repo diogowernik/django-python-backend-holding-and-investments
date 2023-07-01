@@ -2,6 +2,16 @@ from django.db import models
 
 # Create your models here.
 
+class Currency(models.Model):
+    ticker = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    price_brl = models.FloatField(default=0)
+    price_usd = models.FloatField(default=0)
+
+    def __str__(self):
+        return f"{self.ticker} - {self.price_brl} - {self.price_usd}"
+
 
 class Broker(models.Model):
     name = models.CharField(max_length=255)
@@ -9,12 +19,7 @@ class Broker(models.Model):
     tax_brl = models.FloatField(default=0.0)
     tax_usd = models.FloatField(default=0.0)
     tax_percent = models.FloatField(default=0.0)
-    broker_options = (
-        ('BRL', 'BRL'),
-        ('USD', 'USD'),
-        ('EUR', 'EUR'),
-    )
-    main_currency = models.CharField(max_length=3, choices=broker_options, default='BRL')
+    main_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return "{}".format(self.name)

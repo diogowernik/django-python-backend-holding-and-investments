@@ -1,14 +1,14 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-from investments.models import Asset, Currency
+from investments.models import Asset, CurrencyHolding
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        print("Updating Currency price_brl from economia")
+        print("Updating CurrencyHolding price_brl from economia")
         # get assets from db that will be updated
-        queryset = Currency.objects.values_list("id", "ticker")
+        queryset = CurrencyHolding.objects.values_list("id", "ticker")
         app_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
         app_df['ticker'] = app_df['ticker'].astype(str) + '-BRL'
         app_list = app_df["ticker"].astype(str).tolist()
@@ -20,7 +20,7 @@ class Command(BaseCommand):
         # economia api url
         # http://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL
 
-        # get Currency price_brl from economia
+        # get CurrencyHolding price_brl from economia
         economia_df = pd.read_json(
             f'https://economia.awesomeapi.com.br/json/last/{app_list}').T.reset_index()
         economia_df = economia_df[['code', 'bid']]
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         # print(economia_df)
 
         # config app_df to merge and economia_df
-        queryset = Currency.objects.values_list("id", "ticker")
+        queryset = CurrencyHolding.objects.values_list("id", "ticker")
         currencies_df = pd.DataFrame(list(queryset), columns=["id", "ticker"])
         # add line index = BRL and price_brl = 1.0
         # print('currencies_df')
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         # print('df')
         print(df)
 
-        # Update Currency price_brl
+        # Update CurrencyHolding price_brl
         for index, row in df.iterrows():
             try:
                 asset = Asset.objects.get(id=df.loc[index]['id'])

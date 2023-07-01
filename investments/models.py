@@ -2,6 +2,7 @@ from multiprocessing import set_forkserver_preload
 from django.db import models
 from numpy import product
 from categories.models import Category, SubCategory
+from brokers.models import Currency
 
 
 class Asset(models.Model):
@@ -11,6 +12,9 @@ class Asset(models.Model):
         SubCategory, related_name='subcategories', on_delete=models.CASCADE)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
+    price_usd = models.FloatField(default=0)
+    price_brl = models.FloatField(default=0)
+
     dividend_frequency = models.FloatField(default=4)
     twelve_m_dividend = models.FloatField(default=0)
     p_vpa = models.FloatField(default=0)
@@ -19,8 +23,7 @@ class Asset(models.Model):
     twelve_m_yield = models.FloatField(default=0)
     ranking = models.FloatField(default=0)
 
-    price_usd = models.FloatField(default=0)
-    price_brl = models.FloatField(default=0)
+    
 
     is_radar = models.BooleanField(default=True)
 
@@ -61,11 +64,6 @@ class Asset(models.Model):
 
 
 class Fii(Asset):
-    last_dividend = models.FloatField(default=0)
-    last_yield = models.FloatField(default=0)
-    six_m_yield = models.FloatField(default=0)
-
-    # from fundamentus
     ffo_yield = models.FloatField(default=0)
     p_ffo = models.FloatField(default=0)
     market_cap = models.FloatField(default=0)
@@ -103,7 +101,14 @@ class BrStocks(Asset):
         verbose_name_plural = " Ações Brasileiras"
 
 
-class Currency(Asset):
+class CurrencyHolding(Asset):
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, default=1)
+
+    def save(self, *args, **kwargs):
+        self.price_brl = self.currency.price_brl
+        self.price_usd = self.currency.price_usd
+        super(CurrencyHolding, self).save(*args, **kwargs)
+    
     class Meta:
         verbose_name_plural = "Internacional / Moedas"
 

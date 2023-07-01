@@ -5,9 +5,15 @@ from . import models
 
 
 class BrokerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'main_currency','slug', 'tax_brl', 'tax_usd', 'tax_percent')
+    list_display = ('name', 'slug', 'tax_brl', 'tax_usd', 'tax_percent')
     prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['slug', 'main_currency', 'tax_brl', 'tax_usd', 'tax_percent']
+    list_editable = ['slug', 'tax_brl', 'tax_usd', 'tax_percent']
+
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'slug', 'name', 'price_brl', 'price_usd')
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['slug', 'price_brl', 'price_usd']
 
 
 admin.site.register(models.Broker, BrokerAdmin)
+admin.site.register(models.Currency, CurrencyAdmin)

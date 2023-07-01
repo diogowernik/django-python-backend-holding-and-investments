@@ -96,6 +96,7 @@ class PortfolioEvolutionAdmin(admin.ModelAdmin):
                      'category_total_usd']
     list_filter = (
         ('portfolio', RelatedFieldListFilter),
+        'category',
     )
 
 # admin.site.register(models.Portfolio, PortfolioAdmin)

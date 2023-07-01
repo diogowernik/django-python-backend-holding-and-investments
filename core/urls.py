@@ -54,8 +54,6 @@ urlpatterns = [
           portfolio_views.PortfolioInvestmentList.as_view()),
      path('api/portfolios/<pk>/categories',
           portfolio_views.CategoryList.as_view()),
-     # path('api/portfolios/<pk>/history',
-     #      portfolio_views.PortfolioHistoryList.as_view()),
      path('api/portfolios/<pk>/dividends',
           portfolio_views.PortfolioDividendList.as_view()),
      path('api/portfolio_assets/<pk>',
