@@ -1,12 +1,9 @@
 # update trade price
-from tokenize import group
 import pandas as pd
 from django.core.management.base import BaseCommand
-import requests
-from portfolios.models import PortfolioHistory, PortfolioInvestment, PortfolioEvolution
-from categories.models import Category
+from portfolios.models import PortfolioInvestment, PortfolioEvolution
 # date '2021-03-01'
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # This file updates Trades from Degiro
 

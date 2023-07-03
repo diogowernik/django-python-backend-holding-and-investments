@@ -32,7 +32,6 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PortfolioInvestmentList(generics.ListAPIView):
-    # """Handles creating, reading and updating portfolios"""
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated, )
     serializer_class = serializers.PortfolioInvestmentSerializer

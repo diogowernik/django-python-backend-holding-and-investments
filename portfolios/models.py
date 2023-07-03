@@ -28,33 +28,29 @@ class PortfolioInvestment(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
-    shares_amount = models.FloatField()
+    shares_amount = models.FloatField(default=0)
 
-    # Estes campos são calculados com base no PortfolioDividend, será que vale a pena remover eles daqui e criar um classe PortfolioCalculatedValues ou outro nome one-to-one?
     dividends_profit_brl = models.FloatField(default=0, editable=False)
     dividends_profit_usd = models.FloatField(default=0, editable=False)
-    # Estes campos são calculados com base no PortfolioTrade, será que vale a pena remover eles daqui e criar um classe PortfolioCalculatedValues ou outro nome one-to-one?
     trade_profit_brl = models.FloatField(default=0, editable=False)
     trade_profit_usd = models.FloatField(default=0, editable=False)
+
+    # share_average_prices tem haver com o CurrencyAveragePrice, não sei se atualizaria a cada vez do CRUD de CurrencyAveragePrice
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
-
+    # total_costs tem haver com o CurrencyAveragePrice, não sei se atualizaria a cada vez do CRUD de CurrencyAveragePrice
     total_cost_brl = models.FloatField(editable=False, default=0)
-    total_today_brl = models.FloatField(editable=False, default=0)
     total_cost_usd = models.FloatField(default=0, editable=False)
+
+    total_today_brl = models.FloatField(editable=False, default=0)
     total_today_usd = models.FloatField(default=0, editable=False)
 
     def save(self, *args, **kwargs):
-        # Estes calculos podem ser substituidos por @property?
-        self.total_cost_brl = round(
-            self.shares_amount * self.share_average_price_brl, 2)
-        self.total_today_brl = round(
-            self.shares_amount * self.asset.price_brl, 2)
+        self.total_cost_brl = round(self.shares_amount * self.share_average_price_brl, 2)
+        self.total_cost_usd = round(self.shares_amount * self.share_average_price_usd, 2)
 
-        self.total_cost_usd = round(
-            self.shares_amount * self.share_average_price_usd, 2)
-        self.total_today_usd = round(
-            self.shares_amount * self.asset.price_usd, 2)
+        self.total_today_brl = round(self.shares_amount * self.asset.price_brl, 2)
+        self.total_today_usd = round(self.shares_amount * self.asset.price_usd, 2)
         super(PortfolioInvestment, self).save(*args, **kwargs)
 
     @property
@@ -112,7 +108,7 @@ class PortfolioInvestment(models.Model):
         return round((self.total_profit_usd / self.total_cost_usd) if self.total_cost_usd > 0 else 0, 4)
 
     def __str__(self):
-        return ' {} | Qtd = {} | Avg price = {} '.format(self.asset.ticker, self.shares_amount, self.share_average_price_brl)
+        return ' {} | {} | {} '.format(self.broker.name, self.shares_amount, self.asset.ticker)
 
     class Meta:
         verbose_name_plural = "  Investimentos por Portfolio"

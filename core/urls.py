@@ -12,6 +12,7 @@ from portfolios import views as portfolio_views
 from brokers import views as broker_views
 from investments import views as investment_views
 from radar import views as radar_views
+from cashflow import views as cashflow_views
 from .views import home
 
 
@@ -72,6 +73,9 @@ urlpatterns = [
      path('api/radars/<pk>/categories',
           radar_views.RadarCategoryList.as_view()),
      path('api/radars/<pk>/assets', radar_views.RadarAssetList.as_view()),
+     # cashflow currency transactions
+     path('api/portfolios/<pk>/currency_transactions', cashflow_views.CurrencyTransactionList.as_view()),
+     path('api/currency_transactions/<pk>', cashflow_views.CurrencyTransactionDetail.as_view()),
 
 
      url(r'^$', home, name='home'),

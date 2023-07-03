@@ -102,16 +102,10 @@ class BrStocks(Asset):
 
 
 class CurrencyHolding(Asset):
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, default=1)
-
-    def save(self, *args, **kwargs):
-        self.price_brl = self.currency.price_brl
-        self.price_usd = self.currency.price_usd
-        super(CurrencyHolding, self).save(*args, **kwargs)
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, default=1) 
     
     class Meta:
         verbose_name_plural = "Internacional / Moedas"
-
 
 class FixedIncome(Asset):
     kindChoices = (
