@@ -173,8 +173,6 @@ class InternationalAssets(Asset):
     roic = models.FloatField(default=0)
     ffo_yield = models.FloatField(default=0)
 
-    
-
     class Meta:
         abstract = True
 
