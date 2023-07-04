@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()  # take environment variables from .env.
 
-api_key = os.getenv('API_KEY')
+api_key = os.getenv('API_KEY_FINANCIAL_MODELING_PREP')
 
 def get_financial_data(tickers, api_key, app_df):
     

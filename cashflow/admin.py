@@ -16,7 +16,8 @@ admin.site.register(Expense, ExpenseAdmin)
 
 # Currency Transaction
 class CurrencyTransactionAdmin(admin.ModelAdmin):
-    list_display = ('transaction_date', 'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+    list_display = ('transaction_date', 'price_brl','price_usd',
+                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
     list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
     search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
     readonly_fields = ('portfolio_investment',)
@@ -28,23 +29,18 @@ class CurrencyTransactionAdmin(admin.ModelAdmin):
 
 admin.site.register(CurrencyTransaction, CurrencyTransactionAdmin)
 
-
 # class CurrencyAveragePriceAdmin(admin.ModelAdmin):
 #     list_display = ['portfolio_investment', 'share_average_price_brl', 'share_average_price_usd']
 #     search_fields = ['portfolio_investment']
 # admin.site.register(CurrencyAveragePrice, CurrencyAveragePriceAdmin)
 
-# Asset Transaction and Average Price
 class AssetTransactionAdmin(admin.ModelAdmin):
-    list_display = ['portfolio_investment', 'broker', 'asset', 'transaction_amount', 'transaction_type', 'transaction_date', 'asset_price_brl', 'asset_price_usd']
-    search_fields = ['portfolio_investment', 'broker', 'asset', 'transaction_type']
-    list_filter = ['transaction_type']
+    list_display = ('transaction_date', 'price_brl','price_usd',
+                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+    list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
+    search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
+    readonly_fields = ('portfolio_investment',)
 admin.site.register(AssetTransaction, AssetTransactionAdmin)
-
-# class AssetAveragePriceAdmin(admin.ModelAdmin):
-#     list_display = ['portfolio_investment', 'share_average_price_brl', 'share_average_price_usd']
-#     search_fields = ['portfolio_investment']
-# admin.site.register(AssetAveragePrice, AssetAveragePriceAdmin)
 
 # Currency Transfer and International Currency Transfer
 class CurrencyTransferAdmin(admin.ModelAdmin):

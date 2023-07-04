@@ -29,49 +29,49 @@ class CurrencyTransactionTest(TestCase):
 
     def test_brl_banco_brasil_currency_transactions(self):
         # A partir daqui, você pode usar self.broker, self.currency e self.portfolio para criar suas transações
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction1.portfolio_investment.id).shares_amount, 1000)
 
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction2.portfolio_investment.id).shares_amount, 2000)
 
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id).shares_amount, 3000)
 
-        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id).shares_amount, 4000)
 
     def test_usd_currency_transactions(self):
         # A partir daqui, você pode usar self.broker_avenue e self.portfolio para criar suas transações
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000, price_brl=5, price_usd=1)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction1.portfolio_investment.id).shares_amount, 1000)
 
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000, price_brl=5, price_usd=1)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction2.portfolio_investment.id).shares_amount, 2000)
 
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000)
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000, price_brl=5, price_usd=1)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id).shares_amount, 3000)
 
-        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000)
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_avenue, transaction_type='deposit', transaction_amount=1000, price_brl=5, price_usd=1)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id).shares_amount, 4000)
 
     def test_brl_currency_withdraw(self):
         # Primeiro, criamos duas transações de depósito, para que tenhamos algo para retirar.
-        CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=2000)
+        CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=2000, price_brl=1, price_usd=0.20)
 
         # A partir daqui, você pode usar self.broker, self.currency e self.portfolio para criar suas transações
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='withdraw', transaction_amount=500)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='withdraw', transaction_amount=500, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction1.portfolio_investment.id).shares_amount, 1500)
 
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='withdraw', transaction_amount=500)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='withdraw', transaction_amount=500, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction2.portfolio_investment.id).shares_amount, 1000)
 
     def test_edit_first_brl_currency_transaction(self):
         # Primeiro, criamos quatro transações de depósito.
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id).shares_amount, 4000)
 
         # Agora, editamos a primeira transação e verificamos se a quantidade de ações foi atualizada corretamente.
@@ -81,13 +81,13 @@ class CurrencyTransactionTest(TestCase):
 
     def test_edit_first_brl_currency_transaction_with_two_brokers(self):
         # Primeiro, criamos quatro transações de depósito.
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         
         # Terceira transação é feita com uma broker diferente.
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_itau, transaction_type='deposit', transaction_amount=1000)
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_itau, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
 
-        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id).shares_amount, 3000)
 
         # Agora, editamos a primeira transação e verificamos se a quantidade de ações foi atualizada corretamente.
@@ -100,8 +100,8 @@ class CurrencyTransactionTest(TestCase):
 
     def test_delete_brl_currency_transaction(self):
         # Primeiro, criamos duas transações de depósito.
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=1, price_usd=0.20)
         self.assertEqual(PortfolioInvestment.objects.get(id=transaction2.portfolio_investment.id).shares_amount, 2000)
 
         # Agora, deletamos a primeira transação e verificamos se a quantidade de ações foi atualizada corretamente.
@@ -110,29 +110,26 @@ class CurrencyTransactionTest(TestCase):
 
     def test_average_price_calculation_three_transactions(self):
         # Primeiro, atualizamos o preço da Currency para cada transação
-        self.currency_brl.price_brl = 5.12
-        self.currency_brl.price_usd = 10.25
-        self.currency_brl.save()
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        price_brl = 5.12
+        price_usd = 10.25
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
 
-        self.currency_brl.price_brl = 8.14
-        self.currency_brl.price_usd = 16.28
-        self.currency_brl.save()
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        
-        self.currency_brl.price_brl = 12.76
-        self.currency_brl.price_usd = 25.52
-        self.currency_brl.save()
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        price_brl = 8.14
+        price_usd = 16.28
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+            
+        price_brl = 12.76
+        price_usd = 25.52
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
 
         # Calculamos o preço médio esperado. O preço médio é a soma do custo de todas as transações dividido pelo número total de ações.
-        total_cost_brl = (transaction1.transaction_amount * transaction1.broker.main_currency.price_brl +
-                        transaction2.transaction_amount * transaction2.broker.main_currency.price_brl +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_brl)
+        total_cost_brl = (transaction1.transaction_amount * transaction1.price_brl +
+                        transaction2.transaction_amount * transaction2.price_brl +
+                        transaction3.transaction_amount * transaction3.price_brl)
 
-        total_cost_usd = (transaction1.transaction_amount * transaction1.broker.main_currency.price_usd +
-                        transaction2.transaction_amount * transaction2.broker.main_currency.price_usd +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_usd)
+        total_cost_usd = (transaction1.transaction_amount * transaction1.price_usd +
+                        transaction2.transaction_amount * transaction2.price_usd +
+                        transaction3.transaction_amount * transaction3.price_usd)
 
         total_shares = (transaction1.transaction_amount +
                         transaction2.transaction_amount +
@@ -141,6 +138,7 @@ class CurrencyTransactionTest(TestCase):
         expected_average_price_brl = total_cost_brl / total_shares
         expected_average_price_usd = total_cost_usd / total_shares
 
+
         # Verificamos se o preço médio armazenado no PortfolioInvestment corresponde ao preço médio esperado.
         portfolio_investment = PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id)
         self.assertEqual(portfolio_investment.share_average_price_brl, expected_average_price_brl)
@@ -148,37 +146,33 @@ class CurrencyTransactionTest(TestCase):
 
     def test_average_price_calculation_with_deletion(self):
         # Primeiro, atualizamos o preço da Currency para cada transação
-        self.currency_brl.price_brl = 5.12
-        self.currency_brl.price_usd = 10.25
-        self.currency_brl.save()
-        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        price_brl = 5.12
+        price_usd = 10.25
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
 
-        self.currency_brl.price_brl = 8.14
-        self.currency_brl.price_usd = 16.28
-        self.currency_brl.save()
-        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        
-        self.currency_brl.price_brl = 12.76
-        self.currency_brl.price_usd = 25.52
-        self.currency_brl.save()
-        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
-        
-        self.currency_brl.price_brl = 18.34
-        self.currency_brl.price_usd = 36.68
-        self.currency_brl.save()
-        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000)
+        price_brl = 8.14
+        price_usd = 16.28
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        price_brl = 12.76
+        price_usd = 25.52
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        price_brl = 18.34
+        price_usd = 36.68
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
 
         # Agora, deletamos a transação 2
         transaction2.delete()
 
         # Calculamos o preço médio esperado após a deleção. O preço médio é a soma do custo das transações restantes dividido pelo número total de ações restantes.
-        total_cost_brl = (transaction1.transaction_amount * transaction1.broker.main_currency.price_brl +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_brl +
-                        transaction4.transaction_amount * transaction4.broker.main_currency.price_brl)
+        total_cost_brl = (transaction1.transaction_amount * transaction1.price_brl +
+                        transaction3.transaction_amount * transaction3.price_brl +
+                        transaction4.transaction_amount * transaction4.price_brl)
 
-        total_cost_usd = (transaction1.transaction_amount * transaction1.broker.main_currency.price_usd +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_usd +
-                        transaction4.transaction_amount * transaction4.broker.main_currency.price_usd)
+        total_cost_usd = (transaction1.transaction_amount * transaction1.price_usd +
+                        transaction3.transaction_amount * transaction3.price_usd +
+                        transaction4.transaction_amount * transaction4.price_usd)
 
         total_shares = (transaction1.transaction_amount +
                         transaction3.transaction_amount +
@@ -187,6 +181,7 @@ class CurrencyTransactionTest(TestCase):
         expected_average_price_brl = total_cost_brl / total_shares
         expected_average_price_usd = total_cost_usd / total_shares
 
+        # Verificamos se o preço médio armazenado no PortfolioInvestment corresponde ao preço médio esperado após a deleção da transação 2.
         # Verificamos se o preço médio armazenado no PortfolioInvestment corresponde ao preço médio esperado após a deleção da transação 2.
         portfolio_investment = PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id)
         self.assertEqual(portfolio_investment.share_average_price_brl, expected_average_price_brl)
@@ -222,15 +217,15 @@ class CurrencyTransactionTest(TestCase):
         transaction3.save()
 
         # Calculamos o preço médio esperado após a modificação. O preço médio é a soma do custo de todas as transações dividido pelo número total de ações.
-        total_cost_brl = (transaction1.transaction_amount * transaction1.broker.main_currency.price_brl +
-                        transaction2.transaction_amount * transaction2.broker.main_currency.price_brl +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_brl +
-                        transaction4.transaction_amount * transaction4.broker.main_currency.price_brl)
+        total_cost_brl = (transaction1.transaction_amount * transaction1.price_brl +
+                        transaction2.transaction_amount * transaction2.price_brl +
+                        transaction3.transaction_amount * transaction3.price_brl +
+                        transaction4.transaction_amount * transaction4.price_brl)
 
-        total_cost_usd = (transaction1.transaction_amount * transaction1.broker.main_currency.price_usd +
-                        transaction2.transaction_amount * transaction2.broker.main_currency.price_usd +
-                        transaction3.transaction_amount * transaction3.broker.main_currency.price_usd +
-                        transaction4.transaction_amount * transaction4.broker.main_currency.price_usd)
+        total_cost_usd = (transaction1.transaction_amount * transaction1.price_usd +
+                        transaction2.transaction_amount * transaction2.price_usd +
+                        transaction3.transaction_amount * transaction3.price_usd +
+                        transaction4.transaction_amount * transaction4.price_usd)
 
         total_shares = (transaction1.transaction_amount +
                         transaction2.transaction_amount +
@@ -244,3 +239,54 @@ class CurrencyTransactionTest(TestCase):
         portfolio_investment = PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id)
         self.assertEqual(portfolio_investment.share_average_price_brl, expected_average_price_brl)
         self.assertEqual(portfolio_investment.share_average_price_usd, expected_average_price_usd)
+
+    def test_average_price_calculation_with_edit(self):
+        # Primeiro, atualizamos o preço da Currency para cada transação
+        price_brl = 5.12
+        price_usd = 10.25
+        transaction1 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        price_brl = 8.14
+        price_usd = 16.28
+        transaction2 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        price_brl = 12.76
+        price_usd = 25.52
+        transaction3 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        price_brl = 18.34
+        price_usd = 36.68
+        transaction4 = CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='deposit', transaction_amount=1000, price_brl=price_brl, price_usd=price_usd)
+
+        # Agora, modificamos a transaction3
+        price_brl = 21.85
+        price_usd = 43.70
+        transaction3.transaction_amount = 1500
+        transaction3.price_brl = price_brl
+        transaction3.price_usd = price_usd
+        transaction3.save()
+
+        # Calculamos o preço médio esperado após a modificação. O preço médio é a soma do custo de todas as transações dividido pelo número total de ações.
+        total_cost_brl = (transaction1.transaction_amount * transaction1.price_brl +
+                        transaction2.transaction_amount * transaction2.price_brl +
+                        transaction3.transaction_amount * transaction3.price_brl +
+                        transaction4.transaction_amount * transaction4.price_brl)
+
+        total_cost_usd = (transaction1.transaction_amount * transaction1.price_usd +
+                        transaction2.transaction_amount * transaction2.price_usd +
+                        transaction3.transaction_amount * transaction3.price_usd +
+                        transaction4.transaction_amount * transaction4.price_usd)
+
+        total_shares = (transaction1.transaction_amount +
+                        transaction2.transaction_amount +
+                        transaction3.transaction_amount +
+                        transaction4.transaction_amount)
+
+        expected_average_price_brl = total_cost_brl / total_shares
+        expected_average_price_usd = total_cost_usd / total_shares
+
+        # Verificamos se o preço médio armazenado no PortfolioInvestment corresponde ao preço médio esperado após a modificação da transaction3.
+        portfolio_investment = PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id)
+        self.assertEqual(portfolio_investment.share_average_price_brl, expected_average_price_brl)
+        self.assertEqual(portfolio_investment.share_average_price_usd, expected_average_price_usd)
+
