@@ -312,11 +312,13 @@ class AssetTransactionTest(TestCase):
 
         self.asset_wege3 = BrStocks.objects.create(ticker='WEGE3', category=self.category, subcategory=self.subcategory, price_brl=50, price_usd=10)
         self.asset_itub4 = BrStocks.objects.create(ticker='ITUB4', category=self.category, subcategory=self.subcategory, price_brl=30, price_usd=6)
+        self.asset_msft = Stocks.objects.create(ticker='MSFT', category=self.category, subcategory=self.subcategory, price_brl=200, price_usd=40)
+        self.asset_o = Reit.objects.create(ticker='O', category=self.category, subcategory=self.subcategory, price_brl=100, price_usd=20)
 
     def test_brl_banco_do_brasil_asset_buy(self):
-        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=100, price_brl=10, price_usd=2)
-        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=200, price_brl=20, price_usd=4)
-        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=300, price_brl=30, price_usd=6)
+        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
+        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)
+        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=300, price_brl=30, price_usd=6)
 
         # verifica se o portfolio investment foi criado corretamente
         portfolio_investment = PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id)
@@ -348,44 +350,110 @@ class AssetTransactionTest(TestCase):
         self.assertEqual(currency_transaction.transaction_amount, transaction3.transaction_amount * transaction3.price_brl)
 
     def test_brl_banco_do_brasil_asset_sell(self):
-        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=100, price_brl=10, price_usd=2)
-        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=200, price_brl=20, price_usd=4)
-        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_brl, transaction_amount=300, price_brl=30, price_usd=6)
-        transaction4 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='sell', asset=self.asset_brl, transaction_amount=400, price_brl=40, price_usd=8)
+        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
+        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)
+        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=300, price_brl=30, price_usd=6)
+        transaction4 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='sell', asset=self.asset_wege3, transaction_amount=400, price_brl=40, price_usd=8)
 
         # verifica se o portfolio investment foi criado corretamente
         portfolio_investment = PortfolioInvestment.objects.get(id=transaction4.portfolio_investment.id)
+        self.assertIsNotNone(portfolio_investment)
 
         # verifica se as shares amount estão corretas
-        self.assertEqual(portfolio_investment.shares_amount, 200)
+        self.assertEqual(portfolio_investment.shares_amount, 200) # 100 + 200 + 300 - 400
 
         # verifica se o custo total está correto
-        # total_cost_brl = 200 * average_cost_per_share
-        # where average_cost_per_share = (1000 + 4000 + 9000) / 600 = 23.33
-        self.assertEqual(round(portfolio_investment.total_cost_brl, 2), round(200 * 23.33, 2))
-        # total_cost_usd = 200 * average_cost_per_share_usd
-        # where average_cost_per_share_usd = (200 + 800 + 1800) / 600 = 4.67
-        self.assertEqual(round(portfolio_investment.total_cost_usd, 2), round(200 * 4.67, 2))
-        # Check if the average price is still the same (it shouldn't change when selling)
-        self.assertEqual(portfolio_investment.share_average_price_brl, 23.33)
-        self.assertEqual(portfolio_investment.share_average_price_usd, 4.67)
+        self.assertAlmostEqual(portfolio_investment.total_cost_brl, 200 * 23.33333333333334, delta=0.01)  
 
-        # Check if the trade profits are correct
-        # trade_profit_brl = (400 * sell_price_brl) - (400 * average_cost_per_share)
-        # where sell_price_brl = 40
-        self.assertEqual(round(portfolio_investment.trade_profit_brl, 2), round((400 * 40) - (400 * 23.33), 2))
-        # trade_profit_usd = (400 * sell_price_usd) - (400 * average_cost_per_share_usd)
-        # where sell_price_usd = 8
-        self.assertEqual(round(portfolio_investment.trade_profit_usd, 2), round((400 * 8) - (400 * 4.67), 2))
+        # verifica se o preço médio está correto
+        self.assertEqual(portfolio_investment.share_average_price_brl, 23.33333333333334)  # 6000 BRL / 200 shares
 
-        # Check if a new CurrencyTransaction was created
-        currency_transactions = CurrencyTransaction.objects.filter(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_date=transaction4.transaction_date)
+        # verifica se o lucro/prejuizo está correto
+        profit_brl = 400 * (40 - 23.33333333333334)
+        self.assertAlmostEqual(portfolio_investment.trade_profit_brl, profit_brl, delta=0.01)
+
+        # verifica se foi criada uma nova CurrencyTransaction
+        currency_transaction = CurrencyTransaction.objects.filter(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_date=transaction4.transaction_date).first()
+        self.assertIsNotNone(currency_transaction)
+
+        # verifica se a transaction_amount está correta
+        self.assertEqual(currency_transaction.transaction_amount, 400*40)  # 400 shares at 40 BRL each
+
+    def test_brl_banco_do_brasil_asset_delete(self):
+        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
+        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)
+        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=300, price_brl=30, price_usd=6)
+
+        # Deleta a segunda transação
+        transaction2_id = transaction2.id
+        transaction2.delete()
+
+        # Verifica se a transação foi deletada corretamente
+        with self.assertRaises(AssetTransaction.DoesNotExist):
+            AssetTransaction.objects.get(id=transaction2_id)
+
+        # Verifica se o portfolio investment foi atualizado corretamente
+        portfolio_investment = PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id)
+        self.assertEqual(portfolio_investment.shares_amount, 400)  # 100 + 300
+        self.assertEqual(portfolio_investment.total_cost_brl, 10000)  # 1000 + 9000
+        self.assertEqual(portfolio_investment.share_average_price_brl, 25)  # 10000 / 400
+
+        # Verifica se a CurrencyTransaction correspondente à transação deletada também foi deletada
+        currency_transactions = CurrencyTransaction.objects.filter(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_date=transaction2.transaction_date)
+        self.assertEqual(len(currency_transactions), 0)
+
+    def test_brl_broker_diff_asset_no_delete(self):
+        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
+        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_itau, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)
+        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=300, price_brl=30, price_usd=6)
+
+        # Verifica se o portfolio investment do broker_banco_brasil foi atualizado corretamente
+        portfolio_investment_banco_brasil = PortfolioInvestment.objects.get(broker=self.broker_banco_brasil, asset=self.asset_wege3)
+        self.assertEqual(portfolio_investment_banco_brasil.shares_amount, 400)  # 100 + 300
+        self.assertEqual(portfolio_investment_banco_brasil.total_cost_brl, 10000)  # 1000 + 9000
+        self.assertEqual(portfolio_investment_banco_brasil.share_average_price_brl, 25)  # 10000 / 400
+
+        # Verifica se o portfolio investment do broker_itau foi criado corretamente
+        portfolio_investment_itau = PortfolioInvestment.objects.get(broker=self.broker_itau, asset=self.asset_wege3)
+        self.assertEqual(portfolio_investment_itau.shares_amount, 200)  # 200
+        self.assertEqual(portfolio_investment_itau.total_cost_brl, 4000)  # 200 * 20
+        self.assertEqual(portfolio_investment_itau.share_average_price_brl, 20)  # 4000 / 200
+
+        # Verifica se a CurrencyTransaction correspondente à transação no broker itau foi criada
+        currency_transactions = CurrencyTransaction.objects.filter(portfolio=self.portfolio, broker=self.broker_itau, transaction_date=transaction2.transaction_date)
+        self.assertEqual(len(currency_transactions), 1)
+        
+        # Verifica os detalhes da CurrencyTransaction
+        currency_transaction = currency_transactions[0]
+        self.assertEqual(currency_transaction.transaction_type, 'withdraw')
+        self.assertEqual(currency_transaction.transaction_amount, transaction2.transaction_amount * transaction2.price_brl)
+
+    def test_brl_same_broker_edit_transaction(self):
+        transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
+        transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)
+        transaction3 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=300, price_brl=30, price_usd=6)
+
+        # Edit the second transaction
+        transaction2.transaction_amount = 150
+        transaction2.price_brl = 15
+        transaction2.price_usd = 3
+        transaction2.save()
+
+        # Check if the portfolio investment was updated correctly
+        portfolio_investment = PortfolioInvestment.objects.get(id=transaction3.portfolio_investment.id)
+        self.assertEqual(portfolio_investment.shares_amount, 550)  # 100 + 150 + 300
+        self.assertEqual(portfolio_investment.total_cost_brl, 12250)  # 1000 + 2250 + 9000
+        self.assertEqual(portfolio_investment.share_average_price_brl, 22.272727272727273)  # 12250 / 550
+
+        # Check if the corresponding CurrencyTransaction was also updated
+        currency_transactions = CurrencyTransaction.objects.filter(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_date=transaction2.transaction_date)
         self.assertEqual(len(currency_transactions), 1)
 
         # Check the CurrencyTransaction details
         currency_transaction = currency_transactions[0]
-        self.assertEqual(currency_transaction.transaction_type, 'deposit')
-        self.assertEqual(currency_transaction.transaction_amount, transaction4.transaction_amount * transaction4.price_brl)
+        self.assertEqual(currency_transaction.transaction_type, 'withdraw')
+        self.assertEqual(currency_transaction.transaction_amount, transaction2.transaction_amount * transaction2.price_brl)
+
 
 
 

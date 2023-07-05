@@ -128,16 +128,10 @@ class AssetTransaction(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
 
-        # Get the price of the asset
-        # vou criar algumas funções para pegar o preço de cada tipo de ativo
-        # if InternationalAssets(Asset) - Stocks e Reits
-        # get_us_asset_price(USD, asset.ticker, date)
-        # if BrStocks(Asset) e Fii(Asset)
-        # get_br_asset_price(BRL, asset.ticker, date)
-        # else
-        # price_brl = asset.price_brl
-        # price_usd = asset.price_usd
-        # por enquanto vou trabalhar oferecendo o preço
+        if not self.price_brl:
+            self.price_brl = self.asset.price_brl
+        if not self.price_usd:
+            self.price_usd = self.asset.price_usd
 
         # Find or create a PortfolioInvestment with the correct Portfolio, Broker and Asset
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(
@@ -155,30 +149,39 @@ class AssetTransaction(models.Model):
         super().save(*args, **kwargs)
 
         # Create a CurrencyTransaction
-        if is_new:
             # Determine the transaction_type for the CurrencyTransaction
-            if self.transaction_type == 'buy':
-                currency_transaction_type = 'withdraw'
+        if self.transaction_type == 'buy':
+            currency_transaction_type = 'withdraw'
 
-            else:  # self.transaction_type == 'sell'
-                currency_transaction_type = 'deposit'
+        else:  # self.transaction_type == 'sell'
+            currency_transaction_type = 'deposit'
 
-            # Determine the transaction_amount for the CurrencyTransaction
-            if self.broker.main_currency.ticker == 'BRL':
-                currency_transaction_amount = self.transaction_amount * self.price_brl
-            elif self.broker.main_currency.ticker == 'USD':
-                currency_transaction_amount = self.transaction_amount * self.price_usd
+        # Determine the transaction_amount for the CurrencyTransaction
+        if self.broker.main_currency.ticker == 'BRL':
+            currency_transaction_amount = self.transaction_amount * self.price_brl
+        elif self.broker.main_currency.ticker == 'USD':
+            currency_transaction_amount = self.transaction_amount * self.price_usd
 
-            # Create the CurrencyTransaction
-            CurrencyTransaction.objects.create(
-                portfolio=self.portfolio,
-                broker=self.broker,
-                transaction_type=currency_transaction_type,
-                transaction_amount=currency_transaction_amount,
-                transaction_date=self.transaction_date, 
-                price_brl=self.price_brl,  
-                price_usd=self.price_usd,  
-            )
+                    # Create the CurrencyTransaction
+        currency_transaction, created = CurrencyTransaction.objects.get_or_create(
+            portfolio=self.portfolio,
+            broker=self.broker,
+            transaction_date=self.transaction_date,
+            defaults={
+                'transaction_type': currency_transaction_type,
+                'transaction_amount': currency_transaction_amount,
+                'price_brl': self.price_brl,
+                'price_usd': self.price_usd,
+                }
+        )
+
+        if not created:
+            currency_transaction.transaction_type = currency_transaction_type
+            currency_transaction.transaction_amount = currency_transaction_amount
+            currency_transaction.price_brl = self.price_brl
+            currency_transaction.price_usd = self.price_usd
+            currency_transaction.save()
+
 
         # Recalculate share_average_price_brl and share_average_price_usd
         portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
@@ -213,7 +216,6 @@ class AssetTransaction(models.Model):
 
         # Agora, podemos deletar o objeto
         super(AssetTransaction, self).delete(*args, **kwargs)
-
 
 class AssetAveragePrice(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)

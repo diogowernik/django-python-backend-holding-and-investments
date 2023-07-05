@@ -1,21 +1,16 @@
 from rest_framework import serializers
 from . import models
-from investments.models import Category, Asset, Fii
-
-# Minha Holding
-
+from investments.models import Category
 
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
         fields = "__all__"
 
-
 class PortfolioDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
         fields = "__all__"
-
 
 class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
@@ -66,24 +61,44 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
 
         )
 
-
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = "__all__"
 
-
-
 class PortfolioDividendSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PortfolioDividend
-        fields = "__all__"
-
+        fields = (
+            'id',
+            'ticker',
+            'category',
+            'subcategory',
+            'record_date',
+            'pay_date',
+            'shares_amount',
+            'value_per_share_usd',
+            'value_per_share_brl',
+            'total_dividend_brl',
+            'total_dividend_usd',
+            'average_price_usd',
+            'average_price_brl',
+            'yield_on_cost_brl',
+            'yield_on_cost_usd',
+            'usd_on_pay_date',
+            'pay_date_by_month_year',
+            'pay_date_by_year',
+        )
 
 class PortfolioEvolutionSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='category.name')
 
     class Meta:
         model = models.PortfolioEvolution
-        fields = "__all__"
+        fields = (
+            'id',
+            'category',
+            'category_total_brl',
+            'category_total_usd',
+            'date',
+        )
