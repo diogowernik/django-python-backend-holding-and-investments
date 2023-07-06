@@ -116,9 +116,9 @@ class PortfolioInvestment(models.Model):
 
 
 class PortfolioEvolution(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=2)
     date = models.DateField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=7)
     category_total_brl = models.FloatField(default=0)
     category_total_usd = models.FloatField(default=0)
     class Meta:

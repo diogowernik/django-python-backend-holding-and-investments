@@ -4,6 +4,8 @@ from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset, CurrencyHolding
 from django.utils import timezone
 from investments.utils.get_currency_price import get_exchange_rate
+from django.db import transaction
+from django.core.exceptions import ValidationError
 
 # Deposito e Saque de dinheiro (Mesma moeda do broker)
 class CurrencyTransaction(models.Model):
@@ -72,6 +74,13 @@ class CurrencyTransaction(models.Model):
         # Agora, podemos deletar o objeto
         super(CurrencyTransaction, self).delete(*args, **kwargs)
 
+    class Meta:
+        ordering = ['-transaction_date']
+        verbose_name_plural = 'Depósitos e Saques'
+
+    def __str__(self):
+        return f'{self.transaction_type} {self.transaction_amount} {self.broker.main_currency.ticker}'
+
 # Preço Médio, Total Investido, Total Atual (Mesma moeda do broker, calculado em BRL e USD)
 class CurrencyAveragePrice(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
@@ -113,6 +122,124 @@ class CurrencyAveragePrice(models.Model):
         portfolio_investment.total_today_usd = total_shares * portfolio_investment.asset.price_usd
         portfolio_investment.save()
 
+# Transferência de moedas entre brokers mesma moeda. Ex: Transferir USD do Interactive Brokers para o TD Ameritrade
+class CurrencyTransfer(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
+    from_broker = models.ForeignKey(Broker, related_name='transfer_from', on_delete=models.CASCADE, default=1)
+    to_broker = models.ForeignKey(Broker, related_name='transfer_to', on_delete=models.CASCADE, default=2)
+    transfer_amount = models.FloatField()
+    transfer_date = models.DateField(default=timezone.now)
+
+    # Adicione campos ForeignKey para as transações
+    from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+    to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Isto irá chamar o método clean
+        # Se for uma edição, atualize as transações existentes
+        if self.pk is not None and self.from_transaction and self.to_transaction:
+            self.from_transaction.transaction_amount = self.transfer_amount
+            self.from_transaction.save()
+            self.to_transaction.transaction_amount = self.transfer_amount
+            self.to_transaction.save()
+        # Caso contrário, crie novas transações
+        else:
+            self.from_transaction = CurrencyTransaction.objects.create(
+                portfolio=self.portfolio,
+                broker=self.from_broker,
+                transaction_type='withdraw',
+                transaction_amount=self.transfer_amount,
+                transaction_date=self.transfer_date,
+            )
+            self.to_transaction = CurrencyTransaction.objects.create(
+                portfolio=self.portfolio,
+                broker=self.to_broker,
+                transaction_type='deposit',
+                transaction_amount=self.transfer_amount,
+                transaction_date=self.transfer_date,
+            )
+
+        super().save(*args, **kwargs)
+
+    @transaction.atomic
+    def delete(self, *args, **kwargs):
+        if self.from_transaction:
+            self.from_transaction.delete()
+        if self.to_transaction:
+            self.to_transaction.delete()
+        super().delete(*args, **kwargs)
+    
+    def clean(self):
+        if self.from_broker == self.to_broker:
+            raise ValidationError("Os brokers de origem e destino devem ser diferentes.")
+
+# Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
+class InternationalCurrencyTransfer(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
+    from_broker = models.ForeignKey(Broker, related_name='intl_transfer_from', on_delete=models.CASCADE, default=1)
+    to_broker = models.ForeignKey(Broker, related_name='intl_transfer_to', on_delete=models.CASCADE, default=2)
+    from_transfer_amount = models.FloatField()  # Quantidade na moeda original
+    to_transfer_amount = models.FloatField(editable=False) # Quantidade na moeda de destino, após a conversão
+    transfer_fee = models.FloatField(default=0)  # Taxa de transferência cobrada pelo corretor
+    exchange_rate = models.FloatField()  # Taxa de câmbio usada na transferência
+    transfer_date = models.DateField(default=timezone.now)
+
+    from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_intl_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+    to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_intl_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Isto irá chamar o método clean
+        # Calcula o to_transfer_amount baseado no from_transfer_amount e na taxa de câmbio
+        self.to_transfer_amount = self.from_transfer_amount * self.exchange_rate
+        # Se for uma edição, atualize as transações existentes
+        if self.pk is not None and self.from_transaction and self.to_transaction:
+            self.from_transaction.transaction_amount = self.from_transfer_amount
+            self.from_transaction.save()
+            self.to_transaction.transaction_amount = self.to_transfer_amount
+            self.to_transaction.save()
+        # Caso contrário, crie novas transações
+        else:
+            self.from_transaction = CurrencyTransaction.objects.create(
+                portfolio=self.portfolio,
+                broker=self.from_broker,
+                transaction_type='withdraw',
+                transaction_amount=self.from_transfer_amount,
+                transaction_date=self.transfer_date,
+            )
+            self.to_transaction = CurrencyTransaction.objects.create(
+                portfolio=self.portfolio,
+                broker=self.to_broker,
+                transaction_type='deposit',
+                transaction_amount=self.to_transfer_amount,
+                transaction_date=self.transfer_date,
+            )
+
+        super().save(*args, **kwargs)
+    
+    @transaction.atomic
+    def delete(self, *args, **kwargs):
+        if self.from_transaction:
+            self.from_transaction.delete()
+        if self.to_transaction:
+            self.to_transaction.delete()
+        super().delete(*args, **kwargs)
+    
+    def clean(self):
+        if self.from_broker == self.to_broker:
+            raise ValidationError("Os brokers de origem e destino devem ser diferentes.")
+        
+        if self.from_broker.main_currency == self.to_broker.main_currency:
+            raise ValidationError("A moeda principal dos brokers de origem e destino devem ser diferentes.")
+        
+        if self.exchange_rate <= 0:
+            raise ValidationError("A taxa de câmbio deve ser um número positivo.")
+        
+        if self.from_transfer_amount <= 0:
+            raise ValidationError("A quantidade de moeda a ser transferida deve ser maior que zero.")
+
+# Compra e venda de ativos (Reit, BrStocks, Fii, Stocks)
 class AssetTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
@@ -217,6 +344,7 @@ class AssetTransaction(models.Model):
         # Agora, podemos deletar o objeto
         super(AssetTransaction, self).delete(*args, **kwargs)
 
+# Média de preço de um ativo em um portfolio, Total de lucro/prejuízo, total investido (Mesma moeda do Broker)
 class AssetAveragePrice(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     share_average_price_brl = models.FloatField(default=0)
@@ -300,105 +428,53 @@ class AssetAveragePrice(models.Model):
 
         # Now we can delete the object
         super().delete(*args, **kwargs)
-
-
-
-
-class InternationalCurrencyTransfer(models.Model):
-    from_portfolio_investment = models.ForeignKey(PortfolioInvestment, related_name='international_transfer_from', on_delete=models.CASCADE)
-    to_portfolio_investment = models.ForeignKey(PortfolioInvestment, related_name='international_transfer_to', on_delete=models.CASCADE)
-    transfer_amount_in_source_currency = models.FloatField()  # Valor transferido na moeda de origem
-    transfer_date = models.DateField(auto_now_add=True)
-    transfer_fee = models.FloatField()
-    exchange_rate = models.FloatField()  # Taxa de câmbio usada na transferência
-
-    def save(self, *args, **kwargs):
-        if self.pk is not None:  # Verifica se o objeto já existe (ou seja, é uma edição e não uma criação)
-            old_transfer = InternationalCurrencyTransfer.objects.get(pk=self.pk)  # Obtém o objeto antigo antes da edição
-
-            # Atualiza o balanço dos portfolio_investments de origem e destino de acordo com a diferença entre os valores antigos e novos
-            old_transfer.undo_transfer()
-            self.make_transfer()
-
-        else:  # O objeto é novo
-            self.make_transfer()
-
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.undo_transfer()
-        super().delete(*args, **kwargs)
-
-    def make_transfer(self):
-        # Atualiza os balanços dos portfolio_investments de origem e destino
-        self.from_portfolio_investment.shares_amount -= self.transfer_amount_in_source_currency
-        self.to_portfolio_investment.shares_amount += self.transfer_amount_in_source_currency * self.exchange_rate
-        self.from_portfolio_investment.save()
-        self.to_portfolio_investment.save()
-
-    def undo_transfer(self):
-        # Desfaz a atualização dos balanços dos portfolio_investments de origem e destino
-        self.from_portfolio_investment.shares_amount += self.transfer_amount_in_source_currency
-        self.to_portfolio_investment.shares_amount -= self.transfer_amount_in_source_currency * self.exchange_rate
-        self.from_portfolio_investment.save()
-        self.to_portfolio_investment.save()
+ 
+# entrada de dinheiro na carteira, como salário ou renda extra, criará uma transação de moeda (CurrencyTransaction) Deposit
+class Income(CurrencyTransaction):
+    transaction_category = models.CharField(
+        max_length=255,
+        choices=(
+            ('Renda Ativa', 'Renda Ativa'),  # Salário Principal, 
+            ('Renda Extra', 'Renda Extra'),  # Venda de algo, Freelancer, Autônomo, etc
+            ('Renda Passiva', 'Renda Passiva'),  # Dividendos, Aluguéis, será que junto aqui?
+            ('Outros', 'Outros'),
+        )
+    )
     
-class CurrencyTransfer(models.Model):
-    from_portfolio_investment = models.ForeignKey(PortfolioInvestment, related_name='transfer_from', on_delete=models.CASCADE)
-    to_portfolio_investment = models.ForeignKey(PortfolioInvestment, related_name='transfer_to', on_delete=models.CASCADE)
-    transfer_amount = models.FloatField()
-    transfer_date = models.DateField(auto_now_add=True)
-    transfer_fee = models.FloatField()
-
     def save(self, *args, **kwargs):
-        if self.pk is not None:  # Verifica se o objeto já existe (ou seja, é uma edição e não uma criação)
-            old_transfer = CurrencyTransfer.objects.get(pk=self.pk)  # Obtém o objeto antigo antes da edição
-
-            # Atualiza o balanço dos portfolio_investments de origem e destino de acordo com a diferença entre os valores antigos e novos
-            old_transfer.undo_transfer()
-            self.make_transfer()
-
-        else:  # O objeto é novo
-            self.make_transfer()
-
+        self.transaction.transaction_type = 'deposit'
+        self.transaction.save()
         super().save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
-        self.undo_transfer()
-        super().delete(*args, **kwargs)
+    class Meta:
+        verbose_name = 'Receita'
+        verbose_name_plural = 'Receitas'
+        
+    def __str__(self):
+        return f"{self.description} | {self.transaction.transaction_amount} | {self.transaction.broker.main_currency}"
+    
 
-    def make_transfer(self):
-        # Atualiza os balanços dos portfolio_investments de origem e destino
-        self.from_portfolio_investment.shares_amount -= self.transfer_amount
-        self.to_portfolio_investment.shares_amount += self.transfer_amount
-        self.from_portfolio_investment.save()
-        self.to_portfolio_investment.save()
 
-    def undo_transfer(self):
-        # Desfaz a atualização dos balanços dos portfolio_investments de origem e destino
-        self.from_portfolio_investment.shares_amount += self.transfer_amount
-        self.to_portfolio_investment.shares_amount -= self.transfer_amount
-        self.from_portfolio_investment.save()
-        self.to_portfolio_investment.save()
-
-# entrada de dinheiro na carteira, como aporte ou dividendos, criará uma transação de moeda (CurrencyTransaction) Deposit
-class Income(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    broker = models.ForeignKey(Broker, on_delete=models.CASCADE)
-    date = models.DateField()
-    description = models.CharField(max_length=255)
-    amount = models.FloatField(default=0)
+class Expense(CurrencyTransaction):
+    transaction_category = models.CharField(
+        max_length=255,
+        choices=(
+            ('Cartão de Crédito', 'Cartão de Crédito'),  # Mercado, Farmácia, etc
+            ('Casa', 'Casa'),  # Aluguel, Condomínio, Luz, Água, Internet, etc
+            ('Manutenção de Ativos', 'Manutenção de Ativos'),  # Condominio, IPTU de imóveis, Taxas, etc
+            ('Imposto', 'Imposto'),  # IR, IOF, etc
+        )
+    )
+    
+    def save(self, *args, **kwargs):
+        self.transaction.transaction_type = 'withdraw'
+        self.transaction.save()
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = 'Despesa'
+        verbose_name_plural = 'Despesas'
 
     def __str__(self):
-        return f"{self.description} | {self.amount} | {self.broker.main_currency}"
+        return f"{self.description} - {self.transaction.transaction_amount}"
 
-# saída de dinheiro da carteira, como retirada ou taxa, criará uma transação de moeda (CurrencyTransaction) Withdraw
-class Expense(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    broker = models.ForeignKey(Broker, on_delete=models.CASCADE)
-    date = models.DateField()
-    description = models.CharField(max_length=255)
-    amount = models.FloatField(default=0)
-
-    def __str__(self):
-        return f"{self.description} - {self.amount}"

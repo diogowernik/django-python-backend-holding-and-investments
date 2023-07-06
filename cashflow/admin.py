@@ -1,20 +1,7 @@
 from django.contrib import admin
 from .models import AssetTransaction, AssetAveragePrice, CurrencyAveragePrice, Income, Expense, InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTransaction
 from portfolios.models import PortfolioInvestment
-# Income and Expenses
-class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('portfolio', 'broker', 'date', 'description', 'amount')
-    list_filter = ('portfolio', 'broker', 'date')
-    search_fields = ['description']
-admin.site.register(Income, IncomeAdmin)
 
-class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('portfolio', 'broker', 'date', 'description', 'amount')
-    list_filter = ('portfolio', 'broker', 'date')
-    search_fields = ['description']
-admin.site.register(Expense, ExpenseAdmin)
-
-# Currency Transaction
 class CurrencyTransactionAdmin(admin.ModelAdmin):
     list_display = ('transaction_date', 'price_brl','price_usd',
                     'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
@@ -26,13 +13,7 @@ class CurrencyTransactionAdmin(admin.ModelAdmin):
         # Somente chame save() quando todos os campos necessários forem preenchidos
         if obj.portfolio and obj.broker and obj.transaction_type is not None and obj.transaction_amount is not None:
             super().save_model(request, obj, form, change)
-
 admin.site.register(CurrencyTransaction, CurrencyTransactionAdmin)
-
-# class CurrencyAveragePriceAdmin(admin.ModelAdmin):
-#     list_display = ['portfolio_investment', 'share_average_price_brl', 'share_average_price_usd']
-#     search_fields = ['portfolio_investment']
-# admin.site.register(CurrencyAveragePrice, CurrencyAveragePriceAdmin)
 
 class AssetTransactionAdmin(admin.ModelAdmin):
     list_display = ('transaction_date', 'price_brl','price_usd',
@@ -42,15 +23,3 @@ class AssetTransactionAdmin(admin.ModelAdmin):
     readonly_fields = ('portfolio_investment',)
 admin.site.register(AssetTransaction, AssetTransactionAdmin)
 
-# Currency Transfer and International Currency Transfer
-class CurrencyTransferAdmin(admin.ModelAdmin):
-    list_display = ('from_portfolio_investment', 'to_portfolio_investment', 'transfer_amount', 'transfer_date', 'transfer_fee')
-    list_filter = ('from_portfolio_investment', 'to_portfolio_investment', 'transfer_date')
-    search_fields = ['from_portfolio_investment__ticker', 'to_portfolio_investment__ticker']  
-admin.site.register(CurrencyTransfer, CurrencyTransferAdmin)
-
-class InternationalCurrencyTransferAdmin(admin.ModelAdmin):
-    list_display = ('from_portfolio_investment', 'to_portfolio_investment', 'transfer_amount_in_source_currency', 'transfer_date', 'transfer_fee', 'exchange_rate')
-    list_filter = ('from_portfolio_investment', 'to_portfolio_investment', 'transfer_date')
-    search_fields = ['from_portfolio_investment__ticker', 'to_portfolio_investment__ticker']  
-admin.site.register(InternationalCurrencyTransfer, InternationalCurrencyTransferAdmin)
