@@ -2,7 +2,7 @@ from django.test import TestCase
 from portfolios.models import PortfolioInvestment,Portfolio
 from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
 from brokers.models import Broker, Currency 
-from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer
+from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -313,7 +313,6 @@ class CurrencyTransferTest(TestCase):
 
         self.portfolio = Portfolio.objects.create(name='Test Portfolio', owner=self.user)
 
-
     def test_transfer_brl(self):
         # Vamos fazer uma transferência de 500 BRL do banco do brasil para o Itau
         transfer_amount = 500
@@ -465,7 +464,6 @@ class CurrencyTransferTest(TestCase):
         # Depois de receber três transferências de 500 e uma edição para 700, o saldo deve ser 1700 (500 + 700 + 500)
         itau_investment = PortfolioInvestment.objects.get(portfolio=self.portfolio, broker=self.broker_itau, asset=self.asset_brl)
         self.assertEqual(itau_investment.shares_amount, transfer_amount + edited_amount + transfer_amount)
-
 
 class AssetTransactionTest(TestCase):
     def setUp(self):
@@ -631,7 +629,158 @@ class AssetTransactionTest(TestCase):
         self.assertEqual(currency_transaction.transaction_type, 'withdraw')
         self.assertEqual(currency_transaction.transaction_amount, transaction2.transaction_amount * transaction2.price_brl)
 
+class InternationalCurrencyTransferTest(TestCase):
+    def setUp(self):
+        self.currency_brl = Currency.objects.create(ticker='BRL', price_brl=1, price_usd=0.20)
+        self.currency_usd = Currency.objects.create(ticker='USD', price_brl=5, price_usd=1)
+        self.currency_eur = Currency.objects.create(ticker='EUR', price_brl=6, price_usd=1.2)
+        # br brokers
+        self.broker_banco_brasil= Broker.objects.create(name='Banco do Brasil', main_currency=self.currency_brl, slug='banco-do-brasil')
+        self.broker_itau= Broker.objects.create(name='Itau', main_currency=self.currency_brl, slug='itau')
+        # us brokers
+        self.broker_avenue= Broker.objects.create(name='Avenue', main_currency=self.currency_usd, slug='avenue')
+        self.broker_inter= Broker.objects.create(name='Inter', main_currency=self.currency_usd, slug='inter')
+        # eu brokers
+        self.broker_degiro= Broker.objects.create(name='Degiro', main_currency=self.currency_eur, slug='degiro')
+        self.broker_saxo= Broker.objects.create(name='Saxo', main_currency=self.currency_eur, slug='saxo')
+
+        # Configuração inicial. Criamos os objetos necessários para os testes.
+        self.category = Category.objects.create(name='Test Category')
+        self.subcategory = SubCategory.objects.create(name='Test SubCategory')
+        self.asset_brl = CurrencyHolding.objects.create(ticker='BRL', category=self.category, subcategory=self.subcategory, currency=self.currency_brl, price_brl=1, price_usd=0.20)
+        self.asset_usd = CurrencyHolding.objects.create(ticker='USD', category=self.category, subcategory=self.subcategory, currency=self.currency_usd, price_brl=5, price_usd=1)
+        self.asset_eur = CurrencyHolding.objects.create(ticker='EUR', category=self.category, subcategory=self.subcategory, currency=self.currency_eur, price_brl=6, price_usd=1.2)
+
+        # Cria um usuário para ser o proprietário do portfolio
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        # Cria um broker para ser usado nas trades
+
+        self.portfolio = Portfolio.objects.create(name='Test Portfolio', owner=self.user)
 
 
+    def test_from_brl_broker_to_usd_broker(self):
+        # Definimos o valor a ser transferido e a taxa de câmbio
+        transfer_amount_brl = 5000.0  # 5000 BRL
+        exchange_rate = 5.0  # 1 USD = 5 BRL
+
+        # Criamos a transferência
+        transfer = InternationalCurrencyTransfer.objects.create(
+            portfolio=self.portfolio,
+            from_broker=self.broker_banco_brasil,
+            to_broker=self.broker_avenue,
+            from_transfer_amount=transfer_amount_brl,
+            exchange_rate=exchange_rate
+        )
+
+        # Testamos se a transferência foi criada corretamente
+        self.assertEqual(transfer.from_broker, self.broker_banco_brasil)
+        self.assertEqual(transfer.to_broker, self.broker_avenue)
+        self.assertEqual(transfer.from_transfer_amount, transfer_amount_brl)
+        self.assertEqual(transfer.to_transfer_amount, transfer_amount_brl / exchange_rate)  # O valor em USD
+        self.assertEqual(transfer.exchange_rate, exchange_rate)
+        self.assertIsNotNone(transfer.transfer_date)
+
+        # Verificamos se as transações foram criadas corretamente
+        from_transaction = CurrencyTransaction.objects.get(id=transfer.from_transaction.id)
+        to_transaction = CurrencyTransaction.objects.get(id=transfer.to_transaction.id)
+        self.assertEqual(from_transaction.transaction_amount, transfer_amount_brl)
+        self.assertEqual(to_transaction.transaction_amount, transfer_amount_brl / exchange_rate)
+
+        # Verificamos se o tipo de transação está correto
+        self.assertEqual(from_transaction.transaction_type, 'withdraw')
+        self.assertEqual(to_transaction.transaction_type, 'deposit')
 
         
+    def test_from_usd_broker_to_brl_broker(self):
+        # Definimos o valor a ser transferido e a taxa de câmbio
+        transfer_amount_usd = 1000.0  # 1000 USD
+        exchange_rate = 0.20  # 1 BRL = 0.20 USD
+
+        # Criamos a transferência
+        transfer = InternationalCurrencyTransfer.objects.create(
+            portfolio=self.portfolio,
+            from_broker=self.broker_avenue,
+            to_broker=self.broker_banco_brasil,
+            from_transfer_amount=transfer_amount_usd,
+            exchange_rate=exchange_rate
+        )
+
+        # Testamos se a transferência foi criada corretamente
+        self.assertEqual(transfer.from_broker, self.broker_avenue)
+        self.assertEqual(transfer.to_broker, self.broker_banco_brasil)
+        self.assertEqual(transfer.from_transfer_amount, transfer_amount_usd)
+        self.assertEqual(transfer.to_transfer_amount, transfer_amount_usd / exchange_rate)  # O valor em BRL
+        self.assertEqual(transfer.exchange_rate, exchange_rate)
+        self.assertIsNotNone(transfer.transfer_date)
+
+        # Verificamos se as transações foram criadas corretamente
+        from_transaction = CurrencyTransaction.objects.get(id=transfer.from_transaction.id)
+        to_transaction = CurrencyTransaction.objects.get(id=transfer.to_transaction.id)
+        self.assertEqual(from_transaction.transaction_amount, transfer_amount_usd)
+        self.assertEqual(to_transaction.transaction_amount, transfer_amount_usd / exchange_rate)
+
+        # Verificamos se o tipo de transação está correto
+        self.assertEqual(from_transaction.transaction_type, 'withdraw')
+        self.assertEqual(to_transaction.transaction_type, 'deposit')
+
+    def test_edit_international_currency_transfer(self):
+        # Crie um objeto de transferência como em um dos testes anteriores
+        transfer_amount_usd = 1000.0
+        exchange_rate = 0.20
+        transfer = InternationalCurrencyTransfer.objects.create(
+            portfolio=self.portfolio,
+            from_broker=self.broker_avenue,
+            to_broker=self.broker_banco_brasil,
+            from_transfer_amount=transfer_amount_usd,
+            exchange_rate=exchange_rate
+        )
+
+        # Edite o objeto de transferência
+        new_transfer_amount_usd = 500.0
+        new_exchange_rate = 0.25
+        transfer.from_transfer_amount = new_transfer_amount_usd
+        transfer.exchange_rate = new_exchange_rate
+        transfer.save()
+
+        # Recarregue o objeto de transferência do banco de dados
+        transfer.refresh_from_db()
+
+        # Verifique se as edições foram aplicadas corretamente
+        self.assertEqual(transfer.from_transfer_amount, new_transfer_amount_usd)
+        self.assertEqual(transfer.to_transfer_amount, new_transfer_amount_usd / new_exchange_rate) 
+        self.assertEqual(transfer.exchange_rate, new_exchange_rate)
+
+        # Verifique se as transações relacionadas foram atualizadas corretamente
+        from_transaction = CurrencyTransaction.objects.get(id=transfer.from_transaction.id)
+        to_transaction = CurrencyTransaction.objects.get(id=transfer.to_transaction.id)
+        self.assertEqual(from_transaction.transaction_amount, new_transfer_amount_usd)
+        self.assertEqual(to_transaction.transaction_amount, new_transfer_amount_usd / new_exchange_rate)
+  
+    def test_delete_international_currency_transfer(self):
+        # Crie um objeto de transferência como em um dos testes anteriores
+        transfer_amount_usd = 1000.0
+        exchange_rate = 0.20
+        transfer = InternationalCurrencyTransfer.objects.create(
+            portfolio=self.portfolio,
+            from_broker=self.broker_avenue,
+            to_broker=self.broker_banco_brasil,
+            from_transfer_amount=transfer_amount_usd,
+            exchange_rate=exchange_rate
+        )
+
+        # Armazene os IDs das transações relacionadas
+        from_transaction_id = transfer.from_transaction.id
+        to_transaction_id = transfer.to_transaction.id
+
+        # Delete a transferência
+        transfer.delete()
+
+        # Verifique se a transferência foi excluída
+        with self.assertRaises(InternationalCurrencyTransfer.DoesNotExist):
+            InternationalCurrencyTransfer.objects.get(id=transfer.id)
+
+        # Verifique se as transações relacionadas foram excluídas
+        with self.assertRaises(CurrencyTransaction.DoesNotExist):
+            CurrencyTransaction.objects.get(id=from_transaction_id)
+        with self.assertRaises(CurrencyTransaction.DoesNotExist):
+            CurrencyTransaction.objects.get(id=to_transaction_id)

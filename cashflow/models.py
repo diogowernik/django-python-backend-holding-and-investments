@@ -19,6 +19,7 @@ class CurrencyTransaction(models.Model):
 
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE, blank=True, null=True)
     
+    @transaction.atomic
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Verifica se o objeto é novo
 
@@ -56,6 +57,7 @@ class CurrencyTransaction(models.Model):
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
         portfolio_average_price.save()
 
+    @transaction.atomic
     def delete(self, *args, **kwargs):
         # Antes de deletar o objeto, precisamos ajustar a quantidade de ações em portfolio_investment
         if self.transaction_type == 'deposit':
@@ -177,22 +179,22 @@ class CurrencyTransfer(models.Model):
 # Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
 class InternationalCurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
-    from_broker = models.ForeignKey(Broker, related_name='intl_transfer_from', on_delete=models.CASCADE, default=1)
-    to_broker = models.ForeignKey(Broker, related_name='intl_transfer_to', on_delete=models.CASCADE, default=2)
+    from_broker = models.ForeignKey(Broker, related_name='international_transfer_from', on_delete=models.CASCADE, default=1)
+    to_broker = models.ForeignKey(Broker, related_name='intternational_transfer_to', on_delete=models.CASCADE, default=2)
     from_transfer_amount = models.FloatField(default=0)  # Quantidade na moeda original
     to_transfer_amount = models.FloatField(editable=False, default=0) # Quantidade na moeda de destino, após a conversão
     transfer_fee = models.FloatField(default=0)  # Taxa de transferência cobrada pelo corretor
     exchange_rate = models.FloatField(default=0)  # Taxa de câmbio usada na transferência
     transfer_date = models.DateField(default=timezone.now)
 
-    from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_intl_transfers', on_delete=models.SET_NULL, null=True, blank=True)
-    to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_intl_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+    from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_international_transfers', on_delete=models.SET_NULL, null=True, blank=True)
+    to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_international_transfers', on_delete=models.SET_NULL, null=True, blank=True)
 
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.full_clean()  # Isto irá chamar o método clean
         # Calcula o to_transfer_amount baseado no from_transfer_amount e na taxa de câmbio
-        self.to_transfer_amount = self.from_transfer_amount * self.exchange_rate
+        self.to_transfer_amount = self.from_transfer_amount / self.exchange_rate
         # Se for uma edição, atualize as transações existentes
         if self.pk is not None and self.from_transaction and self.to_transaction:
             self.from_transaction.transaction_amount = self.from_transfer_amount
@@ -252,6 +254,7 @@ class AssetTransaction(models.Model):
 
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE, blank=True, null=True)
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
 
@@ -314,7 +317,8 @@ class AssetTransaction(models.Model):
         portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
         portfolio_average_price.save()
-    
+
+    @transaction.atomic    
     def delete(self, *args, **kwargs):
         # Antes de deletar o objeto, precisamos ajustar a quantidade de ações em portfolio_investment
         if self.transaction_type == 'buy':
