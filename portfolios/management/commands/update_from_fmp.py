@@ -35,7 +35,7 @@ class Command(BaseCommand):
         # update the database
         update_investment(Stocks, merged_stocks_df, ['twelve_m_dividend', 'der', 'ffo', 'p_ffo', 'p_vpa', 'roic', 'earnings_yield', 'price_usd', 'price_brl', 'ffo_yield'])
         # update ranking
-        update_ranking(Stocks, 'roic', 'der')
+        update_ranking(Stocks, 'roic', 'der') # earning yield original.
 
 
 

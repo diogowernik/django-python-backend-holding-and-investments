@@ -28,13 +28,19 @@ class CurrencyTransaction(models.Model):
             if self.broker.main_currency.ticker == 'BRL':
                 self.price_brl = 1
             else:
-                self.price_brl = get_exchange_rate(self.broker.main_currency.ticker, 'BRL', self.transaction_date.strftime('%Y-%m-%d'))
+                try:
+                    self.price_brl = get_exchange_rate(self.broker.main_currency.ticker, 'BRL', self.transaction_date.strftime('%Y-%m-%d'))
+                except:
+                    self.price_brl = self.broker.main_currency.price_brl
 
         if not self.price_usd:
             if self.broker.main_currency.ticker == 'USD':
                 self.price_usd = 1
             else:
-                self.price_usd = get_exchange_rate(self.broker.main_currency.ticker, 'USD', self.transaction_date.strftime('%Y-%m-%d'))
+                try:
+                    self.price_usd = get_exchange_rate(self.broker.main_currency.ticker, 'USD', self.transaction_date.strftime('%Y-%m-%d'))
+                except:
+                    self.price_usd = self.broker.main_currency.price_usd
 
         # Encontra ou cria um PortfolioInvestment com o Portfolio, Broker e Asset adequados
         asset = CurrencyHolding.objects.get(currency=self.broker.main_currency)
@@ -270,11 +276,6 @@ class AssetTransaction(models.Model):
             asset=self.asset
         )
 
-        # Recalculate share_average_price_brl and share_average_price_usd
-        portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
-        portfolio_average_price.save()
-
         # Save the object
         super().save(*args, **kwargs)
 
@@ -315,6 +316,7 @@ class AssetTransaction(models.Model):
 
         # Recalculate share_average_price_brl and share_average_price_usd
         portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
+        portfolio_average_price.transaction_date = self.transaction_date.date()
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
         portfolio_average_price.save()
 
@@ -360,6 +362,10 @@ class AssetAveragePrice(models.Model):
     share_average_price_usd = models.FloatField(default=0)
     trade_profit_brl = models.FloatField(default=0)
     trade_profit_usd = models.FloatField(default=0)
+    total_shares = models.FloatField(default=0)
+    total_brl = models.FloatField(default=0)
+    total_usd = models.FloatField(default=0)
+    transaction_date = models.DateTimeField(default=timezone.now)
 
     def recalculate_average(self, start_date, is_new=False, transaction_id=None):
         # Get all transactions for this portfolio_investment, ordered by date
@@ -398,6 +404,11 @@ class AssetAveragePrice(models.Model):
         # Update trade profits
         self.trade_profit_brl = trade_profit_brl
         self.trade_profit_usd = trade_profit_usd
+
+        # Update totals
+        self.total_brl = total_brl
+        self.total_usd = total_usd
+        self.total_shares = total_shares
 
         # Update the corresponding portfolio_investment
         portfolio_investment = self.portfolio_investment

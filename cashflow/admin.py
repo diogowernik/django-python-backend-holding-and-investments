@@ -23,3 +23,6 @@ class AssetTransactionAdmin(admin.ModelAdmin):
     readonly_fields = ('portfolio_investment',)
 admin.site.register(AssetTransaction, AssetTransactionAdmin)
 
+class AssetAveragePriceAdmin(admin.ModelAdmin):
+    list_display = ('transaction_date',)
+admin.site.register(AssetAveragePrice, AssetAveragePriceAdmin)

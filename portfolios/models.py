@@ -1,13 +1,8 @@
-from datetime import date
-from email.policy import default
-from unicodedata import category
-from django import forms
+
 from django.db import models
 from django.contrib.auth.models import User
-from requests import delete
 from investments.models import Asset
 from brokers.models import Broker
-from dividends.models import Dividend
 from categories.models import Category
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
@@ -35,10 +30,8 @@ class PortfolioInvestment(models.Model):
     trade_profit_brl = models.FloatField(default=0, editable=False)
     trade_profit_usd = models.FloatField(default=0, editable=False)
 
-    # share_average_prices tem haver com o CurrencyAveragePrice, não sei se atualizaria a cada vez do CRUD de CurrencyAveragePrice
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
-    # total_costs tem haver com o CurrencyAveragePrice, não sei se atualizaria a cada vez do CRUD de CurrencyAveragePrice
     total_cost_brl = models.FloatField(editable=False, default=0)
     total_cost_usd = models.FloatField(default=0, editable=False)
 
