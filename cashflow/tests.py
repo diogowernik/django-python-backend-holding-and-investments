@@ -467,8 +467,6 @@ class CurrencyTransferTest(TestCase):
         self.assertEqual(itau_investment.shares_amount, transfer_amount + edited_amount + transfer_amount)
 
 
-
-
 class AssetTransactionTest(TestCase):
     def setUp(self):
         self.currency_brl = Currency.objects.create(ticker='BRL', price_brl=1, price_usd=0.20)

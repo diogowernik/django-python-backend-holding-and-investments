@@ -179,10 +179,10 @@ class InternationalCurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     from_broker = models.ForeignKey(Broker, related_name='intl_transfer_from', on_delete=models.CASCADE, default=1)
     to_broker = models.ForeignKey(Broker, related_name='intl_transfer_to', on_delete=models.CASCADE, default=2)
-    from_transfer_amount = models.FloatField()  # Quantidade na moeda original
-    to_transfer_amount = models.FloatField(editable=False) # Quantidade na moeda de destino, após a conversão
+    from_transfer_amount = models.FloatField(default=0)  # Quantidade na moeda original
+    to_transfer_amount = models.FloatField(editable=False, default=0) # Quantidade na moeda de destino, após a conversão
     transfer_fee = models.FloatField(default=0)  # Taxa de transferência cobrada pelo corretor
-    exchange_rate = models.FloatField()  # Taxa de câmbio usada na transferência
+    exchange_rate = models.FloatField(default=0)  # Taxa de câmbio usada na transferência
     transfer_date = models.DateField(default=timezone.now)
 
     from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_intl_transfers', on_delete=models.SET_NULL, null=True, blank=True)
@@ -343,6 +343,11 @@ class AssetTransaction(models.Model):
 
         # Agora, podemos deletar o objeto
         super(AssetTransaction, self).delete(*args, **kwargs)
+    
+    class Meta:
+        ordering = ['-transaction_date']
+        verbose_name = 'Compra e Venda de Ativo'
+        verbose_name_plural = 'Compra e Venda de Ativos'
 
 # Média de preço de um ativo em um portfolio, Total de lucro/prejuízo, total investido (Mesma moeda do Broker)
 class AssetAveragePrice(models.Model):
@@ -438,7 +443,8 @@ class Income(CurrencyTransaction):
             ('Renda Extra', 'Renda Extra'),  # Venda de algo, Freelancer, Autônomo, etc
             ('Renda Passiva', 'Renda Passiva'),  # Dividendos, Aluguéis, será que junto aqui?
             ('Outros', 'Outros'),
-        )
+        ),
+        default='Renda Ativa'
     )
     
     def save(self, *args, **kwargs):
@@ -453,8 +459,6 @@ class Income(CurrencyTransaction):
     def __str__(self):
         return f"{self.description} | {self.transaction.transaction_amount} | {self.transaction.broker.main_currency}"
     
-
-
 class Expense(CurrencyTransaction):
     transaction_category = models.CharField(
         max_length=255,
@@ -463,7 +467,8 @@ class Expense(CurrencyTransaction):
             ('Casa', 'Casa'),  # Aluguel, Condomínio, Luz, Água, Internet, etc
             ('Manutenção de Ativos', 'Manutenção de Ativos'),  # Condominio, IPTU de imóveis, Taxas, etc
             ('Imposto', 'Imposto'),  # IR, IOF, etc
-        )
+        ),
+        default='Cartão de Crédito'
     )
     
     def save(self, *args, **kwargs):
@@ -477,4 +482,6 @@ class Expense(CurrencyTransaction):
 
     def __str__(self):
         return f"{self.description} - {self.transaction.transaction_amount}"
+
+
 

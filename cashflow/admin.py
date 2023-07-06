@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AssetTransaction, AssetAveragePrice, CurrencyAveragePrice, Income, Expense, InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTransaction
+from .models import AssetTransaction, AssetAveragePrice, CurrencyAveragePrice,  InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTransaction
 from portfolios.models import PortfolioInvestment
 
 class CurrencyTransactionAdmin(admin.ModelAdmin):
