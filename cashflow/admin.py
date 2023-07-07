@@ -24,5 +24,5 @@ class AssetTransactionAdmin(admin.ModelAdmin):
 admin.site.register(AssetTransaction, AssetTransactionAdmin)
 
 class AssetAveragePriceAdmin(admin.ModelAdmin):
-    list_display = ('transaction_date',)
+    list_display = ('transaction_date', 'portfolio_investment')
 admin.site.register(AssetAveragePrice, AssetAveragePriceAdmin)
