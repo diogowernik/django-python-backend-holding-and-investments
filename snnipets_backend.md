@@ -41,6 +41,8 @@ python manage.py flush
 # create app with django
 
 python manage.py startapp <app_name>
+- app comum
+python manage.py startapp common
 
 # install pandas
 

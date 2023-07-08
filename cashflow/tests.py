@@ -6,27 +6,8 @@ from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTrans
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
 from django.utils import timezone
+from common.tests import CommonSetupMixin
 
-class CommonSetupMixin:
-    @classmethod
-    def setUpTestData(cls):
-        # Setup comum para todos os testes
-        cls.currency_brl = Currency.objects.create(ticker='BRL', price_brl=1, price_usd=0.20)
-        cls.currency_usd = Currency.objects.create(ticker='USD', price_brl=5, price_usd=1)
-        cls.currency_eur = Currency.objects.create(ticker='EUR', price_brl=6, price_usd=1.2)
-        cls.broker_banco_brasil= Broker.objects.create(name='Banco do Brasil', main_currency=cls.currency_brl, slug='banco-do-brasil')
-        cls.broker_avenue= Broker.objects.create(name='Itau', main_currency=cls.currency_usd, slug='avenue')
-        cls.broker_itau= Broker.objects.create(name='Itau', main_currency=cls.currency_brl, slug='itau')
-        cls.broker_inter= Broker.objects.create(name='Inter', main_currency=cls.currency_usd, slug='inter')
-        cls.broker_degiro= Broker.objects.create(name='Degiro', main_currency=cls.currency_eur, slug='degiro')
-        cls.broker_saxo= Broker.objects.create(name='Saxo', main_currency=cls.currency_eur, slug='saxo')
-        cls.category = Category.objects.create(name='Test Category')
-        cls.subcategory = SubCategory.objects.create(name='Test SubCategory')
-        cls.asset_brl = CurrencyHolding.objects.create(ticker='BRL', category=cls.category, subcategory=cls.subcategory, currency=cls.currency_brl, price_brl=1, price_usd=0.20)
-        cls.asset_usd = CurrencyHolding.objects.create(ticker='USD', category=cls.category, subcategory=cls.subcategory, currency=cls.currency_usd, price_brl=5, price_usd=1)
-        cls.asset_eur = CurrencyHolding.objects.create(ticker='EUR', category=cls.category, subcategory=cls.subcategory, currency=cls.currency_eur, price_brl=6, price_usd=1.2)
-        cls.user = User.objects.create_user(username='testuser', password='12345')
-        cls.portfolio = Portfolio.objects.create(name='Test Portfolio', owner=cls.user)
 
 class CurrencyTransactionTest(CommonSetupMixin, TestCase):          
     def create_transaction(self, amount, price_brl, price_usd, transaction_type='deposit', broker=None):
@@ -317,12 +298,6 @@ class CurrencyTransferTest(CommonSetupMixin, TestCase):
         self.assertEqual(itau_investment.shares_amount, transfer_amount + edited_amount + transfer_amount)
 
 class AssetTransactionTest(CommonSetupMixin, TestCase):
-    def setUp(self):
-        self.asset_wege3 = BrStocks.objects.create(ticker='WEGE3', category=self.category, subcategory=self.subcategory, price_brl=50, price_usd=10)
-        self.asset_itub4 = BrStocks.objects.create(ticker='ITUB4', category=self.category, subcategory=self.subcategory, price_brl=30, price_usd=6)
-        self.asset_msft = Stocks.objects.create(ticker='MSFT', category=self.category, subcategory=self.subcategory, price_brl=200, price_usd=40)
-        self.asset_o = Reit.objects.create(ticker='O', category=self.category, subcategory=self.subcategory, price_brl=100, price_usd=20)
-
     def test_brl_banco_do_brasil_asset_buy(self):
         transaction1 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=100, price_brl=10, price_usd=2)
         transaction2 = AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type='buy', asset=self.asset_wege3, transaction_amount=200, price_brl=20, price_usd=4)

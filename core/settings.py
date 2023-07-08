@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'admin_auto_filters',
     'radar',
+    'common',
 
 ]
 

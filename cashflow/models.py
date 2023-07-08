@@ -3,11 +3,12 @@ from brokers.models import Broker
 from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset, CurrencyHolding
 from django.utils import timezone
-from investments.utils.get_currency_price import get_exchange_rate
+from investments.utils.get_currency_price import get_exchange_rate_api
 from django.db import transaction
 from django.core.exceptions import ValidationError
+# import logging
 
-# Deposito e Saque de dinheiro (Mesma moeda do broker)
+# Encapsulado Ok
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=2)
@@ -26,7 +27,7 @@ class CurrencyTransaction(models.Model):
         self.set_prices()
         self.set_portfolio_investment()
         super().save(*args, **kwargs)  # Save the object
-        self.recalculate_average_prices(is_new)
+        self.process_transaction_prices(is_new)
 
     def set_prices(self):
         self.price_brl = self.get_exchange_rate('BRL')
@@ -36,9 +37,10 @@ class CurrencyTransaction(models.Model):
         if getattr(self.broker.main_currency, 'ticker') == target_currency:
             return 1
         try:
-            return get_exchange_rate(self.broker.main_currency.ticker, target_currency, self.transaction_date.strftime('%Y-%m-%d'))
+            return get_exchange_rate_api(self.broker.main_currency.ticker, target_currency, self.transaction_date.strftime('%Y-%m-%d'))
         except:
             return getattr(self.broker.main_currency, f'price_{target_currency.lower()}')
+
 
     def set_portfolio_investment(self):
         asset = CurrencyHolding.objects.get(currency=self.broker.main_currency)
@@ -48,10 +50,10 @@ class CurrencyTransaction(models.Model):
             asset=asset
         )
 
-    def recalculate_average_prices(self, is_new):
-        portfolio_average_price, _ = CurrencyAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
-        portfolio_average_price.save()
+    def process_transaction_prices(self, is_new):
+        transaction_calculation, _ = CurrencyTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
+        transaction_calculation.process_transaction(start_date=self.transaction_date, is_new=is_new)
+        transaction_calculation.save()
 
     @transaction.atomic
     def delete(self, *args, **kwargs):
@@ -64,9 +66,9 @@ class CurrencyTransaction(models.Model):
 
         # Em seguida, recalcule as médias
         try:
-            portfolio_average_price = CurrencyAveragePrice.objects.get(portfolio_investment=self.portfolio_investment)
-            portfolio_average_price.recalculate_average(start_date=self.transaction_date, transaction_id=self.id)
-        except CurrencyAveragePrice.DoesNotExist:
+            transaction_calculation = CurrencyTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
+            transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
+        except CurrencyTransactionCalculation.DoesNotExist:
             pass
 
         # Agora, podemos deletar o objeto
@@ -74,27 +76,31 @@ class CurrencyTransaction(models.Model):
 
     class Meta:
         ordering = ['-transaction_date']
-        verbose_name_plural = 'Depósitos e Saques'
+        verbose_name_plural = '  Depósitos e Saques'
 
     def __str__(self):
         return f'{self.transaction_type} {self.transaction_amount} {self.broker.main_currency.ticker}'
 
-# Preço Médio, Total Investido, Total Atual (Mesma moeda do broker, calculado em BRL e USD)
-class CurrencyAveragePrice(models.Model):
+# Encapsulado Ok
+class CurrencyTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
 
-    def recalculate_average(self, start_date, is_new=False, transaction_id=None):
-        # Obter todas as transações do portfolio_investment, ordenadas por data
-        transactions = CurrencyTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
+    def process_transaction(self, start_date, is_new=False, transaction_id=None):
+        transactions = self.get_transactions(transaction_id)
+        total_brl, total_usd, total_shares = self.calculate_totals(transactions)
+        self.update_average_prices(total_brl, total_usd, total_shares)
+        self.update_portfolio_investment(total_brl, total_usd, total_shares)
 
-        # Iniciar total_brl, total_usd, e total_shares com 0
+    def get_transactions(self, transaction_id):
+        return CurrencyTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
+
+    def calculate_totals(self, transactions):
         total_brl = 0
         total_usd = 0
         total_shares = 0
 
-        # Percorrer as transações e recalcular a quantidade total de ações e os totais brl e usd
         for transaction in transactions:
             if transaction.transaction_type == 'deposit':
                 total_brl += transaction.transaction_amount * transaction.price_brl
@@ -104,12 +110,14 @@ class CurrencyAveragePrice(models.Model):
                 total_brl -= transaction.transaction_amount * transaction.price_brl
                 total_usd -= transaction.transaction_amount * transaction.price_usd
                 total_shares -= transaction.transaction_amount
+        
+        return total_brl, total_usd, total_shares
 
-        # Atualizar os preços médios
+    def update_average_prices(self, total_brl, total_usd, total_shares):
         self.share_average_price_brl = total_brl / total_shares if total_shares != 0 else 0
         self.share_average_price_usd = total_usd / total_shares if total_shares != 0 else 0
 
-        # Atualizar o portfolio_investment correspondente
+    def update_portfolio_investment(self, total_brl, total_usd, total_shares):
         portfolio_investment = self.portfolio_investment
         portfolio_investment.share_average_price_brl = self.share_average_price_brl
         portfolio_investment.share_average_price_usd = self.share_average_price_usd
@@ -120,7 +128,11 @@ class CurrencyAveragePrice(models.Model):
         portfolio_investment.total_today_usd = total_shares * portfolio_investment.asset.price_usd
         portfolio_investment.save()
 
+# criar um CurrencyTransactionHistory parecido com o AssetTransactionHistory
+# class CurrencyTransactionHistory(models.Model):
+
 # Transferência de moedas entre brokers mesma moeda. Ex: Transferir USD do Interactive Brokers para o TD Ameritrade
+# Encapsular internamente em uma funções menores
 class CurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     from_broker = models.ForeignKey(Broker, related_name='transfer_from', on_delete=models.CASCADE, default=1)
@@ -132,31 +144,38 @@ class CurrencyTransfer(models.Model):
     from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_transfers', on_delete=models.SET_NULL, null=True, blank=True)
     to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_transfers', on_delete=models.SET_NULL, null=True, blank=True)
 
+    def create_transactions(self):
+        self.from_transaction = CurrencyTransaction.objects.create(
+            portfolio=self.portfolio,
+            broker=self.from_broker,
+            transaction_type='withdraw',
+            transaction_amount=self.transfer_amount,
+            transaction_date=self.transfer_date,
+        )
+        self.to_transaction = CurrencyTransaction.objects.create(
+            portfolio=self.portfolio,
+            broker=self.to_broker,
+            transaction_type='deposit',
+            transaction_amount=self.transfer_amount,
+            transaction_date=self.transfer_date,
+        )
+
+    def update_transactions(self):
+        self.from_transaction.transaction_amount = self.transfer_amount
+        self.from_transaction.save()
+        self.to_transaction.transaction_amount = self.transfer_amount
+        self.to_transaction.save()
+
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.full_clean()  # Isto irá chamar o método clean
+
         # Se for uma edição, atualize as transações existentes
         if self.pk is not None and self.from_transaction and self.to_transaction:
-            self.from_transaction.transaction_amount = self.transfer_amount
-            self.from_transaction.save()
-            self.to_transaction.transaction_amount = self.transfer_amount
-            self.to_transaction.save()
+            self.update_transactions()
         # Caso contrário, crie novas transações
         else:
-            self.from_transaction = CurrencyTransaction.objects.create(
-                portfolio=self.portfolio,
-                broker=self.from_broker,
-                transaction_type='withdraw',
-                transaction_amount=self.transfer_amount,
-                transaction_date=self.transfer_date,
-            )
-            self.to_transaction = CurrencyTransaction.objects.create(
-                portfolio=self.portfolio,
-                broker=self.to_broker,
-                transaction_type='deposit',
-                transaction_amount=self.transfer_amount,
-                transaction_date=self.transfer_date,
-            )
+            self.create_transactions()
 
         super().save(*args, **kwargs)
 
@@ -173,6 +192,7 @@ class CurrencyTransfer(models.Model):
             raise ValidationError("Os brokers de origem e destino devem ser diferentes.")
 
 # Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
+# Encapsular internamente em uma funções menores
 class InternationalCurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     from_broker = models.ForeignKey(Broker, related_name='international_transfer_from', on_delete=models.CASCADE, default=1)
@@ -186,33 +206,43 @@ class InternationalCurrencyTransfer(models.Model):
     from_transaction = models.ForeignKey(CurrencyTransaction, related_name='from_international_transfers', on_delete=models.SET_NULL, null=True, blank=True)
     to_transaction = models.ForeignKey(CurrencyTransaction, related_name='to_international_transfers', on_delete=models.SET_NULL, null=True, blank=True)
 
+    def calculate_to_transfer_amount(self):
+        # Calcula o to_transfer_amount baseado no from_transfer_amount e na taxa de câmbio
+        self.to_transfer_amount = self.from_transfer_amount / self.exchange_rate
+
+    def create_transactions(self):
+        self.from_transaction = CurrencyTransaction.objects.create(
+            portfolio=self.portfolio,
+            broker=self.from_broker,
+            transaction_type='withdraw',
+            transaction_amount=self.from_transfer_amount,
+            transaction_date=self.transfer_date,
+        )
+        self.to_transaction = CurrencyTransaction.objects.create(
+            portfolio=self.portfolio,
+            broker=self.to_broker,
+            transaction_type='deposit',
+            transaction_amount=self.to_transfer_amount,
+            transaction_date=self.transfer_date,
+        )
+
+    def update_transactions(self):
+        self.from_transaction.transaction_amount = self.from_transfer_amount
+        self.from_transaction.save()
+        self.to_transaction.transaction_amount = self.to_transfer_amount
+        self.to_transaction.save()
+
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.full_clean()  # Isto irá chamar o método clean
-        # Calcula o to_transfer_amount baseado no from_transfer_amount e na taxa de câmbio
-        self.to_transfer_amount = self.from_transfer_amount / self.exchange_rate
+        self.calculate_to_transfer_amount()
+
         # Se for uma edição, atualize as transações existentes
         if self.pk is not None and self.from_transaction and self.to_transaction:
-            self.from_transaction.transaction_amount = self.from_transfer_amount
-            self.from_transaction.save()
-            self.to_transaction.transaction_amount = self.to_transfer_amount
-            self.to_transaction.save()
+            self.update_transactions()
         # Caso contrário, crie novas transações
         else:
-            self.from_transaction = CurrencyTransaction.objects.create(
-                portfolio=self.portfolio,
-                broker=self.from_broker,
-                transaction_type='withdraw',
-                transaction_amount=self.from_transfer_amount,
-                transaction_date=self.transfer_date,
-            )
-            self.to_transaction = CurrencyTransaction.objects.create(
-                portfolio=self.portfolio,
-                broker=self.to_broker,
-                transaction_type='deposit',
-                transaction_amount=self.to_transfer_amount,
-                transaction_date=self.transfer_date,
-            )
+            self.create_transactions()
 
         super().save(*args, **kwargs)
     
@@ -238,6 +268,7 @@ class InternationalCurrencyTransfer(models.Model):
             raise ValidationError("A quantidade de moeda a ser transferida deve ser maior que zero.")
 
 # Compra e venda de ativos (Reit, BrStocks, Fii, Stocks)
+# Encapsular internamente em uma funções menores
 class AssetTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
@@ -305,11 +336,11 @@ class AssetTransaction(models.Model):
 
 
         # Recalculate share_average_price_brl and share_average_price_usd
-        portfolio_average_price, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
-        portfolio_average_price.transaction_date = self.transaction_date
-        portfolio_average_price.last_transaction = self
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
-        portfolio_average_price.save()
+        transaction_calculation, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
+        transaction_calculation.transaction_date = self.transaction_date
+        transaction_calculation.last_transaction = self
+        transaction_calculation.process_transaction(start_date=self.transaction_date, is_new=is_new)
+        transaction_calculation.save()
 
     @transaction.atomic    
     def delete(self, *args, **kwargs):
@@ -322,8 +353,8 @@ class AssetTransaction(models.Model):
 
         # Em seguida, recalcule as médias
         try:
-            portfolio_average_price = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-            portfolio_average_price.recalculate_average(start_date=self.transaction_date, transaction_id=self.id)
+            transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
+            transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
         except AssetTransactionCalculation.DoesNotExist:
             pass  
 
@@ -343,10 +374,10 @@ class AssetTransaction(models.Model):
     
     class Meta:
         ordering = ['-transaction_date']
-        verbose_name = 'Compra e Venda de Ativo'
-        verbose_name_plural = 'Compra e Venda de Ativos'
+        verbose_name = ' Compra e Venda de Ativo'
+        verbose_name_plural = ' Compra e Venda de Ativos'
 
-
+# Encapsulado Ok
 class AssetTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # não deleta o objeto, apenas seta o campo como null
@@ -359,7 +390,7 @@ class AssetTransactionCalculation(models.Model):
     total_usd = models.FloatField(default=0)
     transaction_date = models.DateTimeField(default=timezone.now)
 
-    def recalculate_average(self, start_date, is_new=False, transaction_id=None):
+    def process_transaction(self, start_date, is_new=False, transaction_id=None):
         transactions = self.get_transactions(transaction_id)
         total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd = self.calculate_totals_and_profits(transactions)
         self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
@@ -447,11 +478,16 @@ class AssetTransactionCalculation(models.Model):
         self.portfolio_investment.save()
 
         # Then recalculate averages
-        portfolio_average_price = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, transaction_id=self.id)
+        transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
+        transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
 
         # Now we can delete the object
         super().delete(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-transaction_date']
+        verbose_name = ' Compra e Venda / Calculos'
+        verbose_name_plural = ' Compras e Vendas / Calculos'
 
 # Histórico de Preço Médio do Ativo, Total de Ações, Total em BRL e Total em USD, Transação
 class TransactionsHistory(models.Model):
@@ -466,8 +502,8 @@ class TransactionsHistory(models.Model):
 
     class Meta:
         ordering = ['-transaction_date']
-        verbose_name = 'Histórico de Transações'
-        verbose_name_plural = 'Históricos de Transações'
+        verbose_name = ' Compra e Venda / Histórico'
+        verbose_name_plural = ' Compras e Vendas / Histórico'
 
 # entrada de dinheiro na carteira, como salário ou renda extra, criará uma transação de moeda (CurrencyTransaction) Deposit
 class Income(CurrencyTransaction):
@@ -481,6 +517,7 @@ class Income(CurrencyTransaction):
         ),
         default='Renda Ativa'
     )
+    # Será que vale a pena criar um model para categorias de renda? Acho que não, mas talvez seja interessante
     
     def save(self, *args, **kwargs):
         self.transaction.transaction_type = 'deposit'
@@ -505,6 +542,8 @@ class Expense(CurrencyTransaction):
         ),
         default='Cartão de Crédito'
     )
+    # Será que vale a pena criar um model para categorias de despesa? Acho que não, mas talvez seja interessante
+    # Será que vale a pena um campo description? Acho que não, mas talvez seja interessante
     
     def save(self, *args, **kwargs):
         self.transaction.transaction_type = 'withdraw'
