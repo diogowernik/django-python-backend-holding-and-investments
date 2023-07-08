@@ -2,7 +2,7 @@ from django.db import models
 from investments.models import Asset
 from portfolios.models import PortfolioInvestment
 from django.core.exceptions import ValidationError
-from cashflow.models import AssetTransaction, AssetAveragePrice, TransactionsHistory
+from cashflow.models import AssetTransaction, AssetTransactionCalculation, TransactionsHistory
 from django.utils import timezone
 
 class Dividend(models.Model):

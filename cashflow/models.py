@@ -305,7 +305,7 @@ class AssetTransaction(models.Model):
 
 
         # Recalculate share_average_price_brl and share_average_price_usd
-        portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
+        portfolio_average_price, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         portfolio_average_price.transaction_date = self.transaction_date
         portfolio_average_price.last_transaction = self
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
@@ -322,9 +322,9 @@ class AssetTransaction(models.Model):
 
         # Em seguida, recalcule as médias
         try:
-            portfolio_average_price = AssetAveragePrice.objects.get(portfolio_investment=self.portfolio_investment)
+            portfolio_average_price = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
             portfolio_average_price.recalculate_average(start_date=self.transaction_date, transaction_id=self.id)
-        except AssetAveragePrice.DoesNotExist:
+        except AssetTransactionCalculation.DoesNotExist:
             pass  
 
         # Depois deletar a CurrencyTransaction correspondente
@@ -346,10 +346,8 @@ class AssetTransaction(models.Model):
         verbose_name = 'Compra e Venda de Ativo'
         verbose_name_plural = 'Compra e Venda de Ativos'
 
-# Média de preço de um ativo em um portfolio, Total de lucro/prejuízo, 
-# total investido (Mesma moeda do Broker) é criado apenas 1 por portfolio_investment o qual é atualizado a cada compra/venda
-# Gera um AssetAverageHistory a cada atualização
-class AssetAveragePrice(models.Model):
+
+class AssetTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # não deleta o objeto, apenas seta o campo como null
     share_average_price_brl = models.FloatField(default=0)
@@ -362,17 +360,21 @@ class AssetAveragePrice(models.Model):
     transaction_date = models.DateTimeField(default=timezone.now)
 
     def recalculate_average(self, start_date, is_new=False, transaction_id=None):
-        # Get all transactions for this portfolio_investment, ordered by date
-        transactions = AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
+        transactions = self.get_transactions(transaction_id)
+        total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd = self.calculate_totals_and_profits(transactions)
+        self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
+        self.create_transaction_history()
+        self.update_portfolio_investment(total_brl, total_usd, total_shares)
 
-        # Initialize total_brl, total_usd, and total_shares with 0
+    def get_transactions(self, transaction_id):
+        return AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
+
+    def calculate_totals_and_profits(self, transactions):
         total_brl = 0
         total_usd = 0
         total_shares = 0
         trade_profit_brl = 0
         trade_profit_usd = 0
-
-        # Go through the transactions and recalculate the total shares and total brl and usd
         for transaction in transactions:
             if transaction.transaction_type == 'buy':
                 total_brl += transaction.transaction_amount * transaction.price_brl
@@ -390,8 +392,9 @@ class AssetAveragePrice(models.Model):
                 total_brl -= cost_brl
                 total_usd -= cost_usd
                 total_shares -= transaction.transaction_amount
+        return total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd
 
-        # Update self values
+    def update_self_values(self, total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd):
         self.share_average_price_brl = total_brl / total_shares if total_shares != 0 else 0
         self.share_average_price_usd = total_usd / total_shares if total_shares != 0 else 0
         self.trade_profit_brl = trade_profit_brl
@@ -400,7 +403,7 @@ class AssetAveragePrice(models.Model):
         self.total_usd = total_usd
         self.total_shares = total_shares
 
-        # Create a TransactionHistory object, problemas com o transaction=xxx
+    def create_transaction_history(self):
         TransactionsHistory.objects.create(
             portfolio_investment=self.portfolio_investment,
             transaction=self.last_transaction,
@@ -412,7 +415,7 @@ class AssetAveragePrice(models.Model):
             transaction_date=self.transaction_date
         )
 
-        # Update the corresponding portfolio_investment
+    def update_portfolio_investment(self, total_brl, total_usd, total_shares):
         portfolio_investment = self.portfolio_investment
         portfolio_investment.share_average_price_brl = self.share_average_price_brl
         portfolio_investment.share_average_price_usd = self.share_average_price_usd
@@ -444,7 +447,7 @@ class AssetAveragePrice(models.Model):
         self.portfolio_investment.save()
 
         # Then recalculate averages
-        portfolio_average_price = AssetAveragePrice.objects.get(portfolio_investment=self.portfolio_investment)
+        portfolio_average_price = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, transaction_id=self.id)
 
         # Now we can delete the object
