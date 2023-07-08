@@ -317,7 +317,8 @@ class AssetTransaction(models.Model):
         # Recalculate share_average_price_brl and share_average_price_usd
         portfolio_average_price, _ = AssetAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         portfolio_average_price.transaction_date = self.transaction_date
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new, transaction=self)
+        portfolio_average_price.last_transaction = self
+        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
         portfolio_average_price.save()
 
     @transaction.atomic    
@@ -360,6 +361,7 @@ class AssetTransaction(models.Model):
 # Gera um AssetAverageHistory a cada atualização
 class AssetAveragePrice(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
+    last_transaction = models.ForeignKey(AssetTransaction, on_delete=models.CASCADE, blank=True, null=True)
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
     trade_profit_brl = models.FloatField(default=0)
@@ -369,9 +371,9 @@ class AssetAveragePrice(models.Model):
     total_usd = models.FloatField(default=0)
     transaction_date = models.DateTimeField(default=timezone.now)
 
-    def recalculate_average(self, start_date, is_new=False, transaction=None):
+    def recalculate_average(self, start_date, is_new=False, transaction_id=None):
         # Get all transactions for this portfolio_investment, ordered by date
-        transactions = AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction.id).order_by('transaction_date')
+        transactions = AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
 
         # Initialize total_brl, total_usd, and total_shares with 0
         total_brl = 0
@@ -399,31 +401,25 @@ class AssetAveragePrice(models.Model):
                 total_usd -= cost_usd
                 total_shares -= transaction.transaction_amount
 
-        # Update average prices
+        # Update self values
         self.share_average_price_brl = total_brl / total_shares if total_shares != 0 else 0
         self.share_average_price_usd = total_usd / total_shares if total_shares != 0 else 0
-
-        # Update trade profits
         self.trade_profit_brl = trade_profit_brl
         self.trade_profit_usd = trade_profit_usd
-
-        # Update totals
         self.total_brl = total_brl
         self.total_usd = total_usd
         self.total_shares = total_shares
 
-        # Create a TransactionHistory object
-
-        # Create a new AssetAverageHistory record, Falta criar um teste para verificar se está funcionando
+        # Create a TransactionHistory object, problemas com o transaction=xxx
         TransactionsHistory.objects.create(
             portfolio_investment=self.portfolio_investment,
-            transaction=transaction,
-            share_average_price_brl=total_brl / total_shares if total_shares != 0 else 0,
-            share_average_price_usd=total_usd / total_shares if total_shares != 0 else 0,
-            total_shares=total_shares,
-            total_brl=total_brl,
-            total_usd=total_usd,
-            timestamp=transaction.transaction_date,
+            transaction=self.last_transaction,
+            share_average_price_brl=self.share_average_price_brl,
+            share_average_price_usd=self.share_average_price_usd,
+            total_shares=self.total_shares,
+            total_brl=self.total_brl,
+            total_usd=self.total_usd,
+            transaction_date=self.transaction_date
         )
 
         # Update the corresponding portfolio_investment
@@ -438,9 +434,6 @@ class AssetAveragePrice(models.Model):
         portfolio_investment.total_today_brl = total_shares * portfolio_investment.asset.price_brl
         portfolio_investment.total_today_usd = total_shares * portfolio_investment.asset.price_usd
         portfolio_investment.save()
-
-        
-
 
     def delete(self, *args, **kwargs):
         # Before deleting the object, we need to adjust the amount of shares in portfolio_investment
@@ -476,12 +469,12 @@ class TransactionsHistory(models.Model):
     total_shares = models.FloatField()
     total_brl = models.FloatField()
     total_usd = models.FloatField()
-    timestamp = models.DateTimeField()
+    transaction_date = models.DateTimeField()
 
     class Meta:
-        ordering = ['-timestamp']
-        verbose_name = 'Histórico de Preço Médio do Ativo'
-        verbose_name_plural = 'Históricos de Preço Médio do Ativo'
+        ordering = ['-transaction_date']
+        verbose_name = 'Histórico de Transações'
+        verbose_name_plural = 'Históricos de Transações'
 
 # entrada de dinheiro na carteira, como salário ou renda extra, criará uma transação de moeda (CurrencyTransaction) Deposit
 class Income(CurrencyTransaction):

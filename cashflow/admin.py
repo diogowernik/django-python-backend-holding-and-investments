@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AssetTransaction, AssetAveragePrice, CurrencyAveragePrice,  InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTransaction
+from .models import AssetTransaction, AssetAveragePrice, CurrencyAveragePrice,  InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTransaction, TransactionsHistory
 from portfolios.models import PortfolioInvestment
 
 class CurrencyTransactionAdmin(admin.ModelAdmin):
@@ -26,3 +26,9 @@ admin.site.register(AssetTransaction, AssetTransactionAdmin)
 class AssetAveragePriceAdmin(admin.ModelAdmin):
     list_display = ('transaction_date', 'portfolio_investment')
 admin.site.register(AssetAveragePrice, AssetAveragePriceAdmin)
+
+class TransactionsHistoryAdmin(admin.ModelAdmin):
+    list_display = ( 'transaction_date',
+        'portfolio_investment', 'transaction', 'share_average_price_brl', 'share_average_price_usd', 'total_shares', 'total_brl', 'total_usd',)
+
+admin.site.register(TransactionsHistory, TransactionsHistoryAdmin)

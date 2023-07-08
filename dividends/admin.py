@@ -21,8 +21,3 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
 
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
 
-class TransactionsHistoryAdmin(admin.ModelAdmin):
-    list_display = ( 'timestamp',
-        'portfolio_investment', 'transaction', 'share_average_price_brl', 'share_average_price_usd', 'total_shares', 'total_brl', 'total_usd',)
-
-admin.site.register(models.TransactionsHistory, TransactionsHistoryAdmin)
