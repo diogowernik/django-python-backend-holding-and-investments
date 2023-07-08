@@ -21,28 +21,26 @@ class CurrencyTransaction(models.Model):
     
     @transaction.atomic
     def save(self, *args, **kwargs):
-        is_new = self.pk is None  # Verifica se o objeto é novo
+        is_new = self.pk is None  # Check if the object is new
 
-        # Criar a função get_exchange_rate
-        if not self.price_brl:
-            if self.broker.main_currency.ticker == 'BRL':
-                self.price_brl = 1
-            else:
-                try:
-                    self.price_brl = get_exchange_rate(self.broker.main_currency.ticker, 'BRL', self.transaction_date.strftime('%Y-%m-%d'))
-                except:
-                    self.price_brl = self.broker.main_currency.price_brl
+        self.set_prices()
+        self.set_portfolio_investment()
+        super().save(*args, **kwargs)  # Save the object
+        self.recalculate_average_prices(is_new)
 
-        if not self.price_usd:
-            if self.broker.main_currency.ticker == 'USD':
-                self.price_usd = 1
-            else:
-                try:
-                    self.price_usd = get_exchange_rate(self.broker.main_currency.ticker, 'USD', self.transaction_date.strftime('%Y-%m-%d'))
-                except:
-                    self.price_usd = self.broker.main_currency.price_usd
+    def set_prices(self):
+        self.price_brl = self.get_exchange_rate('BRL')
+        self.price_usd = self.get_exchange_rate('USD')
 
-        # Encontra ou cria um PortfolioInvestment com o Portfolio, Broker e Asset adequados
+    def get_exchange_rate(self, target_currency):
+        if getattr(self.broker.main_currency, 'ticker') == target_currency:
+            return 1
+        try:
+            return get_exchange_rate(self.broker.main_currency.ticker, target_currency, self.transaction_date.strftime('%Y-%m-%d'))
+        except:
+            return getattr(self.broker.main_currency, f'price_{target_currency.lower()}')
+
+    def set_portfolio_investment(self):
         asset = CurrencyHolding.objects.get(currency=self.broker.main_currency)
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(
             portfolio=self.portfolio,
@@ -50,15 +48,7 @@ class CurrencyTransaction(models.Model):
             asset=asset
         )
 
-        # Recalcular share_average_price_brl e share_average_price_usd
-        portfolio_average_price, _ = CurrencyAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
-        portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
-        portfolio_average_price.save()
-
-        # Salvar o objeto
-        super(CurrencyTransaction, self).save(*args, **kwargs)
-
-        # Recalcular share_average_price_brl e share_average_price_usd
+    def recalculate_average_prices(self, is_new):
         portfolio_average_price, _ = CurrencyAveragePrice.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         portfolio_average_price.recalculate_average(start_date=self.transaction_date, is_new=is_new)
         portfolio_average_price.save()
@@ -361,7 +351,7 @@ class AssetTransaction(models.Model):
 # Gera um AssetAverageHistory a cada atualização
 class AssetAveragePrice(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
-    last_transaction = models.ForeignKey(AssetTransaction, on_delete=models.CASCADE, blank=True, null=True)
+    last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # não deleta o objeto, apenas seta o campo como null
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
     trade_profit_brl = models.FloatField(default=0)
