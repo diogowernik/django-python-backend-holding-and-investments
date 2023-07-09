@@ -6,8 +6,8 @@ from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTrans
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
 from django.utils import timezone
-from common.tests import CommonSetupMixin
-
+from common.tests import CommonSetupMixin # criado por mim para facilitar a criação de objetos para testes
+from unittest.mock import patch
 
 class CurrencyTransactionTest(CommonSetupMixin, TestCase):          
     def create_transaction(self, amount, price_brl, price_usd, transaction_type='deposit', broker=None):
@@ -65,6 +65,24 @@ class CurrencyTransactionTest(CommonSetupMixin, TestCase):
         transactions = [self.create_transaction(1000, 1, 0.20) for _ in range(2)]
         transactions[0].delete()
         self.assertEqual(PortfolioInvestment.objects.get(id=transactions[1].portfolio_investment.id).shares_amount, 1000)
+
+    # @patch('investments.utils.get_currency_price.fetch_currency_price_from_api')
+    # def test_avenue_brl_currency_transaction_with_failed_api_call(self, mock_fetch_currency_price):
+    #     # Teste para verificar se a transação com a corretora Avenue e price_brl = 0
+    #     # utiliza o valor do banco de dados quando a chamada da API falha.
+
+    #     # Configurar o mock para simular a falha na chamada da API
+    #     mock_fetch_currency_price.side_effect = Exception()
+
+    #     # Criar a transação com a corretora Avenue e price_brl = 0
+    #     transaction = self.create_transaction(1000, 0, 1, broker=self.broker_avenue)
+
+    #     # Verificar se o preço BRL foi definido corretamente como o valor do banco de dados
+    #     self.assertEqual(transaction.price_brl, self.broker_avenue.main_currency.price_brl)
+
+    #     # Verificar se a transação foi processada corretamente
+    #     self.assertEqual(PortfolioInvestment.objects.get(id=transaction.portfolio_investment.id).shares_amount, 1000)
+
 
     def test_average_price_calculation_three_transactions(self):
         # Teste para verificar se o cálculo do preço médio está funcionando corretamente.

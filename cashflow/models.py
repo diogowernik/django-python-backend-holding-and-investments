@@ -3,12 +3,12 @@ from brokers.models import Broker
 from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset, CurrencyHolding
 from django.utils import timezone
-from investments.utils.get_currency_price import get_exchange_rate_api
+from investments.utils.get_currency_price import fetch_currency_price_from_api
 from django.db import transaction
 from django.core.exceptions import ValidationError
-# import logging
+from datetime import datetime, timedelta
+import logging
 
-# Encapsulado Ok
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=2)
@@ -27,20 +27,100 @@ class CurrencyTransaction(models.Model):
         self.set_prices()
         self.set_portfolio_investment()
         super().save(*args, **kwargs)  # Save the object
-        self.process_transaction_prices(is_new)
+        self.process_transaction(is_new)
+
+    # def set_prices(self):
+    #     if not self.price_brl:
+    #         if self.broker.main_currency.ticker == 'BRL':
+    #             self.price_brl = 1
+    #         else:
+    #             today = datetime.today().strftime('%Y-%m-%d')
+    #             transaction_date = self.transaction_date.strftime('%Y-%m-%d')
+    #             if transaction_date == today:
+    #                 self.price_brl = self.broker.main_currency.price_brl
+    #             elif transaction_date < today:
+    #                 # tentativa de buscar a cotação para a data da transação
+    #                 days_behind = 0
+    #                 while days_behind < 3:
+    #                     try:
+    #                         self.price_brl = fetch_currency_price_from_api(
+    #                             self.broker.main_currency.ticker,
+    #                             'BRL',
+    #                             (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
+    #                         )
+    #                         # se a cotação for bem sucedida, interrompa o loop
+    #                         if self.price_brl is not None:
+    #                             break
+    #                     except Exception as e:
+    #                         # caso a API falhe ou não retorne um valor, tentamos no dia anterior
+    #                         logging.error(f"Failed to fetch currency price from API: {e}")
+    #                         days_behind += 1
+    #                         continue
+
+    #                 if self.price_brl is None:
+    #                     raise ValidationError('Não foi possível obter a cotação da moeda. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
+    #     if not self.price_usd:
+    #         if self.broker.main_currency.ticker == 'USD':
+    #             self.price_usd = 1
+    #         else:
+    #             today = datetime.today().strftime('%Y-%m-%d')
+    #             transaction_date = self.transaction_date.strftime('%Y-%m-%d')
+    #             if transaction_date == today:
+    #                 self.price_usd = self.broker.main_currency.price_usd
+    #             elif transaction_date < today:
+    #                 days_behind = 0
+    #                 while days_behind < 3:
+    #                     try:
+    #                         self.price_usd = fetch_currency_price_from_api(
+    #                             self.broker.main_currency.ticker,
+    #                             'USD',
+    #                             (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
+    #                         )
+    #                         if self.price_usd is not None:
+    #                             break
+    #                     except Exception as e:
+    #                         logging.error(f"Failed to fetch currency price from API: {e}")
+    #                         days_behind += 1
+    #                         continue
+
+    #                 if self.price_usd is None:
+    #                     raise ValidationError('Não foi possível obter a cotação da moeda. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
+
+    def set_price(self, currency_ticker, price_attribute):
+        if getattr(self, price_attribute) is None:
+            if self.broker.main_currency.ticker == currency_ticker:
+                setattr(self, price_attribute, 1)
+            else:
+                today = datetime.today().strftime('%Y-%m-%d')
+                transaction_date = self.transaction_date.strftime('%Y-%m-%d')
+                if transaction_date == today:
+                    setattr(self, price_attribute, getattr(self.broker.main_currency, price_attribute))
+                elif transaction_date < today:
+                    # tentativa de buscar a cotação para a data da transação
+                    days_behind = 0
+                    while days_behind < 3:
+                        try:
+                            fetched_price = fetch_currency_price_from_api(
+                                self.broker.main_currency.ticker,
+                                currency_ticker,
+                                (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
+                            )
+                            # se a cotação for bem sucedida, interrompa o loop
+                            if fetched_price is not None:
+                                setattr(self, price_attribute, fetched_price)
+                                break
+                        except Exception as e:
+                            # caso a API falhe ou não retorne um valor, tentamos no dia anterior
+                            logging.error(f"Failed to fetch currency price from API: {e}")
+                            days_behind += 1
+                            continue
+                    if getattr(self, price_attribute) is None:
+                        raise ValidationError(f'Não foi possível obter a cotação da moeda {currency_ticker}. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
+
 
     def set_prices(self):
-        self.price_brl = self.get_exchange_rate('BRL')
-        self.price_usd = self.get_exchange_rate('USD')
-
-    def get_exchange_rate(self, target_currency):
-        if getattr(self.broker.main_currency, 'ticker') == target_currency:
-            return 1
-        try:
-            return get_exchange_rate_api(self.broker.main_currency.ticker, target_currency, self.transaction_date.strftime('%Y-%m-%d'))
-        except:
-            return getattr(self.broker.main_currency, f'price_{target_currency.lower()}')
-
+        self.set_price('BRL', 'price_brl')
+        self.set_price('USD', 'price_usd')
 
     def set_portfolio_investment(self):
         asset = CurrencyHolding.objects.get(currency=self.broker.main_currency)
@@ -50,7 +130,7 @@ class CurrencyTransaction(models.Model):
             asset=asset
         )
 
-    def process_transaction_prices(self, is_new):
+    def process_transaction(self, is_new):
         transaction_calculation, _ = CurrencyTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         transaction_calculation.process_transaction(start_date=self.transaction_date, is_new=is_new)
         transaction_calculation.save()
@@ -81,7 +161,6 @@ class CurrencyTransaction(models.Model):
     def __str__(self):
         return f'{self.transaction_type} {self.transaction_amount} {self.broker.main_currency.ticker}'
 
-# Encapsulado Ok
 class CurrencyTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     share_average_price_brl = models.FloatField(default=0)
@@ -128,11 +207,7 @@ class CurrencyTransactionCalculation(models.Model):
         portfolio_investment.total_today_usd = total_shares * portfolio_investment.asset.price_usd
         portfolio_investment.save()
 
-# criar um CurrencyTransactionHistory parecido com o AssetTransactionHistory
-# class CurrencyTransactionHistory(models.Model):
-
 # Transferência de moedas entre brokers mesma moeda. Ex: Transferir USD do Interactive Brokers para o TD Ameritrade
-# Encapsular internamente em uma funções menores
 class CurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     from_broker = models.ForeignKey(Broker, related_name='transfer_from', on_delete=models.CASCADE, default=1)
@@ -192,7 +267,6 @@ class CurrencyTransfer(models.Model):
             raise ValidationError("Os brokers de origem e destino devem ser diferentes.")
 
 # Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
-# Encapsular internamente em uma funções menores
 class InternationalCurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     from_broker = models.ForeignKey(Broker, related_name='international_transfer_from', on_delete=models.CASCADE, default=1)
@@ -268,7 +342,6 @@ class InternationalCurrencyTransfer(models.Model):
             raise ValidationError("A quantidade de moeda a ser transferida deve ser maior que zero.")
 
 # Compra e venda de ativos (Reit, BrStocks, Fii, Stocks)
-# Encapsular internamente em uma funções menores
 class AssetTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
@@ -285,36 +358,29 @@ class AssetTransaction(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
 
+        self.set_prices()
+        self.set_portfolio_investment()
+        super().save(*args, **kwargs)  # Save the object
+        self.create_or_update_currency_transaction()
+        self.process_transaction(is_new)
+
+    def set_prices(self):
         if not self.price_brl:
             self.price_brl = self.asset.price_brl
         if not self.price_usd:
             self.price_usd = self.asset.price_usd
 
-        # Find or create a PortfolioInvestment with the correct Portfolio, Broker and Asset
+    def set_portfolio_investment(self):
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(
             portfolio=self.portfolio,
             broker=self.broker,
             asset=self.asset
         )
 
-        # Save the object
-        super().save(*args, **kwargs)
+    def create_or_update_currency_transaction(self):
+        currency_transaction_type = 'withdraw' if self.transaction_type == 'buy' else 'deposit'
+        currency_transaction_amount = self.get_currency_transaction_amount()
 
-        # Create a CurrencyTransaction
-            # Determine the transaction_type for the CurrencyTransaction
-        if self.transaction_type == 'buy':
-            currency_transaction_type = 'withdraw'
-
-        else:  # self.transaction_type == 'sell'
-            currency_transaction_type = 'deposit'
-
-        # Determine the transaction_amount for the CurrencyTransaction
-        if self.broker.main_currency.ticker == 'BRL':
-            currency_transaction_amount = self.transaction_amount * self.price_brl
-        elif self.broker.main_currency.ticker == 'USD':
-            currency_transaction_amount = self.transaction_amount * self.price_usd
-
-                    # Create the CurrencyTransaction
         currency_transaction, created = CurrencyTransaction.objects.get_or_create(
             portfolio=self.portfolio,
             broker=self.broker,
@@ -324,7 +390,7 @@ class AssetTransaction(models.Model):
                 'transaction_amount': currency_transaction_amount,
                 'price_brl': self.price_brl,
                 'price_usd': self.price_usd,
-                }
+            }
         )
 
         if not created:
@@ -334,8 +400,13 @@ class AssetTransaction(models.Model):
             currency_transaction.price_usd = self.price_usd
             currency_transaction.save()
 
+    def get_currency_transaction_amount(self):
+        if self.broker.main_currency.ticker == 'BRL':
+            return self.transaction_amount * self.price_brl
+        elif self.broker.main_currency.ticker == 'USD':
+            return self.transaction_amount * self.price_usd
 
-        # Recalculate share_average_price_brl and share_average_price_usd
+    def process_transaction(self, is_new):
         transaction_calculation, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         transaction_calculation.transaction_date = self.transaction_date
         transaction_calculation.last_transaction = self
