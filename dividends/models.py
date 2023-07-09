@@ -4,8 +4,10 @@ from portfolios.models import PortfolioInvestment
 from django.core.exceptions import ValidationError
 from cashflow.models import TransactionsHistory
 from django.utils import timezone
+from categories.models import Category
+from django.db.models import Max
 
-# Encapsular internamente em funções menores.
+
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends", default=1)
     value_per_share_brl = models.FloatField(default=0)
@@ -25,30 +27,42 @@ class Dividend(models.Model):
         return None
 
     def create_portfolio_dividends(self):
-        portfolio_investments_by_asset = PortfolioInvestment.objects.filter(asset=self.asset).values('broker', 'portfolio').distinct()
+        portfolio_investments_by_asset = PortfolioInvestment.objects.filter(
+            asset=self.asset
+        ).values('broker', 'portfolio').distinct()
 
-        for portfolio_investment in portfolio_investments_by_asset:
-            portfolio_investment_obj = PortfolioInvestment.objects.get(broker=portfolio_investment['broker'], portfolio=portfolio_investment['portfolio'], asset=self.asset)
+        portfolio_investment_objs = PortfolioInvestment.objects.filter(
+            broker__in=[x['broker'] for x in portfolio_investments_by_asset],
+            portfolio__in=[x['portfolio'] for x in portfolio_investments_by_asset],
+            asset=self.asset
+        )
 
-            latest_asset_transaction = self.get_latest_asset_transaction(portfolio_investment_obj)
-            
-            if latest_asset_transaction is not None:
+        # Pegar todas as últimas transações de uma só vez
+        latest_transactions = TransactionsHistory.objects.filter(
+            portfolio_investment__in=portfolio_investment_objs,
+            transaction_date__lte=self.record_date
+        ).values('portfolio_investment').annotate(
+            last_transaction_date=Max('transaction_date')
+        )
+
+        # Converter para um dicionário para acesso fácil
+        latest_transactions_dict = {
+            x['portfolio_investment']: x['last_transaction_date'] for x in latest_transactions
+        }
+
+        for portfolio_investment_obj in portfolio_investment_objs:
+            # Obter a última transação do dicionário
+            last_transaction_date = latest_transactions_dict.get(portfolio_investment_obj.id)
+            if last_transaction_date is not None:
+                latest_asset_transaction = TransactionsHistory.objects.filter(
+                    portfolio_investment=portfolio_investment_obj,
+                    transaction_date=last_transaction_date
+                ).first()
                 self.create_dividends_for_portfolios(latest_asset_transaction)
 
     def create_dividends_for_portfolios(self, latest_asset_transaction):
-        PortfolioDividend.objects.create( 
-            asset=self.asset,
-            category=self.asset.category,
-            record_date=self.record_date,
-            pay_date=self.pay_date,
-            value_per_share_brl=self.value_per_share_brl,
-            value_per_share_usd=self.value_per_share_usd,
-            dividend=self,
-            shares_amount=latest_asset_transaction.total_shares,
-            portfolio_investment=latest_asset_transaction.portfolio_investment,
-            average_price_brl=latest_asset_transaction.share_average_price_brl,
-            average_price_usd=latest_asset_transaction.share_average_price_usd,
-        )
+        # Crie PortfolioDividend através da função centralizada
+        PortfolioDividend.create(latest_asset_transaction, self)  # foi alterado aqui
         
     def delete(self, *args, **kwargs):
         portfolio_dividends = PortfolioDividend.objects.filter(dividend=self)
@@ -65,29 +79,33 @@ class Dividend(models.Model):
 class PortfolioDividend(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    transaction_history = models.ForeignKey(TransactionsHistory, on_delete=models.CASCADE, null=True, blank=True)
     dividend = models.ForeignKey(Dividend, on_delete=models.CASCADE, null=True, blank=True)
-    categoryChoice = (
-        ('Ações Brasileiras', 'Ações Brasileiras'),
-        ('Fundos Imobiliários', 'Fundos Imobiliários'),
-        ('ETFs', 'ETFs'),
-        ('Stocks', 'Stocks'),
-        ('REITs', 'REITs'),
-        ('Propriedades', 'Propriedades'),
-        ('FII', 'Fundos Imobiliários'),
-        ('FI-Infra', 'Fundos Imobiliários'),
-        ('Ação', 'Ações Brasileiras'),
-    )
-    category = models.CharField(max_length=100, choices=categoryChoice, default='Ação')
-    # category, mudar para asset.category, ou criar um campo dividend_category
-
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     record_date = models.DateTimeField(null=True, blank=True)
     pay_date = models.DateTimeField(null=True, blank=True)
     shares_amount = models.FloatField(default=0)
-
     value_per_share_brl = models.FloatField(default=0)
     value_per_share_usd = models.FloatField(default=0)
     average_price_brl = models.FloatField(default=0)
     average_price_usd = models.FloatField(default=0)
+
+    @classmethod
+    def create(cls, transaction_history, dividend):
+        cls.objects.create(
+            portfolio_investment=transaction_history.portfolio_investment,
+            asset=dividend.asset,
+            transaction_history=transaction_history,
+            category=dividend.asset.category,
+            record_date=dividend.record_date,
+            pay_date=dividend.pay_date,
+            value_per_share_brl=dividend.value_per_share_brl,
+            value_per_share_usd=dividend.value_per_share_usd,
+            dividend=dividend,
+            shares_amount=transaction_history.total_shares,  # verificar se estes valores estão corretos, você quer que tenha o valor total de ações na data
+            average_price_brl=transaction_history.share_average_price_brl,
+            average_price_usd=transaction_history.share_average_price_usd,
+        )
 
     @property
     def pay_date_by_month_year(self):
@@ -112,3 +130,4 @@ class PortfolioDividend(models.Model):
     
     class Meta:
         verbose_name_plural = "Dividendos por Portfolio"
+

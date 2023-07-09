@@ -17,7 +17,7 @@ class DividendAdmin(admin.ModelAdmin):
 admin.site.register(models.Dividend, DividendAdmin)
 
 class PortfolioDividendAdmin(admin.ModelAdmin):
-    list_display = ('portfolio_investment', 'asset', 'category', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_brl', 'value_per_share_usd', 'average_price_brl', 'average_price_usd')
+    list_display = ('portfolio_investment', 'asset',  'record_date', 'pay_date', 'shares_amount', 'value_per_share_brl', 'value_per_share_usd', 'average_price_brl', 'average_price_usd')
 
 admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
 

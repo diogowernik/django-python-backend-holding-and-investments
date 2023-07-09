@@ -294,7 +294,6 @@ class AssetTransaction(models.Model):
     transaction_date = models.DateTimeField(default=timezone.now)
     price_brl = models.FloatField(null=True, blank=True)
     price_usd = models.FloatField(null=True, blank=True)
-
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE, blank=True, null=True)
 
     @transaction.atomic
@@ -484,9 +483,9 @@ class AssetTransactionCalculation(models.Model):
             transaction=self.last_transaction,
             share_average_price_brl=self.share_average_price_brl,
             share_average_price_usd=self.share_average_price_usd,
-            total_shares=self.total_shares,
-            total_brl=self.total_brl,
-            total_usd=self.total_usd,
+            total_shares=self.total_shares, # talvez tenha que criar um total_shares_on_date
+            total_brl=self.total_brl, # talvez tenha que criar um total_shares_on_date
+            total_usd=self.total_usd, # talvez tenha que criar um total_shares_on_date
             transaction_date=self.transaction_date
         )
 
@@ -543,6 +542,19 @@ class TransactionsHistory(models.Model):
     total_brl = models.FloatField()
     total_usd = models.FloatField()
     transaction_date = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            self.create_portfolio_dividend()
+        super().save(*args, **kwargs)
+
+    def create_portfolio_dividend(self):
+        from dividends.models import Dividend, PortfolioDividend  # importação local
+        dividends = Dividend.objects.filter(record_date__gte=self.transaction_date)
+
+        for dividend in dividends:
+                # Crie PortfolioDividend através da função centralizada
+                PortfolioDividend.create(self, dividend)  # foi alterado aqui
 
     class Meta:
         ordering = ['-transaction_date']
