@@ -3,7 +3,7 @@ from brokers.models import Broker
 from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset, CurrencyHolding
 from django.utils import timezone
-from investments.utils.get_currency_price import fetch_currency_price_from_api
+from common.utils.get_currency_price import fetch_currency_price_from_api
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
@@ -28,63 +28,6 @@ class CurrencyTransaction(models.Model):
         self.set_portfolio_investment()
         super().save(*args, **kwargs)  # Save the object
         self.process_transaction(is_new)
-
-    # def set_prices(self):
-    #     if not self.price_brl:
-    #         if self.broker.main_currency.ticker == 'BRL':
-    #             self.price_brl = 1
-    #         else:
-    #             today = datetime.today().strftime('%Y-%m-%d')
-    #             transaction_date = self.transaction_date.strftime('%Y-%m-%d')
-    #             if transaction_date == today:
-    #                 self.price_brl = self.broker.main_currency.price_brl
-    #             elif transaction_date < today:
-    #                 # tentativa de buscar a cotação para a data da transação
-    #                 days_behind = 0
-    #                 while days_behind < 3:
-    #                     try:
-    #                         self.price_brl = fetch_currency_price_from_api(
-    #                             self.broker.main_currency.ticker,
-    #                             'BRL',
-    #                             (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
-    #                         )
-    #                         # se a cotação for bem sucedida, interrompa o loop
-    #                         if self.price_brl is not None:
-    #                             break
-    #                     except Exception as e:
-    #                         # caso a API falhe ou não retorne um valor, tentamos no dia anterior
-    #                         logging.error(f"Failed to fetch currency price from API: {e}")
-    #                         days_behind += 1
-    #                         continue
-
-    #                 if self.price_brl is None:
-    #                     raise ValidationError('Não foi possível obter a cotação da moeda. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
-    #     if not self.price_usd:
-    #         if self.broker.main_currency.ticker == 'USD':
-    #             self.price_usd = 1
-    #         else:
-    #             today = datetime.today().strftime('%Y-%m-%d')
-    #             transaction_date = self.transaction_date.strftime('%Y-%m-%d')
-    #             if transaction_date == today:
-    #                 self.price_usd = self.broker.main_currency.price_usd
-    #             elif transaction_date < today:
-    #                 days_behind = 0
-    #                 while days_behind < 3:
-    #                     try:
-    #                         self.price_usd = fetch_currency_price_from_api(
-    #                             self.broker.main_currency.ticker,
-    #                             'USD',
-    #                             (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
-    #                         )
-    #                         if self.price_usd is not None:
-    #                             break
-    #                     except Exception as e:
-    #                         logging.error(f"Failed to fetch currency price from API: {e}")
-    #                         days_behind += 1
-    #                         continue
-
-    #                 if self.price_usd is None:
-    #                     raise ValidationError('Não foi possível obter a cotação da moeda. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
 
     def set_price(self, currency_ticker, price_attribute):
         if getattr(self, price_attribute) is None:
