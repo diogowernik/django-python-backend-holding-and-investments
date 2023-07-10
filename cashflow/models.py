@@ -343,7 +343,6 @@ class AssetTransaction(models.Model):
         self.set_price(self.asset.ticker, 'BRL')
         self.set_price(self.asset.ticker, 'USD')
 
-
     def set_portfolio_investment(self):
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(
             portfolio=self.portfolio,
@@ -387,23 +386,28 @@ class AssetTransaction(models.Model):
         transaction_calculation.process_transaction(transaction_date=self.transaction_date, is_new=is_new)
         transaction_calculation.save()
 
-    @transaction.atomic    
+    @transaction.atomic  
     def delete(self, *args, **kwargs):
-        # Antes de deletar o objeto, precisamos ajustar a quantidade de ações em portfolio_investment
+        self.adjust_portfolio_investment()
+        self.recalculate_averages()
+        self.delete_currency_transaction()
+        super().delete(*args, **kwargs)    
+
+    def adjust_portfolio_investment(self):
         if self.transaction_type == 'buy':
             self.portfolio_investment.shares_amount -= self.transaction_amount
         elif self.transaction_type == 'sell':
             self.portfolio_investment.shares_amount += self.transaction_amount
         self.portfolio_investment.save()
 
-        # Em seguida, recalcule as médias
+    def recalculate_averages(self):
         try:
             transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
             transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
         except AssetTransactionCalculation.DoesNotExist:
-            pass  
+            pass
 
-        # Depois deletar a CurrencyTransaction correspondente
+    def delete_currency_transaction(self):
         try:
             currency_transaction = CurrencyTransaction.objects.get(
                 portfolio=self.portfolio,
@@ -412,10 +416,7 @@ class AssetTransaction(models.Model):
             )
             currency_transaction.delete()
         except CurrencyTransaction.DoesNotExist:
-            pass  
-
-        # Agora, podemos deletar o objeto
-        super(AssetTransaction, self).delete(*args, **kwargs)
+            pass
     
     class Meta:
         ordering = ['-transaction_date']
@@ -424,7 +425,7 @@ class AssetTransaction(models.Model):
 
 class AssetTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
-    last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # não deleta o objeto, apenas seta o campo como null
+    last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # SET_NULL importante, não queremos deletar o objeto pois ele representa um estado.
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
     trade_profit_brl = models.FloatField(default=0)
@@ -436,11 +437,11 @@ class AssetTransactionCalculation(models.Model):
 
     def process_transaction(self, transaction_date, is_new=False, transaction_id=None): 
         transactions = self.get_transactions(transaction_id)
-        total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd = self.calculate_totals_and_profits(transactions)
+        total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd, share_avg_price_brl, share_avg_price_usd = self.calculate_totals_and_profits(transactions)
         transactions_until_date = self.get_transactions_until_date(transaction_date)
-        total_brl_until_date, total_usd_until_date, total_shares_until_date, _, _ = self.calculate_totals_and_profits(transactions_until_date)
+        total_brl_until_date, total_usd_until_date, total_shares_until_date, _, _, _, _ = self.calculate_totals_and_profits(transactions_until_date)
         self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
-        self.create_transaction_history(total_brl_until_date, total_usd_until_date, total_shares_until_date)
+        self.create_transaction_history(total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl, share_avg_price_usd)
         self.update_portfolio_investment(total_brl, total_usd, total_shares)
 
     def get_transactions(self, transaction_id):
@@ -472,8 +473,11 @@ class AssetTransactionCalculation(models.Model):
                 total_brl -= cost_brl
                 total_usd -= cost_usd
                 total_shares -= transaction.transaction_amount
-        return total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd
 
+        share_avg_price_brl_until_date = total_brl / total_shares if total_shares != 0 else 0
+        share_avg_price_usd_until_date = total_usd / total_shares if total_shares != 0 else 0
+
+        return total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd, share_avg_price_brl_until_date, share_avg_price_usd_until_date
 
     def update_self_values(self, total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd):
         self.share_average_price_brl = total_brl / total_shares if total_shares != 0 else 0
@@ -484,13 +488,13 @@ class AssetTransactionCalculation(models.Model):
         self.total_usd = total_usd
         self.total_shares = total_shares
 
-    def create_transaction_history(self, shares_amount_until_date, total_brl_until_date, total_usd_until_date): 
+    def create_transaction_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl_until_date, share_avg_price_usd_until_date): 
         TransactionsHistory.objects.create(
             portfolio_investment=self.portfolio_investment,
             transaction=self.last_transaction,
-            share_average_price_brl= total_brl_until_date / shares_amount_until_date if shares_amount_until_date != 0 else self.share_average_price_brl,
-            share_average_price_usd= total_usd_until_date / shares_amount_until_date if shares_amount_until_date != 0 else self.share_average_price_usd,
-            total_shares=shares_amount_until_date,
+            share_average_price_brl= share_avg_price_brl_until_date,
+            share_average_price_usd= share_avg_price_usd_until_date,
+            total_shares=total_shares_until_date,
             total_brl=total_brl_until_date,
             total_usd=total_usd_until_date,
             transaction_date=self.transaction_date
@@ -508,31 +512,6 @@ class AssetTransactionCalculation(models.Model):
         portfolio_investment.total_today_brl = total_shares * portfolio_investment.asset.price_brl
         portfolio_investment.total_today_usd = total_shares * portfolio_investment.asset.price_usd
         portfolio_investment.save()
-
-    def delete(self, *args, **kwargs):
-        # Before deleting the object, we need to adjust the amount of shares in portfolio_investment
-        if self.transaction_type == 'buy':
-            self.portfolio_investment.shares_amount -= self.transaction_amount
-            self.portfolio_investment.total_cost_brl -= self.transaction_amount * self.price_brl
-            self.portfolio_investment.total_cost_usd -= self.transaction_amount * self.price_usd
-        elif self.transaction_type == 'sell':
-            self.portfolio_investment.shares_amount += self.transaction_amount
-            sell_brl = self.transaction_amount * self.price_brl
-            sell_usd = self.transaction_amount * self.price_usd
-            cost_brl = self.transaction_amount * self.portfolio_investment.share_average_price_brl
-            cost_usd = self.transaction_amount * self.portfolio_investment.share_average_price_usd
-            self.portfolio_investment.trade_profit_brl -= sell_brl - cost_brl
-            self.portfolio_investment.trade_profit_usd -= sell_usd - cost_usd
-            self.portfolio_investment.total_cost_brl += cost_brl
-            self.portfolio_investment.total_cost_usd += cost_usd
-        self.portfolio_investment.save()
-
-        # Then recalculate averages
-        transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-        transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
-
-        # Now we can delete the object
-        super().delete(*args, **kwargs)
 
     class Meta:
         ordering = ['-transaction_date']
