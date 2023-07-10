@@ -7,6 +7,8 @@ from common.utils.get_prices_from_api import fetch_currency_price_from_api, fetc
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
+from django.apps import apps
+
 import logging
 
 class CurrencyTransaction(models.Model):
@@ -75,7 +77,7 @@ class CurrencyTransaction(models.Model):
 
     def process_transaction(self, is_new):
         transaction_calculation, _ = CurrencyTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
-        transaction_calculation.process_transaction(start_date=self.transaction_date, is_new=is_new)
+        transaction_calculation.process_transaction(transaction_date=self.transaction_date, is_new=is_new)
         transaction_calculation.save()
 
     @transaction.atomic
@@ -90,7 +92,7 @@ class CurrencyTransaction(models.Model):
         # Em seguida, recalcule as médias
         try:
             transaction_calculation = CurrencyTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-            transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
+            transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
         except CurrencyTransactionCalculation.DoesNotExist:
             pass
 
@@ -109,7 +111,7 @@ class CurrencyTransactionCalculation(models.Model):
     share_average_price_brl = models.FloatField(default=0)
     share_average_price_usd = models.FloatField(default=0)
 
-    def process_transaction(self, start_date, is_new=False, transaction_id=None):
+    def process_transaction(self, transaction_date, is_new=False, transaction_id=None):
         transactions = self.get_transactions(transaction_id)
         total_brl, total_usd, total_shares = self.calculate_totals(transactions)
         self.update_average_prices(total_brl, total_usd, total_shares)
@@ -382,7 +384,7 @@ class AssetTransaction(models.Model):
         transaction_calculation, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         transaction_calculation.transaction_date = self.transaction_date
         transaction_calculation.last_transaction = self
-        transaction_calculation.process_transaction(start_date=self.transaction_date, is_new=is_new)
+        transaction_calculation.process_transaction(transaction_date=self.transaction_date, is_new=is_new)
         transaction_calculation.save()
 
     @transaction.atomic    
@@ -397,7 +399,7 @@ class AssetTransaction(models.Model):
         # Em seguida, recalcule as médias
         try:
             transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-            transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
+            transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
         except AssetTransactionCalculation.DoesNotExist:
             pass  
 
@@ -420,7 +422,6 @@ class AssetTransaction(models.Model):
         verbose_name = ' Compra e Venda de Ativo'
         verbose_name_plural = ' Compra e Venda de Ativos'
 
-# Encapsulado Ok
 class AssetTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
     last_transaction = models.ForeignKey(AssetTransaction, null=True, blank=True, on_delete=models.SET_NULL) # não deleta o objeto, apenas seta o campo como null
@@ -433,15 +434,20 @@ class AssetTransactionCalculation(models.Model):
     total_usd = models.FloatField(default=0)
     transaction_date = models.DateTimeField(default=timezone.now)
 
-    def process_transaction(self, start_date, is_new=False, transaction_id=None):
+    def process_transaction(self, transaction_date, is_new=False, transaction_id=None): 
         transactions = self.get_transactions(transaction_id)
         total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd = self.calculate_totals_and_profits(transactions)
+        transactions_until_date = self.get_transactions_until_date(transaction_date)
+        total_brl_until_date, total_usd_until_date, total_shares_until_date, _, _ = self.calculate_totals_and_profits(transactions_until_date)
         self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
-        self.create_transaction_history()
+        self.create_transaction_history(total_brl_until_date, total_usd_until_date, total_shares_until_date)
         self.update_portfolio_investment(total_brl, total_usd, total_shares)
 
     def get_transactions(self, transaction_id):
         return AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
+
+    def get_transactions_until_date(self, transaction_date):
+        return AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment, transaction_date__lte=transaction_date).order_by('transaction_date')
 
     def calculate_totals_and_profits(self, transactions):
         total_brl = 0
@@ -468,6 +474,7 @@ class AssetTransactionCalculation(models.Model):
                 total_shares -= transaction.transaction_amount
         return total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd
 
+
     def update_self_values(self, total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd):
         self.share_average_price_brl = total_brl / total_shares if total_shares != 0 else 0
         self.share_average_price_usd = total_usd / total_shares if total_shares != 0 else 0
@@ -477,15 +484,15 @@ class AssetTransactionCalculation(models.Model):
         self.total_usd = total_usd
         self.total_shares = total_shares
 
-    def create_transaction_history(self):
+    def create_transaction_history(self, shares_amount_until_date, total_brl_until_date, total_usd_until_date): 
         TransactionsHistory.objects.create(
             portfolio_investment=self.portfolio_investment,
             transaction=self.last_transaction,
-            share_average_price_brl=self.share_average_price_brl,
-            share_average_price_usd=self.share_average_price_usd,
-            total_shares=self.total_shares, # talvez tenha que criar um total_shares_on_date
-            total_brl=self.total_brl, # talvez tenha que criar um total_shares_on_date
-            total_usd=self.total_usd, # talvez tenha que criar um total_shares_on_date
+            share_average_price_brl= total_brl_until_date / shares_amount_until_date if shares_amount_until_date != 0 else self.share_average_price_brl,
+            share_average_price_usd= total_usd_until_date / shares_amount_until_date if shares_amount_until_date != 0 else self.share_average_price_usd,
+            total_shares=shares_amount_until_date,
+            total_brl=total_brl_until_date,
+            total_usd=total_usd_until_date,
             transaction_date=self.transaction_date
         )
 
@@ -522,7 +529,7 @@ class AssetTransactionCalculation(models.Model):
 
         # Then recalculate averages
         transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
-        transaction_calculation.process_transaction(start_date=self.transaction_date, transaction_id=self.id)
+        transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
 
         # Now we can delete the object
         super().delete(*args, **kwargs)
@@ -549,7 +556,8 @@ class TransactionsHistory(models.Model):
         super().save(*args, **kwargs)
 
     def create_portfolio_dividend(self):
-        from dividends.models import Dividend, PortfolioDividend  # importação local
+        Dividend = apps.get_model('dividends', 'Dividend')
+        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
         dividends = Dividend.objects.filter(record_date__gte=self.transaction_date)
 
         for dividend in dividends:
