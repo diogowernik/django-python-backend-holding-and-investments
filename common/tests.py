@@ -17,7 +17,7 @@ class CommonSetupMixin:
         cls.currency_usd = Currency.objects.create(ticker='USD', price_brl=5, price_usd=1)
         cls.currency_eur = Currency.objects.create(ticker='EUR', price_brl=6, price_usd=1.2)
         cls.broker_banco_brasil= Broker.objects.create(name='Banco do Brasil', main_currency=cls.currency_brl, slug='banco-do-brasil')
-        cls.broker_avenue= Broker.objects.create(name='Itau', main_currency=cls.currency_usd, slug='avenue')
+        cls.broker_avenue= Broker.objects.create(name='Avenue', main_currency=cls.currency_usd, slug='avenue')
         cls.broker_itau= Broker.objects.create(name='Itau', main_currency=cls.currency_brl, slug='itau')
         cls.broker_inter= Broker.objects.create(name='Inter', main_currency=cls.currency_usd, slug='inter')
         cls.broker_degiro= Broker.objects.create(name='Degiro', main_currency=cls.currency_eur, slug='degiro')

@@ -107,7 +107,6 @@ class PortfolioInvestment(models.Model):
         verbose_name_plural = "  Investimentos por Portfolio"
         unique_together = ['portfolio', 'asset', 'broker']
 
-
 class PortfolioEvolution(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=2)
     date = models.DateField()

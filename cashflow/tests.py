@@ -28,6 +28,13 @@ class CurrencyTransactionTest(CommonSetupMixin, TestCase):
             transaction = self.create_transaction(1000, 5, 1, broker=self.broker_avenue)
             self.assertEqual(PortfolioInvestment.objects.get(id=transaction.portfolio_investment.id).shares_amount, 1000 * (i + 1))
 
+    def test_eur_currency_transactions(self):
+        # Teste para garantir que as transações em EUR com broker eur funcionam, 
+        # cria 4 transações de 1000 euros cada e verifica se o saldo final está correto
+        for i in range(4):
+            transaction = self.create_transaction(1000, 6, 1.2, broker=self.broker_degiro)
+            self.assertEqual(PortfolioInvestment.objects.get(id=transaction.portfolio_investment.id).shares_amount, 1000 * (i + 1))
+
     def test_brl_currency_withdraw(self):
         # Teste para garantir que as retiradas em BRL estão funcionando corretamente.
         # Realiza um depósito inicial de 2000 e em seguida faz duas retiradas de 500. 
@@ -66,23 +73,10 @@ class CurrencyTransactionTest(CommonSetupMixin, TestCase):
         transactions[0].delete()
         self.assertEqual(PortfolioInvestment.objects.get(id=transactions[1].portfolio_investment.id).shares_amount, 1000)
 
-    # @patch('investments.utils.get_currency_price.fetch_currency_price_from_api')
-    # def test_avenue_brl_currency_transaction_with_failed_api_call(self, mock_fetch_currency_price):
-    #     # Teste para verificar se a transação com a corretora Avenue e price_brl = 0
-    #     # utiliza o valor do banco de dados quando a chamada da API falha.
-
-    #     # Configurar o mock para simular a falha na chamada da API
-    #     mock_fetch_currency_price.side_effect = Exception()
-
-    #     # Criar a transação com a corretora Avenue e price_brl = 0
-    #     transaction = self.create_transaction(1000, 0, 1, broker=self.broker_avenue)
-
-    #     # Verificar se o preço BRL foi definido corretamente como o valor do banco de dados
-    #     self.assertEqual(transaction.price_brl, self.broker_avenue.main_currency.price_brl)
-
-    #     # Verificar se a transação foi processada corretamente
-    #     self.assertEqual(PortfolioInvestment.objects.get(id=transaction.portfolio_investment.id).shares_amount, 1000)
-
+class CurrencyTransactionCalculationTest(CommonSetupMixin, TestCase):
+    def create_transaction(self, amount, price_brl, price_usd, transaction_type='deposit', broker=None):
+        # Método auxiliar para criar transações.
+        return CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=broker or self.broker_banco_brasil, transaction_type=transaction_type, transaction_amount=amount, price_brl=price_brl, price_usd=price_usd)
 
     def test_average_price_calculation_three_transactions(self):
         # Teste para verificar se o cálculo do preço médio está funcionando corretamente.

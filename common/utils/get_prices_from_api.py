@@ -29,7 +29,7 @@ def fetch_currency_price_from_api(from_currency, to_currency, date):
 
 def fetch_raw_asset_price(asset, asset_currency, target_currency, date):
     # Adicionar '.SA' se a moeda do ativo for BRL
-    if asset_currency.upper() == 'BRL':
+    if asset_currency == 'BRL':
         asset += ".SA"
         original_currency = 'BRL'  # preço originalmente em BRL
     else:
@@ -49,7 +49,7 @@ def fetch_asset_price_from_api(asset, asset_currency, target_currency, date):
     raw_asset_price, original_currency = fetch_raw_asset_price(asset, asset_currency, target_currency, date)
 
     # If the original currency is already the target currency, return the original price
-    if original_currency.upper() == target_currency.upper():
+    if original_currency == target_currency:
         return raw_asset_price
 
     # If the original and target currencies are different, convert the price to the target currency
@@ -61,6 +61,10 @@ def fetch_asset_price_from_api(asset, asset_currency, target_currency, date):
         # This is the change - we no longer make a distinction between BRL to USD conversion and all other conversions.
         # The exchange rate should always be used to divide the original price, no matter which currencies are involved.
         adjusted_asset_price = raw_asset_price * exchange_rate if exchange_rate else None
+        # adjusted_asset_price round
+        adjusted_asset_price = round(adjusted_asset_price, 2)
+        # change to str
+        adjusted_asset_price = str(adjusted_asset_price)
 
         return adjusted_asset_price
 

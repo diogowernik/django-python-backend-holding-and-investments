@@ -31,14 +31,7 @@ class TransactionsHistoryAdmin(admin.ModelAdmin):
     list_display = ( 'transaction_date',
         'portfolio_investment', 'transaction', 'share_average_price_brl', 'share_average_price_usd', 'total_shares', 'total_brl', 'total_usd',)
     
-    def has_add_permission(self, request):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
+
 
 
 # Apenas para visualização

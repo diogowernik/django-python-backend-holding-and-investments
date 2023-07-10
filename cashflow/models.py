@@ -8,7 +8,6 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
 from django.apps import apps
-
 import logging
 
 class CurrencyTransaction(models.Model):
@@ -62,7 +61,6 @@ class CurrencyTransaction(models.Model):
                     if getattr(self, price_attribute) is None:
                         raise ValidationError(f'Não foi possível obter a cotação da moeda {currency_ticker}. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
 
-
     def set_prices(self):
         self.set_price('BRL', 'price_brl')
         self.set_price('USD', 'price_usd')
@@ -82,22 +80,23 @@ class CurrencyTransaction(models.Model):
 
     @transaction.atomic
     def delete(self, *args, **kwargs):
-        # Antes de deletar o objeto, precisamos ajustar a quantidade de ações em portfolio_investment
+        self.adjust_portfolio_investment()
+        self.recalculate_averages()
+        super().delete(*args, **kwargs)
+
+    def adjust_portfolio_investment(self):
         if self.transaction_type == 'deposit':
             self.portfolio_investment.shares_amount -= self.transaction_amount
         elif self.transaction_type == 'withdraw':
             self.portfolio_investment.shares_amount += self.transaction_amount
         self.portfolio_investment.save()
 
-        # Em seguida, recalcule as médias
+    def recalculate_averages(self):
         try:
             transaction_calculation = CurrencyTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
             transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
         except CurrencyTransactionCalculation.DoesNotExist:
             pass
-
-        # Agora, podemos deletar o objeto
-        super(CurrencyTransaction, self).delete(*args, **kwargs)
 
     class Meta:
         ordering = ['-transaction_date']
@@ -323,8 +322,8 @@ class AssetTransaction(models.Model):
                     try:
                         fetched_price = fetch_asset_price_from_api(
                             self.asset.ticker,
-                            self.broker.main_currency, # pega a moeda principal do broker que é a moeda do asset
-                            target_currency,  # Convertendo para a moeda desejada
+                            self.broker.main_currency.ticker, 
+                            target_currency,  
                             (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
                         )
                         # se a cotação for bem sucedida, interrompa o loop
@@ -422,6 +421,9 @@ class AssetTransaction(models.Model):
         ordering = ['-transaction_date']
         verbose_name = ' Compra e Venda de Ativo'
         verbose_name_plural = ' Compra e Venda de Ativos'
+
+    def __str__(self):
+        return f'{self.asset.ticker} - {self.transaction_date.strftime("%d/%m/%Y")}'
 
 class AssetTransactionCalculation(models.Model):
     portfolio_investment = models.OneToOneField(PortfolioInvestment, on_delete=models.CASCADE)
