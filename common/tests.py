@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test import TestCase
 from portfolios.models import PortfolioInvestment,Portfolio
-from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
+from investments.models import CurrencyHolding, Stocks, BrStocks, Reit, AssetHistoricalPrice, Asset
 from brokers.models import Broker, Currency, CurrencyHistoricalPrice
 from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer, TransactionsHistory
 from categories.models import Category, SubCategory
@@ -40,4 +40,9 @@ class CommonSetupMixin:
         CurrencyHistoricalPrice.objects.create(currency_pair='EURUSD', date=yesterday, open=1.15, high=1.15, low=1.15, close=1.15)
         CurrencyHistoricalPrice.objects.create(currency_pair='BRLEUR', date=yesterday, open=0.15, high=0.15, low=0.15, close=0.15)
         CurrencyHistoricalPrice.objects.create(currency_pair='EURBRL', date=yesterday, open=6.5, high=6.5, low=6.5, close=6.5)
+        AssetHistoricalPrice.objects.create(asset=cls.asset_wege3, date=yesterday, open=50.5, high=50.5, low=50.5, close=50.5, currency='BRL')
+        AssetHistoricalPrice.objects.create(asset=cls.asset_itub4, date=yesterday, open=30.5, high=30.5, low=30.5, close=30.5, currency='BRL')
+        AssetHistoricalPrice.objects.create(asset=cls.asset_msft, date=yesterday, open=200.5, high=200.5, low=200.5, close=200.5, currency='USD')
+        AssetHistoricalPrice.objects.create(asset=cls.asset_o, date=yesterday, open=100.5, high=100.5, low=100.5, close=100.5, currency='USD')
+
 

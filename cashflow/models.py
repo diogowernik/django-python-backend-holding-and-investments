@@ -28,6 +28,11 @@ class CurrencyTransaction(models.Model):
         super().save(*args, **kwargs)  # Save the object
         self.process_transaction(is_new)
 
+    def set_prices(self):
+        self.set_price('BRL', 'price_brl')
+        self.set_price('USD', 'price_usd')
+
+    # set_price for set_prices
     def set_price(self, currency_ticker, price_attribute):
         if getattr(self, price_attribute) is None:
             if self.broker.main_currency.ticker == currency_ticker:
@@ -38,18 +43,18 @@ class CurrencyTransaction(models.Model):
                 if transaction_date == today:
                     setattr(self, price_attribute, getattr(self.broker.main_currency, price_attribute))
                 elif transaction_date < today:
-                    currency_historical_price = CurrencyHistoricalPrice.objects.filter(
-                        currency_pair=f'{self.broker.main_currency.ticker}{currency_ticker}',
-                        date__lte=transaction_date
-                    ).latest('date')
-                    if currency_historical_price:
-                        setattr(self, price_attribute, currency_historical_price.close)
-                    else:
-                        raise ValidationError(f'Não foi possível encontrar o preço do ativo {currency_ticker} na data {transaction_date}')
+                    self.set_historical_price(currency_ticker, price_attribute, transaction_date)
 
-    def set_prices(self):
-        self.set_price('BRL', 'price_brl')
-        self.set_price('USD', 'price_usd')
+    # set_historical_price for set_price
+    def set_historical_price(self, currency_ticker, price_attribute, transaction_date):
+        currency_historical_price = CurrencyHistoricalPrice.objects.filter(
+            currency_pair=f'{self.broker.main_currency.ticker}{currency_ticker}',
+            date__lte=transaction_date
+        ).latest('date')
+        if currency_historical_price:
+            setattr(self, price_attribute, currency_historical_price.close)
+        else:
+            raise ValidationError(f'Não foi possível encontrar o preço do ativo {currency_ticker} na data {transaction_date}')
 
     def set_portfolio_investment(self):
         asset = CurrencyHolding.objects.get(currency=self.broker.main_currency)
@@ -67,7 +72,7 @@ class CurrencyTransaction(models.Model):
     @transaction.atomic
     def delete(self, *args, **kwargs):
         self.adjust_portfolio_investment()
-        self.recalculate_averages()
+        self.reprocess_transaction()
         super().delete(*args, **kwargs)
 
     def adjust_portfolio_investment(self):
@@ -77,7 +82,7 @@ class CurrencyTransaction(models.Model):
             self.portfolio_investment.shares_amount += self.transaction_amount
         self.portfolio_investment.save()
 
-    def recalculate_averages(self):
+    def reprocess_transaction(self):
         try:
             transaction_calculation = CurrencyTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
             transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
@@ -283,6 +288,7 @@ class AssetTransaction(models.Model):
     price_usd = models.FloatField(null=True, blank=True)
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE, blank=True, null=True)
 
+    # Save the object and call needed methods
     @transaction.atomic
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
@@ -293,6 +299,12 @@ class AssetTransaction(models.Model):
         self.create_or_update_currency_transaction()
         self.process_transaction(is_new)
 
+    # set_prices when fields price_brl and price_usd are null or not set
+    def set_prices(self):
+        self.set_price(self.asset.ticker, 'BRL') # price_brl
+        self.set_price(self.asset.ticker, 'USD') # price_usd
+
+    # set_price for set_prices
     def set_price(self, asset_ticker, target_currency):
         price_attribute = f'price_{target_currency.lower()}'
         if getattr(self, price_attribute) is None:
@@ -301,39 +313,41 @@ class AssetTransaction(models.Model):
             if transaction_date == today:
                 setattr(self, price_attribute, getattr(self.asset, price_attribute))
             elif transaction_date < today:
-                try:
-                    asset_historical_price = AssetHistoricalPrice.objects.get(
-                        asset__ticker=asset_ticker, 
-                        date=transaction_date
-                    )
+                self.set_historical_price(asset_ticker, target_currency, transaction_date, price_attribute)
 
-                    # Verifique a moeda do preço histórico
-                    historical_price_currency = asset_historical_price.currency
+    # set_historical_price for set_price
+    def set_historical_price(self, asset_ticker, target_currency, transaction_date, price_attribute):
+        try:
+            asset_historical_price = AssetHistoricalPrice.objects.get(
+                asset__ticker=asset_ticker, 
+                date=transaction_date
+            )
+            # Verifique a moeda do preço histórico
+            historical_price_currency = asset_historical_price.currency
 
-                    if historical_price_currency == target_currency:
-                        setattr(self, price_attribute, asset_historical_price.close)
-                    else:
-                        # Converta o preço histórico para a moeda alvo
-                        currency_historical_price = CurrencyHistoricalPrice.objects.filter(
-                            currency_pair=f'{historical_price_currency}{target_currency}',
-                            date__lte=transaction_date
-                        ).latest('date')
+            if historical_price_currency == target_currency:
+                setattr(self, price_attribute, asset_historical_price.close)
+            else:
+                # Converta o preço histórico para a moeda alvo
+                self.set_converted_price(asset_historical_price, historical_price_currency, target_currency, transaction_date, price_attribute)
 
-                        if currency_historical_price:
-                            converted_price = asset_historical_price.close * currency_historical_price.close
-                            setattr(self, price_attribute, converted_price)
-                        else:
-                            raise ValidationError(f'Não foi possível encontrar a taxa de câmbio de {historical_price_currency} para {target_currency} na data {transaction_date}')
+        except ObjectDoesNotExist:
+            raise ValidationError(f'Não foi possível encontrar o preço do ativo {asset_ticker} na data {transaction_date}')
 
-                except ObjectDoesNotExist:
-                    raise ValidationError(f'Não foi possível encontrar o preço do ativo {asset_ticker} na data {transaction_date}')
+    # set_converted_price for set_historical_price when historical_price_currency != target_currency
+    def set_converted_price(self, asset_historical_price, historical_price_currency, target_currency, transaction_date, price_attribute):
+        currency_historical_price = CurrencyHistoricalPrice.objects.filter(
+            currency_pair=f'{historical_price_currency}{target_currency}',
+            date__lte=transaction_date
+        ).latest('date')
 
-    def set_prices(self):
-        self.set_price(self.asset.ticker, 'BRL') # price_brl
-        self.set_price(self.asset.ticker, 'USD') # price_usd
+        if currency_historical_price:
+            converted_price = asset_historical_price.close * currency_historical_price.close
+            setattr(self, price_attribute, converted_price)
+        else:
+            raise ValidationError(f'Não foi possível encontrar a taxa de câmbio de {historical_price_currency} para {target_currency} na data {transaction_date}')
 
-
-
+    # set_portfolio_investment for future update on process_transaction
     def set_portfolio_investment(self):
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(
             portfolio=self.portfolio,
@@ -341,6 +355,7 @@ class AssetTransaction(models.Model):
             asset=self.asset
         )
 
+    # Create or update a currency transaction related to the asset transaction
     def create_or_update_currency_transaction(self):
         currency_transaction_type = 'withdraw' if self.transaction_type == 'buy' else 'deposit'
         currency_transaction_amount = self.get_currency_transaction_amount()
@@ -364,12 +379,14 @@ class AssetTransaction(models.Model):
             currency_transaction.price_usd = self.price_usd
             currency_transaction.save()
 
+    # Get the total amount of currency involved in the transaction
     def get_currency_transaction_amount(self):
         if self.broker.main_currency.ticker == 'BRL':
             return self.transaction_amount * self.price_brl
         elif self.broker.main_currency.ticker == 'USD':
             return self.transaction_amount * self.price_usd
 
+    # Send data to AssetTransactionCalculation
     def process_transaction(self, is_new):
         transaction_calculation, _ = AssetTransactionCalculation.objects.get_or_create(portfolio_investment=self.portfolio_investment)
         transaction_calculation.transaction_date = self.transaction_date
@@ -380,10 +397,11 @@ class AssetTransaction(models.Model):
     @transaction.atomic  
     def delete(self, *args, **kwargs):
         self.adjust_portfolio_investment()
-        self.recalculate_averages()
+        self.reprocess_transaction()
         self.delete_currency_transaction()
         super().delete(*args, **kwargs)    
 
+    # Adjust the portfolio investment by updating the number of shares when the asset transaction is deleted
     def adjust_portfolio_investment(self):
         if self.transaction_type == 'buy':
             self.portfolio_investment.shares_amount -= self.transaction_amount
@@ -391,13 +409,15 @@ class AssetTransaction(models.Model):
             self.portfolio_investment.shares_amount += self.transaction_amount
         self.portfolio_investment.save()
 
-    def recalculate_averages(self):
+    # Reprocess the transaction when the asset transaction is deleted
+    def reprocess_transaction(self):
         try:
             transaction_calculation = AssetTransactionCalculation.objects.get(portfolio_investment=self.portfolio_investment)
             transaction_calculation.process_transaction(transaction_date=self.transaction_date, transaction_id=self.id)
         except AssetTransactionCalculation.DoesNotExist:
             pass
 
+    # Delete the currency transaction related to the asset transaction
     def delete_currency_transaction(self):
         try:
             currency_transaction = CurrencyTransaction.objects.get(

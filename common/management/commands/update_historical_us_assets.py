@@ -43,7 +43,7 @@ def update_asset_historical_prices(asset_ticker):
         # Cria um novo AssetHistoricalPrice
         AssetHistoricalPrice.objects.create(
             asset=asset,
-            currency = 'BRL',
+            currency = 'USD',
             date=date.date(),
             open=row['Open'],
             high=row['High'],
