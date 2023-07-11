@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import TestCase
 from portfolios.models import PortfolioInvestment,Portfolio
 from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
-from brokers.models import Broker, Currency 
+from brokers.models import Broker, Currency, CurrencyHistoricalPrice
 from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer, TransactionsHistory
 from categories.models import Category, SubCategory
 from dividends.models import Dividend, PortfolioDividend
@@ -33,3 +33,11 @@ class CommonSetupMixin:
         cls.asset_o = Reit.objects.create(ticker='O', category=cls.category, subcategory=cls.subcategory, price_brl=100, price_usd=20)
         cls.user = User.objects.create_user(username='testuser', password='12345')
         cls.portfolio = Portfolio.objects.create(name='Test Portfolio', owner=cls.user)
+        yesterday = timezone.now() - timezone.timedelta(days=1)
+        CurrencyHistoricalPrice.objects.create(currency_pair='BRLUSD', date=yesterday, open=0.18, high=0.18, low=0.18, close=0.18)
+        CurrencyHistoricalPrice.objects.create(currency_pair='USDBRL', date=yesterday, open=5.5, high=5.5, low=5.5, close=5.5)
+        CurrencyHistoricalPrice.objects.create(currency_pair='USDEUR', date=yesterday, open=0.85, high=0.85, low=0.85, close=0.85)
+        CurrencyHistoricalPrice.objects.create(currency_pair='EURUSD', date=yesterday, open=1.15, high=1.15, low=1.15, close=1.15)
+        CurrencyHistoricalPrice.objects.create(currency_pair='BRLEUR', date=yesterday, open=0.15, high=0.15, low=0.15, close=0.15)
+        CurrencyHistoricalPrice.objects.create(currency_pair='EURBRL', date=yesterday, open=6.5, high=6.5, low=6.5, close=6.5)
+

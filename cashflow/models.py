@@ -43,7 +43,7 @@ class CurrencyTransaction(models.Model):
                         date__lte=transaction_date
                     ).latest('date')
                     if currency_historical_price:
-                        setattr(self, price_attribute, currency_historical_price.price)
+                        setattr(self, price_attribute, currency_historical_price.close)
                     else:
                         raise ValidationError(f'Não foi possível encontrar o preço do ativo {currency_ticker} na data {transaction_date}')
 

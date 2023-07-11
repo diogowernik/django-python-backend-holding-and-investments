@@ -1,15 +1,16 @@
 from django.test import TestCase
 from portfolios.models import PortfolioInvestment,Portfolio
 from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
-from brokers.models import Broker, Currency 
+from brokers.models import Broker, Currency, CurrencyHistoricalPrice
 from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
 from django.utils import timezone
 from common.tests import CommonSetupMixin # criado por mim para facilitar a criação de objetos para testes
 from unittest.mock import patch
+from datetime import datetime, timedelta
 
-class CurrencyTransactionTest(CommonSetupMixin, TestCase):          
+class CurrencyTransactionTest(CommonSetupMixin, TestCase):      
     def create_transaction(self, amount, price_brl, price_usd, transaction_type='deposit', broker=None):
         # Método auxiliar para criar transações.
         return CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=broker or self.broker_banco_brasil, transaction_type=transaction_type, transaction_amount=amount, price_brl=price_brl, price_usd=price_usd)
@@ -72,6 +73,50 @@ class CurrencyTransactionTest(CommonSetupMixin, TestCase):
         transactions = [self.create_transaction(1000, 1, 0.20) for _ in range(2)]
         transactions[0].delete()
         self.assertEqual(PortfolioInvestment.objects.get(id=transactions[1].portfolio_investment.id).shares_amount, 1000)
+
+    # set_prices tests yesterday (get historical price)
+    def create_transaction_no_price(self, amount, transaction_type='deposit', broker=None, transaction_date=None):
+        # Método auxiliar para criar transações sem preço definido.
+        return CurrencyTransaction.objects.create(portfolio=self.portfolio, broker=broker or self.broker_banco_brasil, transaction_type=transaction_type, transaction_amount=amount, transaction_date=transaction_date or timezone.now())
+
+    def test_set_prices_brl_banco_brasil(self):
+        # Teste para verificar se o método set_prices está funcionando corretamente para BRL
+        yesterday = datetime.now() - timedelta(days=1)
+        transaction = self.create_transaction_no_price(1000, broker=self.broker_banco_brasil, transaction_date=yesterday)
+        transaction.save()
+        self.assertEqual(transaction.price_brl, 1)
+        self.assertEqual(transaction.price_usd, 0.18)  # Obtido a partir dos dados históricos
+
+    def test_set_prices_usd_avenue(self):
+        # Teste para verificar se o método set_prices está funcionando corretamente para USD
+        yesterday = datetime.now() - timedelta(days=1)
+        transaction = self.create_transaction_no_price(1000, broker=self.broker_avenue, transaction_date=yesterday)
+        transaction.save()
+        self.assertEqual(transaction.price_brl, 5.5)  # Obtido a partir dos dados históricos
+        self.assertEqual(transaction.price_usd, 1)
+
+    def test_set_prices_eur_degiro(self):
+        # Teste para verificar se o método set_prices está funcionando corretamente para EUR
+        yesterday = datetime.now() - timedelta(days=1)
+        transaction = self.create_transaction_no_price(1000, broker=self.broker_degiro, transaction_date=yesterday)
+        transaction.save()
+        self.assertEqual(transaction.price_brl, 6.5)  # Obtido a partir dos dados históricos
+        self.assertEqual(transaction.price_usd, 1.15)  # Obtido a partir dos dados históricos
+    # set_prices tests today (get current price)
+
+    def test_set_prices_brl_banco_brasil_today(self):
+        # Teste para verificar se o método set_prices está funcionando corretamente para BRL
+        transaction = self.create_transaction_no_price(1000, broker=self.broker_banco_brasil, transaction_date=datetime.today())
+        transaction.save()
+        self.assertEqual(transaction.price_brl, 1)
+        self.assertEqual(transaction.price_usd, 0.20)  # Obtido a partir da definição da moeda no setUp
+
+    def test_set_prices_usd_avenue_today(self):
+        # Teste para verificar se o método set_prices está funcionando corretamente para USD
+        transaction = self.create_transaction_no_price(1000, broker=self.broker_avenue, transaction_date=datetime.today())
+        transaction.save()
+        self.assertEqual(transaction.price_brl, 5)  # Obtido a partir da definição da moeda no setUp
+        self.assertEqual(transaction.price_usd, 1)
 
 class CurrencyTransactionCalculationTest(CommonSetupMixin, TestCase):
     def create_transaction(self, amount, price_brl, price_usd, transaction_type='deposit', broker=None):
@@ -157,6 +202,9 @@ class CurrencyTransactionCalculationTest(CommonSetupMixin, TestCase):
         self.assertAlmostEqual(portfolio_investment.share_average_price_usd, expected_average_price_usd)
 
 class CurrencyTransferTest(CommonSetupMixin, TestCase):
+    # criar um def create_transacttion e um def create_transfer para otimizar o código
+
+    # reduzir o código aqui
     def test_transfer_brl(self):
         # Vamos fazer uma transferência de 500 BRL do banco do brasil para o Itau
         transfer_amount = 500
