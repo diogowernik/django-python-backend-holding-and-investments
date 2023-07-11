@@ -1,10 +1,11 @@
 # update trade price
 from tokenize import group
-import pandas as pd
+
 from django.core.management.base import BaseCommand
 import requests
 from common.utils.get_prices_from_api import fetch_asset_price_from_api
 import yfinance as yf
+import pandas as pd
 
 
 
@@ -12,7 +13,6 @@ import yfinance as yf
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        import yfinance as yf
 
 
         # Baixa os dados da taxa de câmbio USD/BRL

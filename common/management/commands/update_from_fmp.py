@@ -1,8 +1,8 @@
 import requests
 from django.core.management.base import BaseCommand
 import pandas as pd
-from investments.utils.common import get_app_df, merge_dataframes, get_usd_to_brl_today, update_investment, update_ranking, create_df_from_api
-from investments.utils.get_financial_data import get_financial_data
+from common.utils.fuctions import get_app_df, merge_dataframes, get_usd_to_brl_today, update_investment, update_ranking, create_df_from_api
+from common.utils.get_financial_data import get_financial_data
 from investments.models import Stocks, Reit
 from dotenv import load_dotenv
 import os

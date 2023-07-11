@@ -22,9 +22,6 @@ class Asset(models.Model):
     bottom_52w = models.FloatField(default=0)
     twelve_m_yield = models.FloatField(default=0)
     ranking = models.FloatField(default=0)
-
-    
-
     is_radar = models.BooleanField(default=True)
 
     leveragedChoices = (
@@ -185,3 +182,16 @@ class Stocks(InternationalAssets):
 class Reit(InternationalAssets):
     class Meta:
         verbose_name_plural = "Internacional / REIT"
+
+
+class AssetHistoricalPrice(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    currency = models.CharField(max_length=3)  # BRL, USD, EUR
+    date = models.DateField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+
+    def __str__(self):
+        return f"{self.asset.ticker} - {self.date} - {self.close} {self.currency}"

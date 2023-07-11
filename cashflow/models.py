@@ -1,14 +1,12 @@
 from django.db import models
-from brokers.models import Broker
+from brokers.models import Broker, CurrencyHistoricalPrice
 from portfolios.models import Portfolio, PortfolioInvestment
-from investments.models import Asset, CurrencyHolding
+from investments.models import Asset, CurrencyHolding, AssetHistoricalPrice
 from django.utils import timezone
-from common.utils.get_prices_from_api import fetch_currency_price_from_api, fetch_asset_price_from_api
 from django.db import transaction
-from django.core.exceptions import ValidationError
-from datetime import datetime, timedelta
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from datetime import datetime
 from django.apps import apps
-import logging
 
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
@@ -40,26 +38,14 @@ class CurrencyTransaction(models.Model):
                 if transaction_date == today:
                     setattr(self, price_attribute, getattr(self.broker.main_currency, price_attribute))
                 elif transaction_date < today:
-                    # tentativa de buscar a cotação para a data da transação
-                    days_behind = 0
-                    while days_behind < 3:
-                        try:
-                            fetched_price = fetch_currency_price_from_api(
-                                self.broker.main_currency.ticker,
-                                currency_ticker,
-                                (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
-                            )
-                            # se a cotação for bem sucedida, interrompa o loop
-                            if fetched_price is not None:
-                                setattr(self, price_attribute, fetched_price)
-                                break
-                        except Exception as e:
-                            # caso a API falhe ou não retorne um valor, tentamos no dia anterior
-                            logging.error(f"Failed to fetch currency price from API: {e}")
-                            days_behind += 1
-                            continue
-                    if getattr(self, price_attribute) is None:
-                        raise ValidationError(f'Não foi possível obter a cotação da moeda {currency_ticker}. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
+                    currency_historical_price = CurrencyHistoricalPrice.objects.filter(
+                        currency_pair=f'{self.broker.main_currency.ticker}{currency_ticker}',
+                        date__lte=transaction_date
+                    ).latest('date')
+                    if currency_historical_price:
+                        setattr(self, price_attribute, currency_historical_price.price)
+                    else:
+                        raise ValidationError(f'Não foi possível encontrar o preço do ativo {currency_ticker} na data {transaction_date}')
 
     def set_prices(self):
         self.set_price('BRL', 'price_brl')
@@ -309,38 +295,44 @@ class AssetTransaction(models.Model):
 
     def set_price(self, asset_ticker, target_currency):
         price_attribute = f'price_{target_currency.lower()}'
-        # asset_ticker = self.asset.ticker
         if getattr(self, price_attribute) is None:
             today = datetime.today().strftime('%Y-%m-%d')
             transaction_date = self.transaction_date.strftime('%Y-%m-%d')
             if transaction_date == today:
                 setattr(self, price_attribute, getattr(self.asset, price_attribute))
             elif transaction_date < today:
-                # tentativa de buscar a cotação para a data da transação
-                days_behind = 0
-                while days_behind < 3:
-                    try:
-                        fetched_price = fetch_asset_price_from_api(
-                            self.asset.ticker,
-                            self.broker.main_currency.ticker, 
-                            target_currency,  
-                            (transaction_date - timedelta(days=days_behind)).strftime('%Y-%m-%d')
-                        )
-                        # se a cotação for bem sucedida, interrompa o loop
-                        if fetched_price is not None:
-                            setattr(self, price_attribute, fetched_price)
-                            break
-                    except Exception as e:
-                        # caso a API falhe ou não retorne um valor, tentamos no dia anterior
-                        logging.error(f"Failed to fetch currency price from API: {e}")
-                        days_behind += 1
-                        continue
-                if getattr(self, price_attribute) is None:
-                    raise ValidationError(f'Não foi possível obter a cotação da moeda {asset_ticker}. Nesta data, a cotação da moeda não estava disponível ou a API não respondeu')
+                try:
+                    asset_historical_price = AssetHistoricalPrice.objects.get(
+                        asset__ticker=asset_ticker, 
+                        date=transaction_date
+                    )
+
+                    # Verifique a moeda do preço histórico
+                    historical_price_currency = asset_historical_price.currency
+
+                    if historical_price_currency == target_currency:
+                        setattr(self, price_attribute, asset_historical_price.close)
+                    else:
+                        # Converta o preço histórico para a moeda alvo
+                        currency_historical_price = CurrencyHistoricalPrice.objects.filter(
+                            currency_pair=f'{historical_price_currency}{target_currency}',
+                            date__lte=transaction_date
+                        ).latest('date')
+
+                        if currency_historical_price:
+                            converted_price = asset_historical_price.close * currency_historical_price.close
+                            setattr(self, price_attribute, converted_price)
+                        else:
+                            raise ValidationError(f'Não foi possível encontrar a taxa de câmbio de {historical_price_currency} para {target_currency} na data {transaction_date}')
+
+                except ObjectDoesNotExist:
+                    raise ValidationError(f'Não foi possível encontrar o preço do ativo {asset_ticker} na data {transaction_date}')
 
     def set_prices(self):
-        self.set_price(self.asset.ticker, 'BRL')
-        self.set_price(self.asset.ticker, 'USD')
+        self.set_price(self.asset.ticker, 'BRL') # price_brl
+        self.set_price(self.asset.ticker, 'USD') # price_usd
+
+
 
     def set_portfolio_investment(self):
         self.portfolio_investment, _ = PortfolioInvestment.objects.get_or_create(

@@ -13,7 +13,9 @@ class Command(BaseCommand):
             'update_from_fundamentus',
             'update_from_fmp',
             'update_total_dividends', 
-            'update_total_today']
+            'update_total_today',
+            'update_historical_currency'
+            ]
 
         errors = []
 

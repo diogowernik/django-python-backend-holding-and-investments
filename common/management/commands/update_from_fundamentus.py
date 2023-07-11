@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from investments.models import BrStocks, Fii
-from investments.utils.common import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe
+from common.utils.fuctions import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, update_ranking, preprocess_dataframe
 
 def update_data_from_fundamentus(AppModel, fetch_url, column_map, transformations, update_fields, ranking1, ranking2):
     newline = "\n"
