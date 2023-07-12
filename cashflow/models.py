@@ -399,7 +399,17 @@ class AssetTransaction(models.Model):
         self.adjust_portfolio_investment()
         self.reprocess_transaction()
         self.delete_currency_transaction()
-        super().delete(*args, **kwargs)    
+        self.delete_transaction_history()
+
+        super().delete(*args, **kwargs)
+
+    def delete_transaction_history(self):
+        # Aqui vamos pegar a TransactionsHistory associada a essa AssetTransaction e chamar o método delete.
+        try:
+            transaction_history = TransactionsHistory.objects.get(transaction=self)
+            transaction_history.delete()
+        except TransactionsHistory.DoesNotExist:
+            pass
 
     # Adjust the portfolio investment by updating the number of shares when the asset transaction is deleted
     def adjust_portfolio_investment(self):
@@ -455,8 +465,13 @@ class AssetTransactionCalculation(models.Model):
         transactions_until_date = self.get_transactions_until_date(transaction_date)
         total_brl_until_date, total_usd_until_date, total_shares_until_date, _, _, _, _ = self.calculate_totals_and_profits(transactions_until_date)
         self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
-        self.create_transaction_history(total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl, share_avg_price_usd)
+        self.create_or_update_transaction_history(total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl, share_avg_price_usd)
         self.update_portfolio_investment(total_brl, total_usd, total_shares)
+
+        # Se a transação for uma atualização, reprocessar as TransactionsHistory seguintes.
+        if not is_new:
+            self.reprocess_following_transaction_histories(self.last_transaction)
+
 
     def get_transactions(self, transaction_id):
         return AssetTransaction.objects.filter(portfolio_investment=self.portfolio_investment).exclude(id=transaction_id).order_by('transaction_date')
@@ -502,17 +517,57 @@ class AssetTransactionCalculation(models.Model):
         self.total_usd = total_usd
         self.total_shares = total_shares
 
-    def create_transaction_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl_until_date, share_avg_price_usd_until_date): 
-        TransactionsHistory.objects.create(
+    def create_or_update_transaction_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl_until_date, share_avg_price_usd_until_date):
+        # Verifique se já existe um histórico de transações para esta transação
+        transaction_history, created = TransactionsHistory.objects.get_or_create(
             portfolio_investment=self.portfolio_investment,
             transaction=self.last_transaction,
-            share_average_price_brl= share_avg_price_brl_until_date,
-            share_average_price_usd= share_avg_price_usd_until_date,
-            total_shares=total_shares_until_date,
-            total_brl=total_brl_until_date,
-            total_usd=total_usd_until_date,
-            transaction_date=self.transaction_date
+            defaults={
+                'share_average_price_brl': share_avg_price_brl_until_date,
+                'share_average_price_usd': share_avg_price_usd_until_date,
+                'total_shares': total_shares_until_date,
+                'total_brl': total_brl_until_date,
+                'total_usd': total_usd_until_date,
+                'transaction_date': self.transaction_date
+            }
         )
+
+        # Se a instância do TransactionsHistory já existia, atualize seus campos
+        if not created:
+            transaction_history.share_average_price_brl = share_avg_price_brl_until_date
+            transaction_history.share_average_price_usd = share_avg_price_usd_until_date
+            transaction_history.total_shares = total_shares_until_date
+            transaction_history.total_brl = total_brl_until_date
+            transaction_history.total_usd = total_usd_until_date
+            transaction_history.transaction_date = self.transaction_date
+            transaction_history.save()
+
+    def reprocess_following_transaction_histories(self, asset_transaction):
+        # Obter todas as TransactionsHistory após a data da asset_transaction
+        following_transaction_histories = TransactionsHistory.objects.filter(
+            transaction__transaction_date__gt=asset_transaction.transaction_date,
+            transaction__asset=asset_transaction.asset
+        ).order_by('transaction__transaction_date')
+
+        # Se não houver TransactionsHistory após a data, sair da função
+        if not following_transaction_histories.exists():
+            return
+
+        # Redefinir a contagem total de ações
+        total_shares = asset_transaction.transaction_amount
+
+        # Iterar através de cada TransactionsHistory e atualizar o total_shares
+        for transaction_history in following_transaction_histories:
+            if transaction_history.transaction.transaction_type == 'buy':
+                total_shares += transaction_history.transaction.transaction_amount
+            elif transaction_history.transaction.transaction_type == 'sell':
+                total_shares -= transaction_history.transaction.transaction_amount
+
+            # Atualizar o total_shares de transaction_history
+            transaction_history.total_shares = total_shares
+            transaction_history.save()
+
+
 
     def update_portfolio_investment(self, total_brl, total_usd, total_shares):
         portfolio_investment = self.portfolio_investment
@@ -535,7 +590,7 @@ class AssetTransactionCalculation(models.Model):
 # Histórico de Preço Médio do Ativo, Total de Ações, Total em BRL e Total em USD, Transação
 class TransactionsHistory(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
-    transaction = models.ForeignKey(AssetTransaction, on_delete=models.CASCADE)
+    transaction = models.ForeignKey(AssetTransaction, on_delete=models.DO_NOTHING)
     share_average_price_brl = models.FloatField()
     share_average_price_usd = models.FloatField()
     total_shares = models.FloatField()
@@ -544,19 +599,118 @@ class TransactionsHistory(models.Model):
     transaction_date = models.DateTimeField()
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            self.create_portfolio_dividend()
+        is_new = self.pk is None
         super().save(*args, **kwargs)
 
+        if is_new:
+            self.create_portfolio_dividend()
+        else:
+            self.update_portfolio_dividend()
+                
     def create_portfolio_dividend(self):
-        Dividend = apps.get_model('dividends', 'Dividend')
-        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
-        dividends = Dividend.objects.filter(record_date__gte=self.transaction_date)
+        Dividend = apps.get_model('dividends', 'Dividend') 
+
+        dividends = Dividend.objects.filter(
+            asset=self.portfolio_investment.asset, 
+            record_date__gte=self.transaction_date
+        )
 
         for dividend in dividends:
-                # Crie PortfolioDividend através da função centralizada
-                PortfolioDividend.create(self, dividend)  # foi alterado aqui
+            transaction_data = self.get_transaction_data(dividend.record_date)
+            self.create_or_update_portfolio_dividend(dividend, transaction_data)
 
+    def get_transaction_data(self, record_date):
+        transaction_histories_before_record_date = self.__class__.objects.filter(
+            portfolio_investment=self.portfolio_investment,
+            transaction_date__lt=record_date
+        ).order_by('-transaction_date')  # Ordenar do mais recente para o mais antigo
+
+        last_transaction_history_before_record_date = transaction_histories_before_record_date.first()
+
+        if last_transaction_history_before_record_date:
+            total_shares = last_transaction_history_before_record_date.total_shares
+            average_price_brl = last_transaction_history_before_record_date.share_average_price_brl
+            average_price_usd = last_transaction_history_before_record_date.share_average_price_usd
+        else:
+            total_shares = 0
+            average_price_brl = 0
+            average_price_usd = 0
+
+        return total_shares, average_price_brl, average_price_usd
+
+    def create_or_update_portfolio_dividend(self, dividend, transaction_data):
+        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend') 
+        total_shares, average_price_brl, average_price_usd = transaction_data
+
+        portfolio_dividend, created = PortfolioDividend.objects.get_or_create(
+            portfolio_investment=self.portfolio_investment,
+            dividend=dividend,
+            defaults={
+                'transaction_history': self,
+                'shares_amount': total_shares, 
+                'average_price_brl': average_price_brl,
+                'average_price_usd': average_price_usd,
+                'asset': dividend.asset,
+                'category': dividend.asset.category,
+                'record_date': dividend.record_date,
+                'pay_date': dividend.pay_date,
+                'value_per_share_brl': dividend.value_per_share_brl,
+                'value_per_share_usd': dividend.value_per_share_usd,
+            }
+        )
+        if not created:
+            self.update_portfolio_dividend_fields(portfolio_dividend, transaction_data)
+
+    def update_portfolio_dividend(self):
+        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
+
+        portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=self.portfolio_investment)
+
+        for portfolio_dividend in portfolio_dividends:
+            transaction_data = self.get_transaction_data(portfolio_dividend.record_date)
+            self.update_portfolio_dividend_record(portfolio_dividend, transaction_data)
+
+    def update_portfolio_dividend_fields(self, portfolio_dividend, transaction_data):
+        total_shares, average_price_brl, average_price_usd = transaction_data
+
+        portfolio_dividend.shares_amount = total_shares
+        portfolio_dividend.average_price_brl = average_price_brl
+        portfolio_dividend.average_price_usd = average_price_usd
+        portfolio_dividend.save()
+
+    def update_portfolio_dividend_record(self, portfolio_dividend, transaction_data):
+        self.update_portfolio_dividend_fields(portfolio_dividend, transaction_data)
+
+    def delete(self, *args, **kwargs):
+        portfolio_investment = self.portfolio_investment
+        transaction_date = self.transaction_date
+        super().delete(*args, **kwargs)
+        self.reprocess_portfolios_dividends(portfolio_investment, transaction_date)
+    
+    def reprocess_portfolios_dividends(self, portfolio_investment, transaction_date):
+        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
+
+        portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=portfolio_investment)
+
+        for portfolio_dividend in portfolio_dividends:
+            # Aqui estamos obtendo os dados da transação considerando a data de registro do dividendo
+            transaction_data = self.get_transaction_data(portfolio_dividend.record_date)
+
+            # Encontrando a última transação antes da transação que estamos excluindo
+            last_transaction = self.__class__.objects.filter(
+                portfolio_investment=portfolio_investment, 
+                transaction_date__lt=transaction_date
+            ).order_by('-transaction_date').first()
+
+            if last_transaction:
+                portfolio_dividend.transaction_history = last_transaction
+                self.update_portfolio_dividend_fields(portfolio_dividend, transaction_data)
+            else:
+                # Se não houver transação anterior, a portfolio_dividend deve ser excluída
+                portfolio_dividend.delete()
+
+
+            
     class Meta:
         ordering = ['-transaction_date']
         verbose_name = ' Compra e Venda / Histórico'
@@ -613,6 +767,4 @@ class Expense(CurrencyTransaction):
 
     def __str__(self):
         return f"{self.description} - {self.transaction.transaction_amount}"
-
-
 

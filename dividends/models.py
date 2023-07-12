@@ -16,42 +16,25 @@ class Dividend(models.Model):
     pay_date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super(Dividend, self).save(*args, **kwargs)  # salvando o Dividendo primeiro
-        self.create_portfolio_dividends()
-
-    def get_latest_asset_transaction(self, portfolio_investment_obj):
-        historical_average_prices = TransactionsHistory.objects.filter(portfolio_investment=portfolio_investment_obj, transaction_date__lte=self.record_date)
-        
-        if historical_average_prices.exists():
-            return historical_average_prices.latest('transaction_date')
-        return None
+        if is_new:
+            self.create_portfolio_dividends()
+        else:
+            self.update_portfolio_dividends()
+    
+    def update_portfolio_dividends(self):
+        portfolio_dividends = PortfolioDividend.objects.filter(dividend=self)
+        for portfolio_dividend in portfolio_dividends:
+            portfolio_dividend.value_per_share_brl = self.value_per_share_brl
+            portfolio_dividend.value_per_share_usd = self.value_per_share_usd
+            portfolio_dividend.save()
 
     def create_portfolio_dividends(self):
-        portfolio_investments_by_asset = PortfolioInvestment.objects.filter(
-            asset=self.asset
-        ).values('broker', 'portfolio').distinct()
-
-        portfolio_investment_objs = PortfolioInvestment.objects.filter(
-            broker__in=[x['broker'] for x in portfolio_investments_by_asset],
-            portfolio__in=[x['portfolio'] for x in portfolio_investments_by_asset],
-            asset=self.asset
-        )
-
-        # Pegar todas as últimas transações de uma só vez
-        latest_transactions = TransactionsHistory.objects.filter(
-            portfolio_investment__in=portfolio_investment_objs,
-            transaction_date__lte=self.record_date
-        ).values('portfolio_investment').annotate(
-            last_transaction_date=Max('transaction_date')
-        )
-
-        # Converter para um dicionário para acesso fácil
-        latest_transactions_dict = {
-            x['portfolio_investment']: x['last_transaction_date'] for x in latest_transactions
-        }
+        portfolio_investment_objs = self.get_portfolio_investments()
+        latest_transactions_dict = self.get_latest_transactions(portfolio_investment_objs)
 
         for portfolio_investment_obj in portfolio_investment_objs:
-            # Obter a última transação do dicionário
             last_transaction_date = latest_transactions_dict.get(portfolio_investment_obj.id)
             if last_transaction_date is not None:
                 latest_asset_transaction = TransactionsHistory.objects.filter(
@@ -60,16 +43,43 @@ class Dividend(models.Model):
                 ).first()
                 self.create_dividends_for_portfolios(latest_asset_transaction)
 
+    def get_portfolio_investments(self):
+        portfolio_investments_by_asset = PortfolioInvestment.objects.filter(
+            asset=self.asset
+        ).values('broker', 'portfolio').distinct()
+
+        return PortfolioInvestment.objects.filter(
+            broker__in=[x['broker'] for x in portfolio_investments_by_asset],
+            portfolio__in=[x['portfolio'] for x in portfolio_investments_by_asset],
+            asset=self.asset
+        )
+
+    def get_latest_transactions(self, portfolio_investment_objs):
+        latest_transactions = TransactionsHistory.objects.filter(
+            portfolio_investment__in=portfolio_investment_objs,
+            transaction_date__lte=self.record_date
+        ).values('portfolio_investment').annotate(
+            last_transaction_date=Max('transaction_date')
+        )
+        return {x['portfolio_investment']: x['last_transaction_date'] for x in latest_transactions}
+    
+    def get_latest_asset_transaction(self, portfolio_investment_obj):
+        historical_average_prices = TransactionsHistory.objects.filter(portfolio_investment=portfolio_investment_obj, transaction_date__lte=self.record_date)
+        
+        if historical_average_prices.exists():
+            return historical_average_prices.latest('transaction_date')
+        return None
+
     def create_dividends_for_portfolios(self, latest_asset_transaction):
-        # Crie PortfolioDividend através da função centralizada
-        PortfolioDividend.create(latest_asset_transaction, self)  # foi alterado aqui
+        if latest_asset_transaction.total_shares > 0:
+            # Crie PortfolioDividend através da função centralizada
+            PortfolioDividend.create_portfolio_dividend(latest_asset_transaction, self)  # foi alterado aqui
         
     def delete(self, *args, **kwargs):
         portfolio_dividends = PortfolioDividend.objects.filter(dividend=self)
         portfolio_dividends.delete()
         super(Dividend, self).delete(*args, **kwargs)
 
-    
     def __str__(self):
         return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
 
@@ -91,7 +101,7 @@ class PortfolioDividend(models.Model):
     average_price_usd = models.FloatField(default=0)
 
     @classmethod
-    def create(cls, transaction_history, dividend):
+    def create_portfolio_dividend(cls, transaction_history, dividend):
         cls.objects.create(
             portfolio_investment=transaction_history.portfolio_investment,
             asset=dividend.asset,
@@ -102,7 +112,7 @@ class PortfolioDividend(models.Model):
             value_per_share_brl=dividend.value_per_share_brl,
             value_per_share_usd=dividend.value_per_share_usd,
             dividend=dividend,
-            shares_amount=transaction_history.total_shares,  # verificar se estes valores estão corretos, você quer que tenha o valor total de ações na data
+            shares_amount=transaction_history.total_shares, 
             average_price_brl=transaction_history.share_average_price_brl,
             average_price_usd=transaction_history.share_average_price_usd,
         )

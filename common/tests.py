@@ -1,11 +1,7 @@
-from django.test import TestCase
-from django.test import TestCase
-from portfolios.models import PortfolioInvestment,Portfolio
-from investments.models import CurrencyHolding, Stocks, BrStocks, Reit, AssetHistoricalPrice, Asset
+from portfolios.models import Portfolio
+from investments.models import CurrencyHolding, Stocks, BrStocks, Reit, AssetHistoricalPrice
 from brokers.models import Broker, Currency, CurrencyHistoricalPrice
-from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer, TransactionsHistory
 from categories.models import Category, SubCategory
-from dividends.models import Dividend, PortfolioDividend
 from django.contrib.auth.models import User
 from django.utils import timezone
 

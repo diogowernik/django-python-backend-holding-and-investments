@@ -574,3 +574,6 @@ class AssetPriceTestCase(CommonSetupMixin, TestCase):
         transaction.set_prices()
         self.assertEqual(transaction.price_brl, self.asset_msft.price_brl) # Obtained from the asset's current price
         self.assertEqual(transaction.price_usd, self.asset_msft.price_usd) # Obtained from the asset's current price
+
+# teste valores na criação de historico != valores para atualização de portfolio investment
+# teste quando cria um historico, se é criado um portfolio dividend
