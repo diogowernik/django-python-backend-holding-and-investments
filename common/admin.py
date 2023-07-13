@@ -1,8 +1,15 @@
 from django.contrib import admin
+from . import models
 # from django.contrib.auth.models import User
 # from django.contrib.auth.models import Group
 
 # Register your models here.
+
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'ticker', 'slug', 'name', 'price_brl', 'price_usd')
+    prepopulated_fields = {'slug': ('ticker',)}
+    list_editable = ['slug', 'price_brl', 'price_usd']
+admin.site.register(models.Currency, CurrencyAdmin)
 
 # admin.site.unregister(User)
 # admin.site.unregister(Group)

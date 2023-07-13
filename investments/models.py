@@ -1,6 +1,6 @@
 from django.db import models
 from categories.models import Category, SubCategory
-from brokers.models import Currency
+from common.models import Currency
 
 
 class Asset(models.Model):

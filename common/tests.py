@@ -1,10 +1,11 @@
 from portfolios.models import Portfolio
 from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
-from brokers.models import Broker, Currency
+from brokers.models import Broker
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
 from django.utils import timezone
 from timewarp.models import CurrencyHistoricalPrice, AssetHistoricalPrice
+from common.models import Currency
 
 class CommonSetupMixin:
     @classmethod
