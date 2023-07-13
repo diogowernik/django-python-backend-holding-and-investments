@@ -16,7 +16,3 @@ class CurrencyAdmin(admin.ModelAdmin):
     list_editable = ['slug', 'price_brl', 'price_usd']
 admin.site.register(models.Currency, CurrencyAdmin)
 
-class CurrencyHistoricalPriceAdmin(admin.ModelAdmin):
-    list_display = ('id','currency_pair', 'date', 'open', 'high', 'low', 'close')
-    list_filter = ('currency_pair',)
-admin.site.register(models.CurrencyHistoricalPrice, CurrencyHistoricalPriceAdmin)

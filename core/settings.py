@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'admin_auto_filters',
     'radar',
     'common',
+    'timewarp',
+    'trade',
 
 ]
 

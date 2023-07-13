@@ -1,5 +1,5 @@
 from django.db import models
-from brokers.models import Broker, CurrencyHistoricalPrice
+from brokers.models import Broker
 from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset, CurrencyHolding, AssetHistoricalPrice
 from django.utils import timezone
@@ -7,6 +7,8 @@ from django.db import transaction
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from datetime import datetime
 from django.apps import apps
+from cashflow.services.price_services_for_assets import set_prices
+from timewarp.models import CurrencyHistoricalPrice
 
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
@@ -293,59 +295,12 @@ class AssetTransaction(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
 
-        self.set_prices()
+        set_prices(self)
         self.set_portfolio_investment()
         super().save(*args, **kwargs)  # Save the object
         self.create_or_update_currency_transaction()
         self.process_transaction(is_new)
 
-    # set_prices when fields price_brl and price_usd are null or not set
-    def set_prices(self):
-        self.set_price(self.asset.ticker, 'BRL') # price_brl
-        self.set_price(self.asset.ticker, 'USD') # price_usd
-
-    # set_price for set_prices
-    def set_price(self, asset_ticker, target_currency):
-        price_attribute = f'price_{target_currency.lower()}'
-        if getattr(self, price_attribute) is None:
-            today = datetime.today().strftime('%Y-%m-%d')
-            transaction_date = self.transaction_date.strftime('%Y-%m-%d')
-            if transaction_date == today:
-                setattr(self, price_attribute, getattr(self.asset, price_attribute))
-            elif transaction_date < today:
-                self.set_historical_price(asset_ticker, target_currency, transaction_date, price_attribute)
-
-    # set_historical_price for set_price
-    def set_historical_price(self, asset_ticker, target_currency, transaction_date, price_attribute):
-        try:
-            asset_historical_price = AssetHistoricalPrice.objects.get(
-                asset__ticker=asset_ticker, 
-                date=transaction_date
-            )
-            # Verifique a moeda do preço histórico
-            historical_price_currency = asset_historical_price.currency
-
-            if historical_price_currency == target_currency:
-                setattr(self, price_attribute, asset_historical_price.close)
-            else:
-                # Converta o preço histórico para a moeda alvo
-                self.set_converted_price(asset_historical_price, historical_price_currency, target_currency, transaction_date, price_attribute)
-
-        except ObjectDoesNotExist:
-            raise ValidationError(f'Não foi possível encontrar o preço do ativo {asset_ticker} na data {transaction_date}')
-
-    # set_converted_price for set_historical_price when historical_price_currency != target_currency
-    def set_converted_price(self, asset_historical_price, historical_price_currency, target_currency, transaction_date, price_attribute):
-        currency_historical_price = CurrencyHistoricalPrice.objects.filter(
-            currency_pair=f'{historical_price_currency}{target_currency}',
-            date__lte=transaction_date
-        ).latest('date')
-
-        if currency_historical_price:
-            converted_price = asset_historical_price.close * currency_historical_price.close
-            setattr(self, price_attribute, converted_price)
-        else:
-            raise ValidationError(f'Não foi possível encontrar a taxa de câmbio de {historical_price_currency} para {target_currency} na data {transaction_date}')
 
     # set_portfolio_investment for future update on process_transaction
     def set_portfolio_investment(self):

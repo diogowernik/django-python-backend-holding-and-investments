@@ -12,17 +12,6 @@ class Currency(models.Model):
     def __str__(self):
         return f"{self.ticker} - {self.price_brl} - {self.price_usd}"
 
-class CurrencyHistoricalPrice(models.Model):
-    currency_pair = models.CharField(max_length=10)
-    date = models.DateField()
-    open = models.FloatField()
-    high = models.FloatField()
-    low = models.FloatField()
-    close = models.FloatField()
-
-    def __str__(self):
-        return f"{self.currency.ticker} - {self.date} - {self.close}"
-
 
 class Broker(models.Model):
     name = models.CharField(max_length=255)

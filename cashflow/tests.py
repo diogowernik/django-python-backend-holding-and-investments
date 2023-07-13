@@ -1,13 +1,8 @@
 from django.test import TestCase
-from portfolios.models import PortfolioInvestment,Portfolio
-from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
-from brokers.models import Broker, Currency, CurrencyHistoricalPrice
+from portfolios.models import PortfolioInvestment
 from cashflow.models import CurrencyTransaction, AssetTransaction, CurrencyTransfer, InternationalCurrencyTransfer
-from categories.models import Category, SubCategory
-from django.contrib.auth.models import User
 from django.utils import timezone
 from common.tests import CommonSetupMixin # criado por mim para facilitar a criação de objetos para testes
-from unittest.mock import patch
 from datetime import datetime, timedelta
 
 class CurrencyTransactionTest(CommonSetupMixin, TestCase):      
@@ -549,7 +544,6 @@ class AssetPriceTestCase(CommonSetupMixin, TestCase):
         # Test to check if the set_prices method is working correctly for BRL
         yesterday = timezone.now() - timezone.timedelta(days=1)
         transaction = self.create_transaction_no_price(self.asset_wege3, 1000, broker=self.broker_banco_brasil, transaction_date=yesterday)
-        transaction.set_prices()
         self.assertEqual(transaction.price_brl, 50.5) # Obtained from historical data
         self.assertEqual(transaction.price_usd, 50.5 * 0.18)  # Converted from BRL to USD using historical data
 
@@ -557,21 +551,18 @@ class AssetPriceTestCase(CommonSetupMixin, TestCase):
         # Test to check if the set_prices method is working correctly for USD
         yesterday = timezone.now() - timezone.timedelta(days=1)
         transaction = self.create_transaction_no_price(self.asset_msft, 1000, broker=self.broker_avenue, transaction_date=yesterday)
-        transaction.set_prices()
         self.assertEqual(transaction.price_brl, 200.5 * 5.5)  # Converted from USD to BRL using historical data
         self.assertEqual(transaction.price_usd, 200.5) # Obtained from historical data
 
     def test_set_prices_brl_banco_brasil_today(self):
         # Test to check if the set_prices method is working correctly for BRL with today's date
         transaction = self.create_transaction_no_price(self.asset_wege3, 1000, broker=self.broker_banco_brasil)
-        transaction.set_prices()
         self.assertEqual(transaction.price_brl, self.asset_wege3.price_brl) # Obtained from the asset's current price
         self.assertEqual(transaction.price_usd, self.asset_wege3.price_usd) # Obtained from the asset's current price
 
     def test_set_prices_usd_avenue_today(self):
         # Test to check if the set_prices method is working correctly for USD with today's date
         transaction = self.create_transaction_no_price(self.asset_msft, 1000, broker=self.broker_avenue)
-        transaction.set_prices()
         self.assertEqual(transaction.price_brl, self.asset_msft.price_brl) # Obtained from the asset's current price
         self.assertEqual(transaction.price_usd, self.asset_msft.price_usd) # Obtained from the asset's current price
 

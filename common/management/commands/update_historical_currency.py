@@ -1,6 +1,6 @@
 import yfinance as yf
 from django.core.management.base import BaseCommand
-from brokers.models import CurrencyHistoricalPrice
+from timewarp.models import CurrencyHistoricalPrice
 from datetime import datetime, timedelta
 import pandas as pd
 
