@@ -10,8 +10,6 @@ from django.apps import apps
 from cashflow.services.price_services import set_prices
 from timewarp.models import CurrencyHistoricalPrice
 
-
-
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=2)

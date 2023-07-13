@@ -1,7 +1,7 @@
 from django.db import models
 
-# Create your models here.
-
+# mover para common/models.py
+# adicionar uma ação que quando é atualizado, atualiza CurrencyHoldings
 class Currency(models.Model):
     ticker = models.CharField(max_length=255)
     slug = models.CharField(max_length=255)

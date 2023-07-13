@@ -11,7 +11,7 @@ class BrokerAdmin(admin.ModelAdmin):
 admin.site.register(models.Broker, BrokerAdmin)
 
 class CurrencyAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'slug', 'name', 'price_brl', 'price_usd')
+    list_display = ('id', 'ticker', 'slug', 'name', 'price_brl', 'price_usd')
     prepopulated_fields = {'slug': ('ticker',)}
     list_editable = ['slug', 'price_brl', 'price_usd']
 admin.site.register(models.Currency, CurrencyAdmin)
