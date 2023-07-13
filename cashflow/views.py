@@ -17,8 +17,3 @@ class CurrencyTransactionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = CurrencyTransaction.objects.all()
 
     
-    
-
-
-
-# Create your views here.

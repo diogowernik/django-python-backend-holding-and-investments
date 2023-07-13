@@ -1,7 +1,7 @@
 from django.db import models
 from investments.models import Asset
 from portfolios.models import PortfolioInvestment
-from cashflow.models import TransactionsHistory
+from trade.models import TradeHistory
 from categories.models import Category
 from django.db.models import Max
 
@@ -35,7 +35,7 @@ class Dividend(models.Model):
         for portfolio_investment_obj in portfolio_investment_objs:
             last_transaction_date = latest_transactions_dict.get(portfolio_investment_obj.id)
             if last_transaction_date is not None:
-                latest_asset_transaction = TransactionsHistory.objects.filter(
+                latest_asset_transaction = TradeHistory.objects.filter(
                     portfolio_investment=portfolio_investment_obj,
                     transaction_date=last_transaction_date
                 ).first()
@@ -53,7 +53,7 @@ class Dividend(models.Model):
         )
 
     def get_latest_transactions(self, portfolio_investment_objs):
-        latest_transactions = TransactionsHistory.objects.filter(
+        latest_transactions = TradeHistory.objects.filter(
             portfolio_investment__in=portfolio_investment_objs,
             transaction_date__lte=self.record_date
         ).values('portfolio_investment').annotate(
@@ -62,7 +62,7 @@ class Dividend(models.Model):
         return {x['portfolio_investment']: x['last_transaction_date'] for x in latest_transactions}
     
     def get_latest_asset_transaction(self, portfolio_investment_obj):
-        historical_average_prices = TransactionsHistory.objects.filter(portfolio_investment=portfolio_investment_obj, transaction_date__lte=self.record_date)
+        historical_average_prices = TradeHistory.objects.filter(portfolio_investment=portfolio_investment_obj, transaction_date__lte=self.record_date)
         
         if historical_average_prices.exists():
             return historical_average_prices.latest('transaction_date')
@@ -87,7 +87,7 @@ class Dividend(models.Model):
 class PortfolioDividend(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    transaction_history = models.ForeignKey(TransactionsHistory, on_delete=models.CASCADE, null=True, blank=True)
+    transaction_history = models.ForeignKey(TradeHistory, on_delete=models.CASCADE, null=True, blank=True)
     dividend = models.ForeignKey(Dividend, on_delete=models.CASCADE, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     record_date = models.DateTimeField(null=True, blank=True)

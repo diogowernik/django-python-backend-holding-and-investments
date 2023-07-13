@@ -1,5 +1,5 @@
 from django.test import TestCase
-from cashflow.models import AssetTransaction, TransactionsHistory
+from trade.models import Trade, TradeHistory
 from portfolios.models import PortfolioInvestment
 from dividends.models import Dividend, PortfolioDividend
 from django.utils import timezone
@@ -13,7 +13,7 @@ class DividendsTestCase(CommonSetupMixin, TestCase):
         self.create_asset_transaction('sell', self.asset_itub4, 100, 30)
 
     def create_asset_transaction(self, transaction_type, asset, amount, days_ago):
-        return AssetTransaction.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type=transaction_type, asset=asset, transaction_amount=amount, price_brl=30, price_usd=6, transaction_date=timezone.now() - timezone.timedelta(days=days_ago))
+        return Trade.objects.create(portfolio=self.portfolio, broker=self.broker_banco_brasil, transaction_type=transaction_type, asset=asset, transaction_amount=amount, price_brl=30, price_usd=6, transaction_date=timezone.now() - timezone.timedelta(days=days_ago))
 
     def create_dividend(self, asset, value_per_share_brl, value_per_share_usd, record_days_ago, pay_days_ago):
         return Dividend.objects.create(asset=asset, value_per_share_brl=value_per_share_brl, value_per_share_usd=value_per_share_usd, record_date=(timezone.now() - timezone.timedelta(days=record_days_ago)), pay_date=(timezone.now() - timezone.timedelta(days=pay_days_ago)))
@@ -95,8 +95,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege) # Ok
 
-        # Então, 10 dias depois, criamos uma AssetTransaction com o transaction date antes do record_date do Dividend
-        wege_transaction = AssetTransaction.objects.create(
+        # Então, 10 dias depois, criamos uma Trade com o transaction date antes do record_date do Dividend
+        wege_transaction = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -107,23 +107,23 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
         
-        # Verificamos se a AssetTransaction foi criada corretamente
+        # Verificamos se a Trade foi criada corretamente
         self.assertIsNotNone(wege_transaction) # Ok
 
-        # Recuperamos a instância TransactionsHistory associada a essa AssetTransaction
-        transaction_history = TransactionsHistory.objects.filter(transaction=wege_transaction).first()
+        # Recuperamos a instância TradeHistory associada a essa Trade
+        transaction_history = TradeHistory.objects.filter(transaction=wege_transaction).first()
 
-        # Verificamos se existe um transaction_history criado para essa AssetTransaction
+        # Verificamos se existe um transaction_history criado para essa Trade
         self.assertIsNotNone(transaction_history) # Ok
 
-        # Verificamos se existe um PortfolioInvestment criado para essa AssetTransaction
+        # Verificamos se existe um PortfolioInvestment criado para essa Trade
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
             ).first()
 
-        # Como a AssetTransaction foi realizada antes da record_date do Dividend, deve haver um PortfolioDividend criado
+        # Como a Trade foi realizada antes da record_date do Dividend, deve haver um PortfolioDividend criado
         self.assertIsNotNone(portfolio_investment) # Ok
 
         # Verificamos se o PortfolioDividend foi criado corretamente
@@ -149,10 +149,10 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Então, 10 dias depois, criamos uma AssetTransaction com o transaction date depois do record_date do Dividend
+        # Então, 10 dias depois, criamos uma Trade com o transaction date depois do record_date do Dividend
         # Nesse caso, não deve haver um PortfolioDividend criado
-        # A AssetTransaction deve ser criada normalmente, mas sem um PortfolioDividend associado
-        wege_transaction = AssetTransaction.objects.create(
+        # A Trade deve ser criada normalmente, mas sem um PortfolioDividend associado
+        wege_transaction = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -163,36 +163,36 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se a AssetTransaction foi criada corretamente
+        # Verificamos se a Trade foi criada corretamente
         self.assertIsNotNone(wege_transaction) # Ok
 
-        # Recuperamos a instância TransactionsHistory associada a essa AssetTransaction
-        transaction_history = TransactionsHistory.objects.filter(transaction=wege_transaction).first()
+        # Recuperamos a instância TradeHistory associada a essa Trade
+        transaction_history = TradeHistory.objects.filter(transaction=wege_transaction).first()
 
         self.assertIsNotNone(transaction_history) # Ok
 
-        # Verificamos se existe um PortfolioInvestment criado para essa AssetTransaction
+        # Verificamos se existe um PortfolioInvestment criado para essa Trade
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
             ).first()
 
-        # Como a AssetTransaction foi realizada depois da record_date do Dividend, não deve haver um PortfolioDividend criado
+        # Como a Trade foi realizada depois da record_date do Dividend, não deve haver um PortfolioDividend criado
         self.assertIsNotNone(portfolio_investment) # Ok
 
-        # Verificamos que não existe um PortfolioDividend criado para essa AssetTransaction
+        # Verificamos que não existe um PortfolioDividend criado para essa Trade
         portfolio_dividend = PortfolioDividend.objects.filter(
             portfolio_investment=portfolio_investment,
             ).first()
         self.assertIsNone(portfolio_dividend)        
 
     # criar outros testes para situações diferentes, por exemplo, 
-    # 2) se editar uma AssetTransaction e mudar o transaction_date, para antes ou depois do record_date do Dividend, vai criar ou apagar um PortfolioDividend?
-    # 3) se apagar uma AssetTransaction, vai apagar os PortfolioDividends associado ao HistoryTransaction
-    # 4) se apagar uma AssetTransaction, vai apagar o PortfolioDividend associado ao HistoryTransaction, mas se tiver outro HistoryTransaction com mesmos critérios não pode apagar, tem que atualizar.
+    # 2) se editar uma Trade e mudar o transaction_date, para antes ou depois do record_date do Dividend, vai criar ou apagar um PortfolioDividend?
+    # 3) se apagar uma Trade, vai apagar os PortfolioDividends associado ao HistoryTransaction
+    # 4) se apagar uma Trade, vai apagar o PortfolioDividend associado ao HistoryTransaction, mas se tiver outro HistoryTransaction com mesmos critérios não pode apagar, tem que atualizar.
     
-    # se criar 2 Dividends e 1 AssetTransaction antes do record_date dos dois Dividends, deve criar 2 PortfolioDividends.
+    # se criar 2 Dividends e 1 Trade antes do record_date dos dois Dividends, deve criar 2 PortfolioDividends.
     def test_multiple_dividends_before_asset_transaction(self):
             # Primeiro, criamos dois Dividends em dias diferentes.
         dividend_wege1 = Dividend.objects.create(
@@ -213,8 +213,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         self.assertIsNotNone(dividend_wege1)
         self.assertIsNotNone(dividend_wege2)
 
-        # Criamos uma AssetTransaction com o transaction date antes do record_date dos dois Dividends
-        wege_transaction = AssetTransaction.objects.create(
+        # Criamos uma Trade com o transaction date antes do record_date dos dois Dividends
+        wege_transaction = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -225,16 +225,16 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se a AssetTransaction foi criada corretamente
+        # Verificamos se a Trade foi criada corretamente
         self.assertIsNotNone(wege_transaction) 
 
-        # Recuperamos a instância TransactionsHistory associada a essa AssetTransaction
-        transaction_history = TransactionsHistory.objects.filter(transaction=wege_transaction).first()
+        # Recuperamos a instância TradeHistory associada a essa Trade
+        transaction_history = TradeHistory.objects.filter(transaction=wege_transaction).first()
 
-        # Verificamos se existe um transaction_history criado para essa AssetTransaction
+        # Verificamos se existe um transaction_history criado para essa Trade
         self.assertIsNotNone(transaction_history)
 
-        # Verificamos se existe um PortfolioInvestment criado para essa AssetTransaction
+        # Verificamos se existe um PortfolioInvestment criado para essa Trade
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -243,11 +243,11 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
 
         self.assertIsNotNone(portfolio_investment) 
 
-        # Como a AssetTransaction foi realizada antes da record_date dos Dividends, devem existir 2 PortfolioDividends criados
+        # Como a Trade foi realizada antes da record_date dos Dividends, devem existir 2 PortfolioDividends criados
         portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=portfolio_investment)
         self.assertEqual(portfolio_dividends.count(), 2)
 
-    # se tiver 2 AsssetTransactions antes do record_date do Dividend, deve criar 1 PortfolioDividend, somando as duas AssetTransactions
+    # se tiver 2 AsssetTransactions antes do record_date do Dividend, deve criar 1 PortfolioDividend, somando as duas Trades
     def test_multiple_transactions_before_dividend_single_investment(self):
         # Primeiro, criamos um Dividend em um dia qualquer.
         dividend_wege = Dividend.objects.create(
@@ -260,8 +260,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos duas AssetTransactions com o transaction date antes do record_date do Dividend
-        wege_transaction1 = AssetTransaction.objects.create(
+        # Criamos duas Trades com o transaction date antes do record_date do Dividend
+        wege_transaction1 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -272,7 +272,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        wege_transaction2 = AssetTransaction.objects.create(
+        wege_transaction2 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -283,19 +283,19 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se as AssetTransactions foram criadas corretamente
+        # Verificamos se as Trades foram criadas corretamente
         self.assertIsNotNone(wege_transaction1) 
         self.assertIsNotNone(wege_transaction2) 
 
-        # Recuperamos as instâncias TransactionsHistory associadas a essas AssetTransactions
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        # Recuperamos as instâncias TradeHistory associadas a essas Trades
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         # verificamos a quantidade de shares_amount do transaction_history1
         self.assertEqual(transaction_history1.total_shares, 100) # OK
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         # verificamos a quantidade de shares_amount do transaction_history2
         self.assertEqual(transaction_history2.total_shares, 150) # OK este é que deve valer para este caso
 
-        # Verificamos se existe um PortfolioInvestment criado para essas AssetTransactions
+        # Verificamos se existe um PortfolioInvestment criado para essas Trades
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -314,7 +314,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # Verificamos se o shares_amount do PortfolioDividend é correto
         self.assertEqual(portfolio_dividend.shares_amount, 150)
 
-    # se editar uma AssetTransaction e mudar o numero de transaction_amount, vai mudar o numero de shares_amount do PortfolioDividend?
+    # se editar uma Trade e mudar o numero de transaction_amount, vai mudar o numero de shares_amount do PortfolioDividend?
     def test_edit_asset_transaction_changes_portfolio_dividend(self):
         # Primeiro, criamos um Dividend em um dia qualquer.
         dividend_wege = Dividend.objects.create(
@@ -327,8 +327,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos uma AssetTransaction com o transaction date antes do record_date do Dividend
-        wege_transaction = AssetTransaction.objects.create(
+        # Criamos uma Trade com o transaction date antes do record_date do Dividend
+        wege_transaction = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -339,19 +339,19 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se a AssetTransaction foi criada corretamente
+        # Verificamos se a Trade foi criada corretamente
         self.assertIsNotNone(wege_transaction) 
 
-        # Recuperamos a instância TransactionsHistory associada a essa AssetTransaction
-        transaction_history = TransactionsHistory.objects.filter(transaction=wege_transaction).first()
+        # Recuperamos a instância TradeHistory associada a essa Trade
+        transaction_history = TradeHistory.objects.filter(transaction=wege_transaction).first()
 
-        # Verificamos se existe um transaction_history criado para essa AssetTransaction
+        # Verificamos se existe um transaction_history criado para essa Trade
         self.assertIsNotNone(transaction_history)
 
         # verificamos se o total_shares do transaction_history é correto
         self.assertEqual(transaction_history.total_shares, 100)
 
-        # Editamos o transaction_amount da AssetTransaction
+        # Editamos o transaction_amount da Trade
         wege_transaction.transaction_amount = 200
         wege_transaction.save()
 
@@ -359,7 +359,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         transaction_history.refresh_from_db()
         self.assertEqual(transaction_history.total_shares, 200)
 
-        # Verificamos se existe um PortfolioInvestment criado para essa AssetTransaction
+        # Verificamos se existe um PortfolioInvestment criado para essa Trade
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -389,8 +389,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos duas AssetTransactions com o transaction date antes do record_date do Dividend
-        wege_transaction1 = AssetTransaction.objects.create(
+        # Criamos duas Trades com o transaction date antes do record_date do Dividend
+        wege_transaction1 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -401,11 +401,11 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se as AssetTransactions foram criadas corretamente
+        # Verificamos se as Trades foram criadas corretamente
         self.assertIsNotNone(wege_transaction1) 
 
-        # Recuperamos as instâncias TransactionsHistory associadas a essas AssetTransactions
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        # Recuperamos as instâncias TradeHistory associadas a essas Trades
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         # verificamos a quantidade de shares_amount do transaction_history1
         self.assertEqual(transaction_history1.total_shares, 100) # OK
 
@@ -413,10 +413,10 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         wege_transaction1.delete()
         
         # Verificamos se o transaction_history2 foi apagado
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         self.assertIsNone(transaction_history1)
 
-        # Verificamos se existe um PortfolioInvestment criado para essas AssetTransactions
+        # Verificamos se existe um PortfolioInvestment criado para essas Trades
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -429,7 +429,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=portfolio_investment)
         self.assertEqual(portfolio_dividends.count(), 0)
         
-    #se apagar uma AssetTransaction, vai apagar o PortfolioDividend associado ao HistoryTransaction, 
+    #se apagar uma Trade, vai apagar o PortfolioDividend associado ao HistoryTransaction, 
     # mas se tiver outro HistoryTransaction, não apaga o PortfolioDividend mas atualiza ele.
     def test_multiple_transactions_before_dividend_single_dividend_delete_one(self):
         # Primeiro, criamos um Dividend em um dia qualquer.
@@ -443,8 +443,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos duas AssetTransactions com o transaction date antes do record_date do Dividend
-        wege_transaction1 = AssetTransaction.objects.create(
+        # Criamos duas Trades com o transaction date antes do record_date do Dividend
+        wege_transaction1 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -455,7 +455,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        wege_transaction2 = AssetTransaction.objects.create(
+        wege_transaction2 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -466,15 +466,15 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se as AssetTransactions foram criadas corretamente
+        # Verificamos se as Trades foram criadas corretamente
         self.assertIsNotNone(wege_transaction1) 
         self.assertIsNotNone(wege_transaction2) 
 
-        # Recuperamos as instâncias TransactionsHistory associadas a essas AssetTransactions
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        # Recuperamos as instâncias TradeHistory associadas a essas Trades
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         # verificamos a quantidade de shares_amount do transaction_history1
         self.assertEqual(transaction_history1.total_shares, 100) # OK
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         # verificamos a quantidade de shares_amount do transaction_history2
         self.assertEqual(transaction_history2.total_shares, 150) # OK este é que deve valer para este caso
 
@@ -482,14 +482,14 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         wege_transaction2.delete()
         
         # Verificamos se o transaction_history2 foi apagado
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         self.assertIsNone(transaction_history2)
 
         # Verificamos se o transaction_history1 está presente e tem total_shares correto
         transaction_history1.refresh_from_db()
         self.assertEqual(transaction_history1.total_shares, 100)
 
-        # Verificamos se existe um PortfolioInvestment criado para essas AssetTransactions
+        # Verificamos se existe um PortfolioInvestment criado para essas Trades
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -521,8 +521,8 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos duas AssetTransactions com o transaction date antes do record_date do Dividend
-        wege_transaction1 = AssetTransaction.objects.create(
+        # Criamos duas Trades com o transaction date antes do record_date do Dividend
+        wege_transaction1 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -533,7 +533,7 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        wege_transaction2 = AssetTransaction.objects.create(
+        wege_transaction2 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -544,15 +544,15 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se as AssetTransactions foram criadas corretamente
+        # Verificamos se as Trades foram criadas corretamente
         self.assertIsNotNone(wege_transaction1) 
         self.assertIsNotNone(wege_transaction2) 
 
-        # Recuperamos as instâncias TransactionsHistory associadas a essas AssetTransactions
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        # Recuperamos as instâncias TradeHistory associadas a essas Trades
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         # verificamos a quantidade de shares_amount do transaction_history1
         self.assertEqual(transaction_history1.total_shares, 100) # OK
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         # verificamos a quantidade de shares_amount do transaction_history2
         self.assertEqual(transaction_history2.total_shares, 150) # OK este é que deve valer para este caso
 
@@ -560,14 +560,14 @@ class PortfolioDividendTest(CommonSetupMixin, TestCase):
         wege_transaction2.delete()
         
         # Verificamos se o transaction_history2 foi apagado
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         self.assertIsNone(transaction_history2)
 
         # Verificamos se o transaction_history1 está presente e tem total_shares correto
         transaction_history1.refresh_from_db()
         self.assertEqual(transaction_history1.total_shares, 100)
 
-        # Verificamos se existe um PortfolioInvestment criado para essas AssetTransactions
+        # Verificamos se existe um PortfolioInvestment criado para essas Trades
         portfolio_investment = PortfolioInvestment.objects.filter(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
@@ -600,8 +600,8 @@ class TransactionHistoryTest(CommonSetupMixin, TestCase):
         # verificamos se o dividendo foi criado corretamente
         self.assertIsNotNone(dividend_wege)
 
-        # Criamos duas AssetTransactions com o transaction date antes do record_date do Dividend
-        wege_transaction1 = AssetTransaction.objects.create(
+        # Criamos duas Trades com o transaction date antes do record_date do Dividend
+        wege_transaction1 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -612,7 +612,7 @@ class TransactionHistoryTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        wege_transaction2 = AssetTransaction.objects.create(
+        wege_transaction2 = Trade.objects.create(
             asset=self.asset_wege3,
             portfolio=self.portfolio,
             broker=self.broker_inter,
@@ -623,15 +623,15 @@ class TransactionHistoryTest(CommonSetupMixin, TestCase):
             price_usd=2,
             )
 
-        # Verificamos se as AssetTransactions foram criadas corretamente
+        # Verificamos se as Trades foram criadas corretamente
         self.assertIsNotNone(wege_transaction1) 
         self.assertIsNotNone(wege_transaction2) 
 
-        # Recuperamos as instâncias TransactionsHistory associadas a essas AssetTransactions
-        transaction_history1 = TransactionsHistory.objects.filter(transaction=wege_transaction1).first()
+        # Recuperamos as instâncias TradeHistory associadas a essas Trades
+        transaction_history1 = TradeHistory.objects.filter(transaction=wege_transaction1).first()
         # verificamos a quantidade de shares_amount do transaction_history1
         self.assertEqual(transaction_history1.total_shares, 100) # OK
-        transaction_history2 = TransactionsHistory.objects.filter(transaction=wege_transaction2).first()
+        transaction_history2 = TradeHistory.objects.filter(transaction=wege_transaction2).first()
         # verificamos a quantidade de shares_amount do transaction_history2
         self.assertEqual(transaction_history2.total_shares, 150) # OK este é que deve valer para este caso
 
@@ -640,11 +640,11 @@ class TransactionHistoryTest(CommonSetupMixin, TestCase):
         wege_transaction1.transaction_amount = 50
         wege_transaction1.save()
 
-        # Verificamos se as AssetTransactions foram editadas corretamente
+        # Verificamos se as Trades foram editadas corretamente
         wege_transaction1.refresh_from_db()
         self.assertEqual(wege_transaction1.transaction_amount, 50) # OK
 
-        # Verificamos se as TransactionsHistory foram editadas corretamente
+        # Verificamos se as TradeHistory foram editadas corretamente
         transaction_history1.refresh_from_db()
         self.assertEqual(transaction_history1.total_shares, 50)
 
