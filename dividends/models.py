@@ -5,7 +5,6 @@ from trade.models import TradeHistory
 from categories.models import Category
 from django.db.models import Max
 
-
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends", default=1)
     value_per_share_brl = models.FloatField(default=0)
@@ -87,7 +86,7 @@ class Dividend(models.Model):
 class PortfolioDividend(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    transaction_history = models.ForeignKey(TradeHistory, on_delete=models.CASCADE, null=True, blank=True)
+    trade_history = models.ForeignKey(TradeHistory, on_delete=models.CASCADE, null=True, blank=True)
     dividend = models.ForeignKey(Dividend, on_delete=models.CASCADE, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     record_date = models.DateTimeField(null=True, blank=True)
@@ -99,20 +98,20 @@ class PortfolioDividend(models.Model):
     average_price_usd = models.FloatField(default=0)
 
     @classmethod
-    def create_portfolio_dividend(cls, transaction_history, dividend):
+    def create_portfolio_dividend(cls, trade_history, dividend):
         cls.objects.create(
-            portfolio_investment=transaction_history.portfolio_investment,
+            portfolio_investment=trade_history.portfolio_investment,
             asset=dividend.asset,
-            transaction_history=transaction_history,
+            trade_history=trade_history,
             category=dividend.asset.category,
             record_date=dividend.record_date,
             pay_date=dividend.pay_date,
             value_per_share_brl=dividend.value_per_share_brl,
             value_per_share_usd=dividend.value_per_share_usd,
             dividend=dividend,
-            shares_amount=transaction_history.total_shares, 
-            average_price_brl=transaction_history.share_average_price_brl,
-            average_price_usd=transaction_history.share_average_price_usd,
+            shares_amount=trade_history.total_shares, 
+            average_price_brl=trade_history.share_average_price_brl,
+            average_price_usd=trade_history.share_average_price_usd,
         )
 
     @property
