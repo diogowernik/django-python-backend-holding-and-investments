@@ -1,9 +1,7 @@
 from django.db import models
 from investments.models import Asset
 from portfolios.models import PortfolioInvestment
-from django.core.exceptions import ValidationError
 from cashflow.models import TransactionsHistory
-from django.utils import timezone
 from categories.models import Category
 from django.db.models import Max
 

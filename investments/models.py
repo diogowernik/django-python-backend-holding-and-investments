@@ -1,6 +1,4 @@
-from multiprocessing import set_forkserver_preload
 from django.db import models
-from numpy import product
 from categories.models import Category, SubCategory
 from brokers.models import Currency
 
@@ -184,14 +182,3 @@ class Reit(InternationalAssets):
         verbose_name_plural = "Internacional / REIT"
 
 
-class AssetHistoricalPrice(models.Model):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    currency = models.CharField(max_length=3)  # BRL, USD, EUR
-    date = models.DateField()
-    open = models.FloatField()
-    high = models.FloatField()
-    low = models.FloatField()
-    close = models.FloatField()
-
-    def __str__(self):
-        return f"{self.asset.ticker} - {self.date} - {self.close} {self.currency}"

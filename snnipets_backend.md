@@ -42,7 +42,8 @@ python manage.py flush
 
 python manage.py startapp <app_name>
 - app comum
-python manage.py startapp common
+python manage.py startapp trade
+python manage.py startapp timewarp
 
 # install pandas
 

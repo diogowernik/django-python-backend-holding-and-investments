@@ -1,14 +1,16 @@
 from django.db import models
 from brokers.models import Broker
 from portfolios.models import Portfolio, PortfolioInvestment
-from investments.models import Asset, CurrencyHolding, AssetHistoricalPrice
+from investments.models import Asset, CurrencyHolding
 from django.utils import timezone
 from django.db import transaction
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from datetime import datetime
 from django.apps import apps
-from cashflow.services.price_services_for_assets import set_prices
+from cashflow.services.price_services import set_prices
 from timewarp.models import CurrencyHistoricalPrice
+
+
 
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)

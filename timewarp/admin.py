@@ -5,3 +5,7 @@ class CurrencyHistoricalPriceAdmin(admin.ModelAdmin):
     list_display = ('id','currency_pair', 'date', 'open', 'high', 'low', 'close')
     list_filter = ('currency_pair',)
 admin.site.register(models.CurrencyHistoricalPrice, CurrencyHistoricalPriceAdmin)
+
+class AssetHistoricalPriceAdmin(admin.ModelAdmin):
+    list_display = ('asset', 'currency', 'date', 'close')
+admin.site.register(models.AssetHistoricalPrice, AssetHistoricalPriceAdmin)

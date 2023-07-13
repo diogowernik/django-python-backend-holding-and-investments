@@ -54,10 +54,6 @@ class ReitAdmin(AssetAdmin):
     list_filter = ('is_radar',)
 
 
-class AssetHistoricalPriceAdmin(admin.ModelAdmin):
-    list_display = ('asset', 'currency', 'date', 'close')
-admin.site.register(models.AssetHistoricalPrice, AssetHistoricalPriceAdmin)
-
 # admin.site.register(models.Asset, AssetAdmin)
 admin.site.register(models.Fii, FiiAdmin)
 admin.site.register(models.Stocks, StocksAdmin)

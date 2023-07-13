@@ -1,8 +1,9 @@
 import yfinance as yf
 from django.core.management.base import BaseCommand
-from investments.models import AssetHistoricalPrice, Asset
+from investments.models import Asset
 from datetime import datetime, timedelta
 import pandas as pd
+from timewarp.models import AssetHistoricalPrice
 
 def update_asset_historical_prices(asset_ticker):
     print(f'Updating {asset_ticker} historical prices...')
