@@ -12,13 +12,6 @@ from trade.services.dividends_service import update_portfolio_dividend, update_p
 
 # Serviços    
 class HistoryService:
-    def delete_trade_history(self, trade): 
-        try:
-            trade_history = TradeHistory.objects.get(transaction=trade)
-            trade_history.delete()
-        except TradeHistory.DoesNotExist:
-            pass
-    
     def create_or_update_trade_history(self, trade_calculation, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl_until_date, share_avg_price_usd_until_date):
         trade_history, created = TradeHistory.objects.get_or_create(
             portfolio_investment=trade_calculation.portfolio_investment,
@@ -32,7 +25,6 @@ class HistoryService:
                 'transaction_date': trade_calculation.transaction_date
             }
         )
-
         if not created:
             trade_history.share_average_price_brl = share_avg_price_brl_until_date
             trade_history.share_average_price_usd = share_avg_price_usd_until_date
@@ -40,8 +32,8 @@ class HistoryService:
             trade_history.total_brl = total_brl_until_date
             trade_history.total_usd = total_usd_until_date
             trade_history.transaction_date = trade_calculation.transaction_date
-            trade_history.save()
-            
+            trade_history.save()     
+
     def reprocess_following_transaction_histories(self, asset_transaction):
         following_transaction_histories = TradeHistory.objects.filter(
             transaction__transaction_date__gt=asset_transaction.transaction_date,
@@ -61,10 +53,16 @@ class HistoryService:
 
             trade_history.total_shares = total_shares
             trade_history.save()
+
+    def delete_trade_history(self, trade): 
+        try:
+            trade_history = TradeHistory.objects.get(transaction=trade)
+            trade_history.delete()
+        except TradeHistory.DoesNotExist:
+            pass
 history_service = HistoryService()
 
-class CalculationService:
-    
+class CalculationService: 
     def process_trade(self, trade, is_new):
         transaction_calculation, _ = TradeCalculation.objects.get_or_create(portfolio_investment=trade.portfolio_investment)
         transaction_calculation.transaction_date = trade.transaction_date
@@ -78,7 +76,6 @@ class CalculationService:
             transaction_calculation.process_transaction(transaction_date=trade.transaction_date, transaction_id=trade.id)
         except TradeCalculation.DoesNotExist:
             pass
-
 calculation_service = CalculationService()
 
 # Compra e venda de ativos (Reit, BrStocks, Fii, Stocks)
@@ -151,13 +148,11 @@ class TradeCalculation(models.Model):
         
         # portfolio_investment_service
         update_portfolio_investment(self, total_brl, total_usd, total_shares)
+
         # history_service
         history_service.create_or_update_trade_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl, share_avg_price_usd)
-
-
         # Se a transação for uma atualização, reprocessar as TradeHistory seguintes.
         if not is_new:
-
             history_service.reprocess_following_transaction_histories(self.last_transaction)
 
     def calculate_totals_and_profits(self, transactions):
@@ -203,6 +198,31 @@ class TradeCalculation(models.Model):
         verbose_name = ' Compra e Venda / Calculos'
         verbose_name_plural = ' Compras e Vendas / Calculos'
 
+class DividendService:
+    def reprocess_portfolios_dividends(self, trade_history, portfolio_investment, transaction_date):
+        from django.apps import apps
+        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
+
+        portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=portfolio_investment)
+
+        for portfolio_dividend in portfolio_dividends:
+            # Aqui estamos obtendo os dados da transação considerando a data de registro do dividendo
+            transaction_data = trade_history.get_transaction_data(portfolio_dividend.record_date)
+
+            # Encontrando a última transação antes da transação que estamos excluindo
+            last_transaction = TradeHistory.objects.filter(
+                portfolio_investment=portfolio_investment, 
+                transaction_date__lt=transaction_date
+            ).order_by('-transaction_date').first()
+
+            if last_transaction:
+                portfolio_dividend.trade_history = last_transaction
+                update_portfolio_dividend_fields(self, portfolio_dividend, transaction_data)
+            else:
+                # Se não houver transação anterior, a portfolio_dividend deve ser excluída
+                portfolio_dividend.delete()
+dividend_service = DividendService()
+
 # Histórico de Preço Médio do Ativo, Total de Ações, Total em BRL e Total em USD, Transação
 class TradeHistory(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
@@ -244,47 +264,10 @@ class TradeHistory(models.Model):
         portfolio_investment = self.portfolio_investment
         transaction_date = self.transaction_date
         super().delete(*args, **kwargs)
-        self.reprocess_portfolios_dividends(portfolio_investment, transaction_date)
-    
-    def reprocess_portfolios_dividends(self, portfolio_investment, transaction_date):
-        PortfolioDividend = apps.get_model('dividends', 'PortfolioDividend')
+        dividend_service.reprocess_portfolios_dividends(self, portfolio_investment, transaction_date)
 
-        portfolio_dividends = PortfolioDividend.objects.filter(portfolio_investment=portfolio_investment)
-
-        for portfolio_dividend in portfolio_dividends:
-            # Aqui estamos obtendo os dados da transação considerando a data de registro do dividendo
-            transaction_data = self.get_transaction_data(portfolio_dividend.record_date)
-
-            # Encontrando a última transação antes da transação que estamos excluindo
-            last_transaction = self.__class__.objects.filter(
-                portfolio_investment=portfolio_investment, 
-                transaction_date__lt=transaction_date
-            ).order_by('-transaction_date').first()
-
-            if last_transaction:
-                portfolio_dividend.trade_history = last_transaction
-                update_portfolio_dividend_fields(self, portfolio_dividend, transaction_data)
-            else:
-                # Se não houver transação anterior, a portfolio_dividend deve ser excluída
-                portfolio_dividend.delete()
 
     class Meta:
         ordering = ['-transaction_date']
         verbose_name = ' Compra e Venda / Histórico'
         verbose_name_plural = ' Compras e Vendas / Histórico'
-
-
-# class QuotaPrice(models.Model):
-#     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
-#     date = models.DateField()
-#     amount = models.FloatField()
-#     price_brl = models.FloatField()
-#     price_usd = models.FloatField()
-
-#     def __str__(self):
-#         return f'{self.portfolio_investment} - {self.date}'
-
-#     class Meta:
-#         ordering = ['-date']
-#         verbose_name = ' Preço da Cota'
-#         verbose_name_plural = ' Preços das Cotas'
