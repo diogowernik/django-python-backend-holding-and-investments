@@ -7,11 +7,13 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from timewarp.models import CurrencyHistoricalPrice
+from django.apps import apps
+from django.db.models import Sum
 
 class CurrencyTransaction(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=2)
-    transaction_type = models.CharField(max_length=50, choices=(('deposit', 'Deposit'), ('withdraw', 'Withdraw')), default='deposit')
+    transaction_type = models.CharField(max_length=50, choices=(('deposit', 'deposit'), ('withdraw', 'withdraw')), default='deposit')
     transaction_amount = models.FloatField(default=0)
     transaction_date = models.DateTimeField(default=timezone.now)
     price_brl = models.FloatField(null=True, blank=True)
@@ -327,4 +329,10 @@ class Expense(CurrencyTransaction):
 
     def __str__(self):
         return f"{self.description} - {self.transaction.transaction_amount}"
+
+
+        
+
+            
+
 

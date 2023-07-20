@@ -20,12 +20,17 @@ class RadarCategoryAdmin(admin.ModelAdmin):
         'delta_ideal_actual_percentage'
         )
     list_editable = ['ideal_category_percentage']
+    list_filter = (
+        ('radar', RelatedFieldListFilter),
+        ('category', RelatedFieldListFilter),
+        )
 
 class RadarAssetAdmin(admin.ModelAdmin):
     list_display = (
         'id', 
         'radar', 
         'asset', 
+        # 'radar_category',
         'ideal_asset_percentage_on_category',
         'ideal_asset_percentage_on_portfolio',
         'portfolio_investment_total_value',
@@ -36,6 +41,7 @@ class RadarAssetAdmin(admin.ModelAdmin):
     )
     list_filter = (
         ('radar', RelatedFieldListFilter),
+        # 'radar_category',
         ('asset__category', RelatedFieldListFilter),
         )
     list_editable = ['ideal_asset_percentage_on_category']

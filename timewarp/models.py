@@ -24,3 +24,5 @@ class AssetHistoricalPrice(models.Model):
 
     def __str__(self):
         return f"{self.asset.ticker} - {self.date} - {self.close} {self.currency}"
+
+    # Algum mecanistmo para atualizar o low e high nos assets (talvez um signal).

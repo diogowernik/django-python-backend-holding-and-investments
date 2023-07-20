@@ -64,21 +64,20 @@ class RadarCategory(models.Model):
 
     
 class RadarAsset(models.Model):
-    radar = models.ForeignKey(Radar, on_delete=models.CASCADE, default=2)
+    radar = models.ForeignKey(Radar, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     ideal_asset_percentage_on_category = models.FloatField(default=0.1)
     # Campo definido no save()
-    radar_category = models.ForeignKey(RadarCategory, on_delete=models.CASCADE, default=6)
+    radar_category = models.ForeignKey(RadarCategory, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    ideal_category_percentage = models.FloatField(default=0.1, editable=False)
 
-    # def save(self, *args, **kwargs):
-    #         # Tenta obter o RadarCategory correspondente.
-    #     try:
-    #         if self.asset and self.radar:
-    #             self.radar_category = RadarCategory.objects.get(radar=self.radar, category=self.asset.category)
-    #     except ObjectDoesNotExist:
-    #         raise ValidationError("Você precisa adicionar uma RadarCategory equivalente para adicionar este ativo.")
+    def save(self, *args, **kwargs):
+         
+        self.radar_category = RadarCategory.objects.get(radar=self.radar, category=self.asset.category)
+        self.ideal_category_percentage = self.radar_category.ideal_category_percentage
+
             
-    #     super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     # Campos calculados automaticamente quando acessados
     @property
@@ -91,7 +90,7 @@ class RadarAsset(models.Model):
 
     @property
     def ideal_asset_percentage_on_portfolio(self):
-        return self.ideal_asset_percentage_on_category * self.radar_category.ideal_category_percentage
+        return self.ideal_asset_percentage_on_category * self.ideal_category_percentage
 
     @property
     def portfolio_investment_percentage_on_portfolio(self):

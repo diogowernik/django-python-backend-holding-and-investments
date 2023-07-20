@@ -1,181 +1,117 @@
 from django.db import models
 from portfolios.models import Portfolio
+from django.db import transaction
+from django.db.models import Sum
+from datetime import datetime
+from cashflow.models import CurrencyTransaction
+from django.db.models import F
 
 class QuotaHistory(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    date = models.DateField()
-    total_quotas = models.FloatField()
-    quota_price_brl = models.FloatField()
-    quota_price_usd = models.FloatField()
-    event_type = models.CharField(max_length=50)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
+    event_type = models.CharField( 
+        max_length=20,
+        choices=[
+            ('deposit', 'deposit'),
+            ('withdraw', 'withdraw'),
+            ('valuation', 'valuation'),
+        ],
+        default='deposit'
+    )
+    # tem que considerar a cotação do dolar do dia
+    value_brl = models.FloatField(default=0) # Exemplo: 1000 reais
+    value_usd = models.FloatField(default=0) # Exemplo: 200 dolares (200 * 5 = 1000 reais)
+    # Calculado Automaticamente
+    date = models.DateTimeField(default=datetime.now, editable=False) # sempre vai ser uma foto do momento, gravado em pedra.
+    total_brl = models.FloatField(default=0, editable=False)
+    total_usd = models.FloatField(default=0, editable=False)
+    quota_amount = models.FloatField(default=0, editable=False)
+    quota_price_brl = models.FloatField(default=0, editable=False)
+    quota_price_usd = models.FloatField(default=0, editable=False)
+    percentage_change = models.FloatField(default=0, editable=False)
 
-    def __str__(self):
-        return f'{self.portfolio} - {self.date}'
-
-
-class QuotaState(models.Model):
-    portfolio = models.OneToOneField(Portfolio, on_delete=models.CASCADE)
-    total_quotas = models.FloatField()
-    quota_price_brl = models.FloatField()
-    quota_price_usd = models.FloatField()
-
-    def __str__(self):
-        return f'{self.portfolio}'
-
-
-class QuotaEvent(models.Model):
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    date = models.DateField()
-    EVENT_TYPES = [
-        ('dividend_receive', 'Dividend Receive'),
-        ('dividend_pay', 'Dividend Pay'),
-        ('subscription', 'Subscription'),
-        ('redemption', 'Redemption'),
-        ('asset_valuation', 'Asset Valuation'),
-    ]
-    event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
-    new_total_quotas = models.FloatField()  # o novo total de cotas
-    new_quota_price_brl = models.FloatField()
-    new_quota_price_usd = models.FloatField()
-
-    def __str__(self):
-        return f'{self.portfolio} - {self.event_type} - {self.date}'
+class SubscriptionEvent(CurrencyTransaction):
+    # Campos herdados de CurrencyTransaction:
+    # portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    # transaction_date = models.DateTimeField(default=datetime.now)
+    # transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='deposit')
+    # transaction_amount = models.FloatField(default=0)
+    # price_brl = models.FloatField(default=0)
+    # price_usd = models.FloatField(default=0)
     
+    @transaction.atomic
     def save(self, *args, **kwargs):
-        self.apply()
         super().save(*args, **kwargs)
-        self.update_portfolio_state()
         self.create_quota_history()
 
-    def apply(self):
-        raise NotImplementedError("This method should be implemented by subclasses.")
+    def create_quota_history(self):
+        value_brl = self.transaction_amount * self.price_brl
+        value_usd = self.transaction_amount * self.price_usd
 
-    def update_portfolio_state(self):
-        state = self.portfolio.quotastate
-        state.total_quotas = self.new_total_quotas
-        state.quota_price_brl = self.new_quota_price_brl
-        state.quota_price_usd = self.new_quota_price_usd
-        state.save()
+        total_brl = self.portfolio.portfolioinvestment_set.aggregate(Sum('total_today_brl'))['total_today_brl__sum']
+        total_usd = self.portfolio.portfolioinvestment_set.aggregate(Sum('total_today_usd'))['total_today_usd__sum']
+        print(total_brl)
+
+        portfolio_quota_histories = QuotaHistory.objects.filter(portfolio=self.portfolio).order_by('-date')
+        last_quota_history = portfolio_quota_histories.filter(date__lt=self.transaction_date).first()
+
+        if last_quota_history:
+            quota_amount = last_quota_history.quota_amount + (value_brl / last_quota_history.quota_price_brl) if last_quota_history.quota_price_brl != 0 else 0
+            quota_price_brl = total_brl / quota_amount if quota_amount != 0 else 0
+            quota_price_usd = total_usd / quota_amount if quota_amount != 0 else 0
+            percentage_change = (quota_price_brl / last_quota_history.quota_price_brl) - 1 if last_quota_history.quota_price_brl != 0 else 0
+        else:
+            total_brl = value_brl
+            total_usd = value_usd
+            quota_amount = value_brl
+            quota_price_brl = 1
+            quota_price_usd = value_usd / value_brl if value_brl != 0 else 0
+            percentage_change = 0
+
+class RedemptionEvent(CurrencyTransaction):
+    # Campos herdados de CurrencyTransaction:
+    # portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    # transaction_date = models.DateTimeField(default=datetime.now)
+    # transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='deposit')
+    # transaction_amount = models.FloatField(default=0)
+    # price_brl = models.FloatField(default=0)
+    # price_usd = models.FloatField(default=0)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.create_quota_history()
 
     def create_quota_history(self):
+        value_brl = (self.transaction_amount * self.price_brl) * -1
+        value_usd = (self.transaction_amount * self.price_usd) * -1
+
+        total_brl = self.portfolio.portfolioinvestment_set.aggregate(Sum('total_today_brl'))['total_today_brl__sum']
+        total_usd = self.portfolio.portfolioinvestment_set.aggregate(Sum('total_today_usd'))['total_today_usd__sum']
+
+        portfolio_quota_histories = QuotaHistory.objects.filter(portfolio=self.portfolio).order_by('-date')
+        last_quota_history = portfolio_quota_histories.filter(date__lt=self.transaction_date).first()
+
+        if last_quota_history:
+            quota_amount = last_quota_history.quota_amount + (value_brl / last_quota_history.quota_price_brl) if last_quota_history.quota_price_brl != 0 else 0
+            quota_price_brl = total_brl / quota_amount if quota_amount != 0 else 0
+            quota_price_usd = total_usd / quota_amount if quota_amount != 0 else 0
+            percentage_change = (quota_price_brl / last_quota_history.quota_price_brl) - 1 if last_quota_history.quota_price_brl != 0 else 0
+        else:
+            # Error message
+            raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode resgatar.')
+
+        # Create a new QuotaHistory
         QuotaHistory.objects.create(
             portfolio=self.portfolio,
-            date=self.date,
-            total_quotas=self.new_total_quotas,
-            quota_price_brl=self.new_quota_price_brl,
-            quota_price_usd=self.new_quota_price_usd,
-            event_type=self.event_type
+            date=self.transaction_date,
+            event_type='withdraw',
+            value_brl=value_brl,
+            value_usd=value_usd,
+            total_brl=total_brl,
+            total_usd=total_usd,
+            quota_amount=quota_amount,
+            quota_price_brl=quota_price_brl,
+            quota_price_usd=quota_price_usd,
+            percentage_change=percentage_change,            
         )
-
-class DividendReceiveEvent(QuotaEvent):
-    total_dividends_brl = models.FloatField()
-    total_dividends_usd = models.FloatField()
     
-    def apply(self):
-        # Increase the quota price as the portfolio value increases due to received dividends
-        self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl + self.total_dividends_brl / self.portfolio.quotastate.total_quotas
-        self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd + self.total_dividends_usd / self.portfolio.quotastate.total_quotas
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type = 'dividend_receive'
-
-class DividendPayEvent(QuotaEvent):
-    total_dividends_brl = models.FloatField()
-    total_dividends_usd = models.FloatField()
-
-    def apply(self):
-        # Decrease the quota price as the portfolio value decreases due to paid dividends
-        self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl - self.total_dividends_brl / self.portfolio.quotastate.total_quotas
-        self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd - self.total_dividends_usd / self.portfolio.quotastate.total_quotas
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type = 'dividend_pay'
-
-class SubscriptionEvent(QuotaEvent):
-    paid_amount_brl = models.FloatField()  # the amount of money used to buy new quotas
-    paid_amount_usd = models.FloatField()
-
-    def apply(self):
-        # Increase the total quotas and adjust the quota price
-        current_state = self.portfolio.quotastate
-        new_total_value_brl = current_state.total_quotas * current_state.quota_price_brl + self.paid_amount_brl
-        new_total_value_usd = current_state.total_quotas * current_state.quota_price_usd + self.paid_amount_usd
-        self.new_total_quotas = current_state.total_quotas + self.paid_amount_brl / current_state.quota_price_brl  # assuming quota price is in BRL
-        self.new_quota_price_brl = new_total_value_brl / self.new_total_quotas
-        self.new_quota_price_usd = new_total_value_usd / self.new_total_quotas
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type = 'subscription'
-
-class RedemptionEvent(QuotaEvent):
-    sold_quotas = models.FloatField()  # the amount of quotas sold
-
-    def apply(self):
-        # Decrease the total quotas and adjust the quota price
-        current_state = self.portfolio.quotastate
-        new_total_value_brl = current_state.total_quotas * current_state.quota_price_brl - self.sold_quotas * current_state.quota_price_brl
-        new_total_value_usd = current_state.total_quotas * current_state.quota_price_usd - self.sold_quotas * current_state.quota_price_usd
-        self.new_total_quotas = current_state.total_quotas - self.sold_quotas
-        if self.new_total_quotas > 0:  # avoid division by zero
-            self.new_quota_price_brl = new_total_value_brl / self.new_total_quotas
-            self.new_quota_price_usd = new_total_value_usd / self.new_total_quotas
-        else:
-            self.new_quota_price_brl = 0
-            self.new_quota_price_usd = 0
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type = 'redemption'
-
-class AssetValuationEvent(QuotaEvent):
-    def apply(self):
-        # Calculate the new total portfolio value and adjust the quota price
-        portfolio_investments = self.portfolio.portfolioinvestment_set.all()
-        new_total_value_brl = sum([inv.total_today_brl for inv in portfolio_investments])
-        new_total_value_usd = sum([inv.total_today_usd for inv in portfolio_investments])
-        self.new_total_quotas = self.portfolio.quotastate.total_quotas
-        self.new_quota_price_brl = new_total_value_brl / self.new_total_quotas
-        self.new_quota_price_usd = new_total_value_usd / self.new_total_quotas
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type = 'asset_valuation'
-
-# Outras classes ainda não muito certo se vale a pena implementar
-
-# class CapitalGainEvent(QuotaEvent):
-#     gain_amount_brl = models.FloatField()  # the gain amount in BRL
-#     gain_amount_usd = models.FloatField()  # the gain amount in USD
-    
-#     def apply(self):
-#         self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl + self.gain_amount_brl / self.portfolio.quotastate.total_quotas
-#         self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd + self.gain_amount_usd / self.portfolio.quotastate.total_quotas
-
-
-# class CapitalLossEvent(QuotaEvent):
-#     loss_amount_brl = models.FloatField()  # the loss amount in BRL
-#     loss_amount_usd = models.FloatField()  # the loss amount in USD
-    
-#     def apply(self):
-#         self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl - self.loss_amount_brl / self.portfolio.quotastate.total_quotas
-#         self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd - self.loss_amount_usd / self.portfolio.quotastate.total_quotas
-
-
-# class ExpenseEvent(QuotaEvent):
-#     expense_amount_brl = models.FloatField()  # the expense amount in BRL
-#     expense_amount_usd = models.FloatField()  # the expense amount in USD
-    
-#     def apply(self):
-#         self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl - self.expense_amount_brl / self.portfolio.quotastate.total_quotas
-#         self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd - self.expense_amount_usd / self.portfolio.quotastate.total_quotas
-
-# class InterestEvent(QuotaEvent):
-#     interest_amount_brl = models.FloatField()  # the interest amount in BRL
-#     interest_amount_usd = models.FloatField()  # the interest amount in USD
-    
-#     def apply(self):
-#         self.new_quota_price_brl = self.portfolio.quotastate.quota_price_brl + self.interest_amount_brl / self.portfolio.quotastate.total_quotas
-#         self.new_quota_price_usd = self.portfolio.quotastate.quota_price_usd + self.interest_amount_usd / self.portfolio.quotastate.total_quotas

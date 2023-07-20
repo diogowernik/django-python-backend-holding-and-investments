@@ -4,7 +4,6 @@ from portfolios.models import Portfolio, PortfolioInvestment
 from investments.models import Asset
 from django.utils import timezone
 from django.db import transaction # @transaction.atomic
-from django.apps import apps
 from trade.services.price_services import set_prices
 from trade.services.currency_transaction_service import create_or_update_currency_transaction, delete_currency_transaction
 from trade.services.portfolio_investment_service import set_portfolio_investment, adjust_portfolio_investment, update_portfolio_investment
@@ -94,17 +93,25 @@ class Trade(models.Model):
     @transaction.atomic
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
+        # services/price_services.py
         set_prices(self)
+        # services/portfolio_investment_service.py
         set_portfolio_investment(self)
         super().save(*args, **kwargs)  # Save the object
+        # services/currency_transaction_service.py
         create_or_update_currency_transaction(self)
+        # CalculationService
         calculation_service.process_trade(self, is_new)
 
     @transaction.atomic  
     def delete(self, *args, **kwargs):
+        # services/portfolio_investment_service.py
         adjust_portfolio_investment(self)
+        # CalculationService
         calculation_service.reprocess_trade(self)
+        # services/currency_transaction_service.py
         delete_currency_transaction(self)
+        # services/history_service.py
         history_service.delete_trade_history(self)
 
         super().delete(*args, **kwargs)
@@ -138,19 +145,21 @@ class TradeCalculation(models.Model):
     transaction_date = models.DateTimeField(default=timezone.now)
 
     def process_transaction(self, transaction_date, is_new=False, transaction_id=None): 
-        # trade_service
+        # TradeService
         transactions = trade_service.get_transactions(self.portfolio_investment, transaction_id)
         transactions_until_date = trade_service.get_transactions_until_date(self.portfolio_investment, transaction_date)
 
+        # self
         total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd, share_avg_price_brl, share_avg_price_usd = self.calculate_totals_and_profits(transactions)
         total_brl_until_date, total_usd_until_date, total_shares_until_date, _, _, _, _ = self.calculate_totals_and_profits(transactions_until_date)
         self.update_self_values(total_brl, total_usd, total_shares, trade_profit_brl, trade_profit_usd)
         
-        # portfolio_investment_service
+        # services/portfolio_investment_service.py
         update_portfolio_investment(self, total_brl, total_usd, total_shares)
 
-        # history_service
-        history_service.create_or_update_trade_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, share_avg_price_brl, share_avg_price_usd)
+        # HistoryService
+        history_service.create_or_update_trade_history(self, total_brl_until_date, total_usd_until_date, total_shares_until_date, 
+        share_avg_price_brl, share_avg_price_usd)
         # Se a transação for uma atualização, reprocessar as TradeHistory seguintes.
         if not is_new:
             history_service.reprocess_following_transaction_histories(self.last_transaction)
@@ -238,10 +247,13 @@ class TradeHistory(models.Model):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new:
+            # services/dividend_service.py
             create_portfolio_dividend(self)
         else:
+            # services/dividend_service.py
             update_portfolio_dividend(self)
-                
+
+    # self    
     def get_transaction_data(self, record_date):
         transaction_histories_before_record_date = self.__class__.objects.filter(
             portfolio_investment=self.portfolio_investment,
@@ -264,6 +276,8 @@ class TradeHistory(models.Model):
         portfolio_investment = self.portfolio_investment
         transaction_date = self.transaction_date
         super().delete(*args, **kwargs)
+
+        # services/dividend_service.py
         dividend_service.reprocess_portfolios_dividends(self, portfolio_investment, transaction_date)
 
 
