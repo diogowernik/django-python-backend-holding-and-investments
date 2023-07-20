@@ -1,32 +1,19 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Portfolio, QuotaHistory, SubscriptionEvent, PortfolioHistory    
+from .models import Portfolio, QuotaHistory, SubscriptionEvent 
 from common.tests import CommonSetupMixin
 from portfolios.models import PortfolioInvestment
 from django.db.models import Sum
 from cashflow.models import CurrencyTransaction
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
-
-# Campos do QuotaHistory:
-# portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
-# event_type = models.CharField( ... default='deposit'
-# value_brl = models.FloatField(default=0) # Exemplo: 1000 reais
-# value_usd = models.FloatField(default=0) # Exemplo: 200 dolares (200 * 5 = 1000 reais)
-# date = models.DateTimeField(default=datetime.now, editable=False) # sempre vai ser uma foto do momento, gravado em pedra.
-# total_brl = models.FloatField(default=0, editable=False)
-# total_usd = models.FloatField(default=0, editable=False)
-# quota_amount = models.FloatField(default=0, editable=False)
-# quota_price_brl = models.FloatField(default=0, editable=False)
-# quota_price_usd = models.FloatField(default=0, editable=False)
-# percentage_change = models.FloatField(default=0, editable=False)
+import time
 
 class SubscriptionEventTestCase(CommonSetupMixin, TestCase):
     def create_subscription_event_test(self):
         return SubscriptionEvent.objects.create(
             portfolio=self.portfolio, 
             broker=self.broker_banco_brasil, 
-            transaction_type='deposit', 
             transaction_amount=1000, 
             price_brl=1.0,
             price_usd=0.20,
@@ -77,18 +64,19 @@ class SubscriptionEventTestCase(CommonSetupMixin, TestCase):
 
 class SubscriptionEventTestCase(CommonSetupMixin, TestCase):
     def create_subscription_event_test(self, transaction_amount):
-        return SubscriptionEvent.objects.create(
+        event = SubscriptionEvent.objects.create(
             portfolio=self.portfolio, 
             broker=self.broker_banco_brasil, 
-            transaction_type='deposit', 
             transaction_amount=transaction_amount, 
             price_brl=1.0,
             price_usd=0.20,
         )
+        time.sleep(1)  # espera 1 segundo antes de criar o próximo evento
+        return event
         
     def test_create_multiple_subscription_events(self):
         # Create multiple subscription events
-        self.create_subscription_event_test(1000)
+        self.create_subscription_event_test(1000)        
         self.create_subscription_event_test(2000)
         self.create_subscription_event_test(1500)
 
@@ -96,12 +84,12 @@ class SubscriptionEventTestCase(CommonSetupMixin, TestCase):
         quota_histories = QuotaHistory.objects.filter(
             portfolio=self.portfolio,
             event_type='deposit',
-        ).order_by('date')
+        ).order_by('id')
 
         # Verify the quota_amount for each QuotaHistory
-        self.assertEqual(quota_histories[0].quota_amount, 1000)  # 1000 (from the first transaction)
-        self.assertEqual(quota_histories[1].quota_amount, 3000)  # 1000 + 2000 (from the first and second transactions)
-        self.assertEqual(quota_histories[2].quota_amount, 4500)  # 1000 + 2000 + 1500 (from all transactions)
+        self.assertEqual(quota_histories[0].quota_amount, 1000)
+        self.assertEqual(quota_histories[1].quota_amount, 3000)
+        self.assertEqual(quota_histories[2].quota_amount, 4500)
 
 
 
