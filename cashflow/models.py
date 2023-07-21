@@ -202,6 +202,11 @@ class CurrencyTransfer(models.Model):
     def clean(self):
         if self.from_broker == self.to_broker:
             raise ValidationError("Os brokers de origem e destino devem ser diferentes.")
+    
+    class Meta:
+        ordering = ['-transfer_date']
+        verbose_name_plural = ' Transferências mesma moeda'
+
 
 # Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
 class InternationalCurrencyTransfer(models.Model):
@@ -277,58 +282,11 @@ class InternationalCurrencyTransfer(models.Model):
         
         if self.from_transfer_amount <= 0:
             raise ValidationError("A quantidade de moeda a ser transferida deve ser maior que zero.")
-
-# entrada de dinheiro na carteira, como salário ou renda extra, criará uma transação de moeda (CurrencyTransaction) Deposit
-class Income(CurrencyTransaction):
-    transaction_category = models.CharField(
-        max_length=255,
-        choices=(
-            ('Renda Ativa', 'Renda Ativa'),  # Salário Principal, 
-            ('Renda Extra', 'Renda Extra'),  # Venda de algo, Freelancer, Autônomo, etc
-            ('Renda Passiva', 'Renda Passiva'),  # Dividendos, Aluguéis, será que junto aqui?
-            ('Outros', 'Outros'),
-        ),
-        default='Renda Ativa'
-    )
-    # Será que vale a pena criar um model para categorias de renda? Acho que não, mas talvez seja interessante
-    
-    def save(self, *args, **kwargs):
-        self.transaction.transaction_type = 'deposit'
-        self.transaction.save()
-        super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = 'Receita'
-        verbose_name_plural = 'Receitas'
         
-    def __str__(self):
-        return f"{self.description} | {self.transaction.transaction_amount} | {self.transaction.broker.main_currency}"
-    
-class Expense(CurrencyTransaction):
-    transaction_category = models.CharField(
-        max_length=255,
-        choices=(
-            ('Cartão de Crédito', 'Cartão de Crédito'),  # Mercado, Farmácia, etc
-            ('Casa', 'Casa'),  # Aluguel, Condomínio, Luz, Água, Internet, etc
-            ('Manutenção de Ativos', 'Manutenção de Ativos'),  # Condominio, IPTU de imóveis, Taxas, etc
-            ('Imposto', 'Imposto'),  # IR, IOF, etc
-        ),
-        default='Cartão de Crédito'
-    )
-    # Será que vale a pena criar um model para categorias de despesa? Acho que não, mas talvez seja interessante
-    # Será que vale a pena um campo description? Acho que não, mas talvez seja interessante
-    
-    def save(self, *args, **kwargs):
-        self.transaction.transaction_type = 'withdraw'
-        self.transaction.save()
-        super().save(*args, **kwargs)
-    
     class Meta:
-        verbose_name = 'Despesa'
-        verbose_name_plural = 'Despesas'
+        ordering = ['-transfer_date']
+        verbose_name_plural = 'Transferências Internacionais'
 
-    def __str__(self):
-        return f"{self.description} - {self.transaction.transaction_amount}"
 
 
         

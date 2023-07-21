@@ -10,8 +10,8 @@ class CurrencyHistoricalPrice(models.Model):
     close = models.FloatField()
 
     def __str__(self):
-        return f"{self.currency.ticker} - {self.date} - {self.close}"
-    
+        return f"{self.currency_pair} - {self.date} - {self.close}"
+
 
 class AssetHistoricalPrice(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)

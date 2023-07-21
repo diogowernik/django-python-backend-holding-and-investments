@@ -26,7 +26,7 @@ def app_resort(func):
         # rename the apps names
         for app in app_list:
             # cashflow
-            app['name'] = app['name'].replace('Cashflow', 'Fluxo de Transações')
+            app['name'] = app['name'].replace('Cashflow', 'Cashflow')
             app['name'] = app['name'].replace('Investments', 'Investmentos')
             app['name'] = app['name'].replace('Categories', 'Categorias')
             app['name'] = app['name'].replace('Dividends', 'Dividendos')
@@ -38,14 +38,18 @@ def app_resort(func):
 
         app_sort_key = 'name'
         app_ordering = {
-            'Fluxo de Transações': 0,
-            'Investmentos': 1,
-            'Portfolios': 2,
-            'Categorias': 3,
-            'Dividendos': 4,
-            'Corretoras': 5,
-            'Autenticação e Autorização': 6,
-            'Token de Autenticação': 7,
+            'Equity': 0,
+            'Cashflow': 1,
+            'Trade': 2,
+            'Portfolios': 3,
+            'Radar': 4,
+            'Investmentos': 5,
+            'Timewarp': 6,
+            'Dividendos': 7,
+            'Categorias': 8,
+            'Corretoras': 9,
+            'Autenticação e Autorização': 10,
+            'Token de Autenticação': 11,
         }
 
         resorted_app_list = sorted(
