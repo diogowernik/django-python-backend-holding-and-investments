@@ -324,7 +324,6 @@ class PortfolioHistory(models.Model):
             transaction_type='deposit',
             transaction_date__lte=self.date
         ).aggregate(Sum('transaction_amount'))['transaction_amount__sum'] or 0
-        print(deposits) # 1000 correto adicionei mais 1000 e o resultado foi 2000 correto.
 
         withdraws = CurrencyTransaction.objects.filter(
             portfolio_investment=investment,
@@ -357,10 +356,6 @@ class PortfolioHistory(models.Model):
     def calculate_total_values(self, investment, historical_price, exchange_rate):
         total_brl = 0
         total_usd = 0
-        print(f'historical_price: {historical_price}')
-        print(f'investment.shares_amount: {investment.shares_amount}')
-        print(f'investment.broker.main_currency: {investment.broker.main_currency}')
-        print(f'exchange_rate: {exchange_rate}')
 
         if historical_price:
             if investment.broker.main_currency.ticker == 'BRL':
@@ -372,7 +367,7 @@ class PortfolioHistory(models.Model):
                 if exchange_rate:
                     total_brl += (historical_price.close * investment.shares_amount) * exchange_rate.close
         return total_brl, total_usd
-    print(f'total_brl_investment: {total_brl}, total_usd_investment: {total_usd}')
+    
     def save(self, *args, **kwargs):
         portfolio_investments = self.portfolio.portfolioinvestment_set.all()
 
