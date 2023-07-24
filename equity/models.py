@@ -6,12 +6,8 @@ from datetime import datetime
 from cashflow.models import CurrencyTransaction
 from timewarp.models import AssetHistoricalPrice, CurrencyHistoricalPrice
 from trade.models import Trade
-from django.db.models import F
 from brokers.models import Broker
 from investments.models import Asset
-from django.utils import timezone
-from abc import ABC, abstractmethod
-
 
 class QuotaHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
@@ -162,7 +158,7 @@ class DividendReceiveEvent(CurrencyTransaction):
             # Error message
             raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode receber dividendos.')
 
-class AssetValuationEvent(QuotaHistory):
+class ValuationEvent(QuotaHistory):
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.event_type = 'valuation'
@@ -202,8 +198,6 @@ class AssetValuationEvent(QuotaHistory):
         else:
             # Mensagem de erro
             raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode afirmar a avaliação dos ativos.')
-
-
 
 
 
@@ -282,8 +276,8 @@ class DividendPayEvent(CurrencyTransaction):
         return portfolio_history
 
     def create_quota_history(self, portfolio_history):
-        value_brl = self.transaction_amount * self.price_brl
-        value_usd = self.transaction_amount * self.price_usd
+        value_brl = self.transaction_amount * self.price_brl * -1
+        value_usd = self.transaction_amount * self.price_usd * -1
 
         total_brl = portfolio_history.total_brl  
         total_usd = portfolio_history.total_usd  
@@ -398,6 +392,7 @@ class InvestBrEvent(CurrencyTransaction):
 
 
 
+
 class PortfolioHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
@@ -494,5 +489,4 @@ class PortfolioHistory(models.Model):
         self.total_usd = total_usd
 
         super().save(*args, **kwargs)
-
 
