@@ -10,10 +10,10 @@ def set_portfolio_investment(self):
 
 # Adjust the portfolio investment by updating the number of shares when the asset transaction is deleted
 def adjust_portfolio_investment(self):
-    if self.transaction_type == 'buy':
-        self.portfolio_investment.shares_amount -= self.transaction_amount
-    elif self.transaction_type == 'sell':
-        self.portfolio_investment.shares_amount += self.transaction_amount
+    if self.trade_type == 'buy':
+        self.portfolio_investment.shares_amount -= self.trade_amount
+    elif self.trade_type == 'sell':
+        self.portfolio_investment.shares_amount += self.trade_amount
     self.portfolio_investment.save()
 
 

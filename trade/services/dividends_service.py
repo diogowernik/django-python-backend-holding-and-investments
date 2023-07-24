@@ -26,7 +26,7 @@ def create_portfolio_dividend(trade_history):
 
     dividends = Dividend.objects.filter(
         asset=trade_history.portfolio_investment.asset, 
-        record_date__gte=trade_history.transaction_date
+        record_date__gte=trade_history.trade_date
     )
 
     for dividend in dividends:

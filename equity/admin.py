@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuotaHistory, SubscriptionEvent, PortfolioHistory
+from .models import QuotaHistory, SubscriptionEvent, PortfolioHistory, RedemptionEvent, InvestBrEvent
 
 class QuotaHistoryAdmin(admin.ModelAdmin):
     list_display = ('portfolio', 'date', 'event_type', 'value_brl', 'value_usd', 
@@ -17,8 +17,29 @@ class SubscriptionEventAdmin(admin.ModelAdmin):
     list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
     search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
     readonly_fields = ('portfolio_investment',)
+    exclude = ('transaction_type', 'price_brl', 'price_usd')
 
 admin.site.register(SubscriptionEvent, SubscriptionEventAdmin)  
+
+
+class RedemptionEventAdmin(admin.ModelAdmin):
+    list_display = ('transaction_date', 'price_brl','price_usd',
+                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+    list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
+    search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
+    readonly_fields = ('portfolio_investment',)
+    exclude = ('transaction_type', 'price_brl', 'price_usd')
+
+admin.site.register(RedemptionEvent, RedemptionEventAdmin)
+
+class InvestBrEventAdmin(admin.ModelAdmin):
+    list_display = ('transaction_date', 'price_brl','price_usd',
+                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+    list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
+    search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
+    readonly_fields = ('portfolio_investment',)
+    exclude = ('transaction_type', 'price_brl', 'price_usd', 'transaction_amount')
+admin.site.register(InvestBrEvent, InvestBrEventAdmin)
 
 class PortfolioHistoryAdmin(admin.ModelAdmin):
     list_display = ('portfolio', 'date', 'total_brl', 'total_usd')
