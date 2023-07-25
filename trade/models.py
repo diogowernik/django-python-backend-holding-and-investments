@@ -5,7 +5,6 @@ from investments.models import Asset
 from django.utils import timezone
 from django.db import transaction # @transaction.atomic
 from trade.services.price_services import set_prices
-from trade.services.currency_transaction_service import create_or_update_currency_transaction, delete_currency_transaction
 from trade.services.portfolio_investment_service import set_portfolio_investment, adjust_portfolio_investment, update_portfolio_investment
 from trade.services.dividends_service import update_portfolio_dividend, update_portfolio_dividend_fields, create_portfolio_dividend
 

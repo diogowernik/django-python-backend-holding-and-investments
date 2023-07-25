@@ -24,10 +24,10 @@ class QuotaHistory(models.Model):
         default='deposit'
     )
     # tem que considerar a cotação do dolar do dia
-    value_brl = models.FloatField(default=0) # Exemplo: 1000 reais
-    value_usd = models.FloatField(default=0) # Exemplo: 200 dolares (200 * 5 = 1000 reais)
+    value_brl = models.FloatField(default=0)
+    value_usd = models.FloatField(default=0) 
+    date = models.DateTimeField(default=datetime.now)
     # Calculado Automaticamente
-    date = models.DateTimeField(default=datetime.now, editable=False) # sempre vai ser uma foto do momento, gravado em pedra.
     total_brl = models.FloatField(default=0, editable=False)
     total_usd = models.FloatField(default=0, editable=False)
     quota_amount = models.FloatField(default=0, editable=False)
@@ -35,63 +35,135 @@ class QuotaHistory(models.Model):
     quota_price_usd = models.FloatField(default=0, editable=False)
     percentage_change = models.FloatField(default=0, editable=False)
 
-class SubscriptionEvent(CurrencyTransaction):
-    def __init__(self, *args, **kwargs):
-        super(SubscriptionEvent, self).__init__(*args, **kwargs)
-        self.transaction_type = 'deposit'
+    def save(self, *args, **kwargs):
+        portfolio_history = self.create_portfolio_history()
+        self.create_quota_history(portfolio_history) 
+        super().save(*args, **kwargs)
 
+    def create_portfolio_history(self):
+        portfolio_history = PortfolioTotalHistory.objects.create(
+            portfolio=self.portfolio,
+            date=self.date
+        )
+        return portfolio_history
+
+    def create_quota_history(self, portfolio_history):
+        self.total_brl = portfolio_history.total_brl  
+        self.total_usd = portfolio_history.total_usd  
+
+        portfolio_quota_histories = QuotaHistory.objects.filter(portfolio=self.portfolio).order_by('-date')
+        last_quota_history = portfolio_quota_histories.filter(date__lt=self.date).first()
+
+        if last_quota_history:
+            if self.event_type in ['deposit', 'withdraw']:
+                self.quota_amount = last_quota_history.quota_amount + (self.value_brl / last_quota_history.quota_price_brl) if last_quota_history.quota_price_brl != 0 else 0
+            else:
+                self.quota_amount = last_quota_history.quota_amount
+
+            self.quota_price_brl = self.total_brl / self.quota_amount if self.quota_amount != 0 else 0
+            self.quota_price_usd = self.total_usd / self.quota_amount if self.quota_amount != 0 else 0
+            self.percentage_change = (self.quota_price_brl / last_quota_history.quota_price_brl) - 1 if last_quota_history.quota_price_brl != 0 else 0
+
+        else:
+            if self.event_type == 'deposit':
+                self.total_brl = self.value_brl
+                self.total_usd = self.value_usd
+                self.quota_amount = self.value_brl
+                self.quota_price_brl = 1
+                self.quota_price_usd = self.value_usd / self.value_brl if self.value_brl != 0 else 0
+                self.percentage_change = 0
+            else:
+                raise Exception(f'Não há histórico de cotas para este portfolio, por isso voce não pode realizar a operação: {self.event_type}.')
+
+    class Meta:
+        verbose_name_plural = "Historico dos Portfolios - Cotas"
+        ordering = ['-date']
+
+
+class SubscriptionEvent(CurrencyTransaction):
     @transaction.atomic
     def save(self, *args, **kwargs):
         # Make sure the transaction_type is always 'deposit'
         self.transaction_type = 'deposit' # deixar hidden no admin e frontend
         super().save(*args, **kwargs)
-        portfolio_history = self.create_portfolio_history()
-        self.create_quota_history(portfolio_history) 
 
-    def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date
-        )
-        return portfolio_history
-
-    def create_quota_history(self, portfolio_history):
         value_brl = self.transaction_amount * self.price_brl
         value_usd = self.transaction_amount * self.price_usd
-
-        total_brl = portfolio_history.total_brl  
-        total_usd = portfolio_history.total_usd  
-
-        portfolio_quota_histories = QuotaHistory.objects.filter(portfolio=self.portfolio).order_by('-date')
-        last_quota_history = portfolio_quota_histories.filter(date__lt=self.transaction_date).first()
-
-        if last_quota_history:
-            quota_amount = last_quota_history.quota_amount + (value_brl / last_quota_history.quota_price_brl) if last_quota_history.quota_price_brl != 0 else 0
-            quota_price_brl = total_brl / quota_amount if quota_amount != 0 else 0
-            quota_price_usd = quota_price_brl * value_usd / value_brl if value_brl != 0 else 0 
-            percentage_change = quota_price_brl * ((quota_price_brl / last_quota_history.quota_price_brl) - 1) if last_quota_history.quota_price_brl != 0 else 0
-        else:
-            total_brl = value_brl
-            total_usd = value_usd
-            quota_amount = value_brl
-            quota_price_brl = 1
-            quota_price_usd = value_usd / value_brl if value_brl != 0 else 0
-            percentage_change = 0
         
         QuotaHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date,
             event_type='deposit',
             value_brl=value_brl,
-            value_usd=value_usd,
-            total_brl=total_brl,
-            total_usd=total_usd,
-            quota_amount=quota_amount,
-            quota_price_brl=quota_price_brl,
-            quota_price_usd=quota_price_usd,
-            percentage_change=percentage_change,            
+            value_usd=value_usd,     
         )
-  
+
+    class Meta:
+        verbose_name = 'Subscrição'
+        verbose_name_plural = '    Subscrições - Aumento de Cotas'
+
+
+# class SubscriptionEvent(CurrencyTransaction):
+#     def __init__(self, *args, **kwargs):
+#         super(SubscriptionEvent, self).__init__(*args, **kwargs)
+#         self.transaction_type = 'deposit'
+
+#     @transaction.atomic
+#     def save(self, *args, **kwargs):
+#         # Make sure the transaction_type is always 'deposit'
+#         self.transaction_type = 'deposit' # deixar hidden no admin e frontend
+#         super().save(*args, **kwargs)
+#         portfolio_history = self.create_portfolio_history()
+#         self.create_quota_history(portfolio_history) 
+
+#     def create_portfolio_history(self):
+#         portfolio_history = PortfolioTotalHistory.objects.create(
+#             portfolio=self.portfolio,
+#             date=self.transaction_date
+#         )
+#         return portfolio_history
+
+#     def create_quota_history(self, portfolio_history):
+#         value_brl = self.transaction_amount * self.price_brl
+#         value_usd = self.transaction_amount * self.price_usd
+
+#         total_brl = portfolio_history.total_brl  
+#         total_usd = portfolio_history.total_usd  
+
+#         portfolio_quota_histories = QuotaHistory.objects.filter(portfolio=self.portfolio).order_by('-date')
+#         last_quota_history = portfolio_quota_histories.filter(date__lt=self.transaction_date).first()
+
+#         if last_quota_history:
+#             quota_amount = last_quota_history.quota_amount + (value_brl / last_quota_history.quota_price_brl) if last_quota_history.quota_price_brl != 0 else 0
+#             quota_price_brl = total_brl / quota_amount if quota_amount != 0 else 0
+#             quota_price_usd = quota_price_brl * value_usd / value_brl if value_brl != 0 else 0 
+#             percentage_change = quota_price_brl * ((quota_price_brl / last_quota_history.quota_price_brl) - 1) if last_quota_history.quota_price_brl != 0 else 0
+#         else:
+#             total_brl = value_brl
+#             total_usd = value_usd
+#             quota_amount = value_brl
+#             quota_price_brl = 1
+#             quota_price_usd = value_usd / value_brl if value_brl != 0 else 0
+#             percentage_change = 0
+        
+#         QuotaHistory.objects.create(
+#             portfolio=self.portfolio,
+#             date=self.transaction_date,
+#             event_type='deposit',
+#             value_brl=value_brl,
+#             value_usd=value_usd,
+#             total_brl=total_brl,
+#             total_usd=total_usd,
+#             quota_amount=quota_amount,
+#             quota_price_brl=quota_price_brl,
+#             quota_price_usd=quota_price_usd,
+#             percentage_change=percentage_change,            
+#         )
+
+#     class Meta:
+#         verbose_name = 'Subscrição'
+#         verbose_name_plural = '    Subscrições - Aumento de Cotas'
+    
 class DividendReceiveEvent(CurrencyTransaction):
     # Campos herdados de CurrencyTransaction:
     # portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
@@ -114,7 +186,7 @@ class DividendReceiveEvent(CurrencyTransaction):
         self.create_quota_history(portfolio_history) 
 
     def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
+        portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date
         )
@@ -158,6 +230,10 @@ class DividendReceiveEvent(CurrencyTransaction):
             # Error message
             raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode receber dividendos.')
 
+    class Meta:
+        verbose_name = 'Recebimento de Dividendos'
+        verbose_name_plural = ' Recebimento de Dividendos'
+
 class ValuationEvent(QuotaHistory):
     @transaction.atomic
     def save(self, *args, **kwargs):
@@ -169,7 +245,7 @@ class ValuationEvent(QuotaHistory):
         self.create_quota_history(portfolio_history) 
 
     def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
+        portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date
         )
@@ -199,7 +275,9 @@ class ValuationEvent(QuotaHistory):
             # Mensagem de erro
             raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode afirmar a avaliação dos ativos.')
 
-
+    class Meta:
+        verbose_name = 'Valuation do Portfolio'
+        verbose_name_plural = 'Valuation dos Portfolios'
 
 class RedemptionEvent(CurrencyTransaction):
     def __init__(self, *args, **kwargs):
@@ -215,7 +293,7 @@ class RedemptionEvent(CurrencyTransaction):
         self.create_quota_history(portfolio_history) 
 
     def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
+        portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date
         )
@@ -254,6 +332,10 @@ class RedemptionEvent(CurrencyTransaction):
             quota_price_usd=quota_price_usd,
             percentage_change=percentage_change,            
         )
+    
+    class Meta:
+        verbose_name = 'Resgate'
+        verbose_name_plural = '  Resgates - Diminuição de Cotas'
   
 class DividendPayEvent(CurrencyTransaction):
     def __init__(self, *args, **kwargs):
@@ -269,7 +351,7 @@ class DividendPayEvent(CurrencyTransaction):
         self.create_quota_history(portfolio_history) 
 
     def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
+        portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date
         )
@@ -345,7 +427,7 @@ class InvestBrEvent(CurrencyTransaction):
         return trade
 
     def create_portfolio_history(self):
-        portfolio_history = PortfolioHistory.objects.create(
+        portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
             date=self.transaction_date
         )
@@ -389,11 +471,10 @@ class InvestBrEvent(CurrencyTransaction):
             # Error message
             raise Exception('Não há histórico de cotas para este portfolio, por isso voce não pode pagar dividendos.')
 
+    class Meta:
+        verbose_name_plural = ' Comprar / Investir no Brasil'
 
-
-
-
-class PortfolioHistory(models.Model):
+class PortfolioTotalHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
     total_brl = models.FloatField()
@@ -446,7 +527,6 @@ class PortfolioHistory(models.Model):
                 currency_pair=currency_pair, 
                 date__lte=self.date  
             ).latest('date')
-            print(exchange_rate) 
         except CurrencyHistoricalPrice.DoesNotExist:
             exchange_rate = None
 
@@ -489,4 +569,7 @@ class PortfolioHistory(models.Model):
         self.total_usd = total_usd
 
         super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name_plural = 'Histórico dos Portfolios - Total'
 
