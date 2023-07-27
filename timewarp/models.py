@@ -2,7 +2,7 @@ from django.db import models
 from investments.models import Asset
 
 class CurrencyHistoricalPrice(models.Model):
-    currency_pair = models.CharField(max_length=10)
+    currency_pair = models.CharField(max_length=10) # USDBRL e BRLUSD
     date = models.DateField()
     open = models.FloatField()
     high = models.FloatField()

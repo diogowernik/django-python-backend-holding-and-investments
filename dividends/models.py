@@ -4,6 +4,8 @@ from portfolios.models import PortfolioInvestment
 from trade.models import TradeHistory
 from categories.models import Category
 from django.db.models import Max
+from timewarp.models import CurrencyHistoricalPrice
+from equity.models import DividendReceiveEvent
 
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends", default=1)
@@ -114,6 +116,20 @@ class PortfolioDividend(models.Model):
             average_price_usd=trade_history.share_average_price_usd,
         )
 
+    def save(self, *args, **kwargs):
+        self.category = self.asset.category
+        super(PortfolioDividend, self).save(*args, **kwargs)
+        self.create_dividend_receive_event()
+
+    # Cria automaticamente um evento de recebimento de dividendos para cada PortfolioDividend criado.
+    def create_dividend_receive_event(self):
+        DividendReceiveEvent.objects.create(
+            portfolio = self.portfolio_investment.portfolio,
+            broker = self.portfolio_investment.broker,
+            transaction_amount = self.shares_amount * self.value_per_share_brl,
+            transaction_date = self.pay_date,
+        )
+
     @property
     def pay_date_by_month_year(self):
         return self.pay_date.strftime('%m/%Y')
@@ -138,3 +154,52 @@ class PortfolioDividend(models.Model):
     class Meta:
         verbose_name_plural = "Dividendos por Portfolio"
 
+class DividendBr(Dividend):
+    def save(self, *args, **kwargs):
+        # Obtém o preço de fechamento do par BRLUSD mais recente antes da data de pagamento do dividendo
+        try:
+            currency_price = CurrencyHistoricalPrice.objects.filter(
+                currency_pair="BRLUSD",
+                date__lte=self.pay_date
+            ).latest('date')
+        except CurrencyHistoricalPrice.DoesNotExist:
+            # Error message
+            print("Não foi possível encontrar o preço de fechamento do par BRLUSD adicione o preço manualmente.")
+            return
+
+        # Converte o valor do dividendo de BRL para USD usando o preço de fechamento
+        self.value_per_share_usd = self.value_per_share_brl * currency_price.close
+
+        super().save(*args, **kwargs)
+
+
+
+    def __str__(self):
+        return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
+
+    class Meta:
+        verbose_name_plural = "Dividendos BR"
+
+class DividendUs(Dividend):
+    def save(self, *args, **kwargs):
+        # Obtém o preço de fechamento do par USDBRL mais recente antes da data de pagamento do dividendo
+        try:
+            currency_price = CurrencyHistoricalPrice.objects.filter(
+                currency_pair="USDBRL",
+                date__lte=self.pay_date.date()
+            ).latest('date')
+        except CurrencyHistoricalPrice.DoesNotExist:
+            # Error message
+            print("Não foi possível encontrar o preço de fechamento do par BRLUSD adicione o preço manualmente.")
+            return
+
+        # Converte o valor do dividendo de USD para BRL usando o preço de fechamento
+        self.value_per_share_brl = self.value_per_share_usd * currency_price.close
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_usd, self.record_date, self.pay_date)
+
+    class Meta:
+        verbose_name_plural = "Dividendos US"
