@@ -1,5 +1,5 @@
 from portfolios.models import Portfolio
-from investments.models import CurrencyHolding, Stocks, BrStocks, Reit
+from investments.models import CurrencyHolding, Stocks, BrStocks, Reit, PrivateAsset
 from brokers.models import Broker
 from categories.models import Category, SubCategory
 from django.contrib.auth.models import User
@@ -46,5 +46,16 @@ class CommonSetupMixin:
         AssetHistoricalPrice.objects.create(asset=cls.asset_itub4, date=yesterday, open=30.5, high=30.5, low=30.5, close=30.5, currency='BRL')
         AssetHistoricalPrice.objects.create(asset=cls.asset_msft, date=yesterday, open=200.5, high=200.5, low=200.5, close=200.5, currency='USD')
         AssetHistoricalPrice.objects.create(asset=cls.asset_o, date=yesterday, open=100.5, high=100.5, low=100.5, close=100.5, currency='USD')
+
+        # Setup para testar o equity alem dos já existentes
+        cls.asset_ap_315 = PrivateAsset.objects.create(ticker='AP 315', category=cls.category, subcategory=cls.subcategory, price_brl=400, price_usd=80)
+        # historical price 26/06/2006
+        AssetHistoricalPrice.objects.create(asset=cls.asset_ap_315, date=timezone.datetime(2006, 6, 26), open=187.5, high=187.5, low=187.5, close=187.5, currency='BRL')
+        # historical price for USD and BRL
+        AssetHistoricalPrice.objects.create(asset=cls.asset_usd, date=timezone.datetime(2006, 1, 26), open=1, high=1, low=1, close=1, currency='USD')
+        AssetHistoricalPrice.objects.create(asset=cls.asset_brl, date=timezone.datetime(2006, 1, 26), open=1, high=1, low=1, close=1, currency='BRL')
+        # currency historical price for USD and BRL
+        CurrencyHistoricalPrice.objects.create(currency_pair='BRLUSD', date=timezone.datetime(2006, 1, 26), open=0.45, high=0.45, low=0.45, close=0.45)
+        CurrencyHistoricalPrice.objects.create(currency_pair='USDBRL', date=timezone.datetime(2006, 1, 26), open=2.2, high=2.2, low=2.2, close=2.2)
 
 

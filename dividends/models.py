@@ -8,7 +8,7 @@ from django.db.models import Max
 class Dividend(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="dividends", default=1)
     value_per_share_brl = models.FloatField(default=0)
-    value_per_share_usd = models.FloatField(default=0)
+    value_per_share_usd = models.FloatField(default=0) # criar uma conversão automática na data.
     record_date = models.DateTimeField(null=True, blank=True)
     pay_date = models.DateTimeField(null=True, blank=True)
 
@@ -32,11 +32,11 @@ class Dividend(models.Model):
         latest_transactions_dict = self.get_latest_transactions(portfolio_investment_objs)
 
         for portfolio_investment_obj in portfolio_investment_objs:
-            last_transaction_date = latest_transactions_dict.get(portfolio_investment_obj.id)
-            if last_transaction_date is not None:
+            last_trade_date = latest_transactions_dict.get(portfolio_investment_obj.id)
+            if last_trade_date is not None:
                 latest_asset_transaction = TradeHistory.objects.filter(
                     portfolio_investment=portfolio_investment_obj,
-                    transaction_date=last_transaction_date
+                    trade_date=last_trade_date
                 ).first()
                 self.create_dividends_for_portfolios(latest_asset_transaction)
 
@@ -54,17 +54,17 @@ class Dividend(models.Model):
     def get_latest_transactions(self, portfolio_investment_objs):
         latest_transactions = TradeHistory.objects.filter(
             portfolio_investment__in=portfolio_investment_objs,
-            transaction_date__lte=self.record_date
+            trade_date__lte=self.record_date
         ).values('portfolio_investment').annotate(
-            last_transaction_date=Max('transaction_date')
+            last_trade_date=Max('trade_date')
         )
-        return {x['portfolio_investment']: x['last_transaction_date'] for x in latest_transactions}
+        return {x['portfolio_investment']: x['last_trade_date'] for x in latest_transactions}
     
     def get_latest_asset_transaction(self, portfolio_investment_obj):
-        historical_average_prices = TradeHistory.objects.filter(portfolio_investment=portfolio_investment_obj, transaction_date__lte=self.record_date)
+        historical_average_prices = TradeHistory.objects.filter(portfolio_investment=portfolio_investment_obj, trade_date__lte=self.record_date)
         
         if historical_average_prices.exists():
-            return historical_average_prices.latest('transaction_date')
+            return historical_average_prices.latest('trade_date')
         return None
 
     def create_dividends_for_portfolios(self, latest_asset_transaction):
