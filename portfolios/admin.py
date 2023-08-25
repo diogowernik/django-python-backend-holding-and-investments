@@ -8,6 +8,7 @@ from django import forms
 class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner')
     list_editable = ['owner']
+admin.site.register(models.Portfolio, PortfolioAdmin)
 
 class PortfolioInvestmentSum(ChangeList):
     def get_results(self, *args, **kwargs):

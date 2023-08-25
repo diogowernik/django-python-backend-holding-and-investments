@@ -5,9 +5,9 @@ from common.models import Currency
 
 class Asset(models.Model):
     category = models.ForeignKey(
-        Category, related_name='categories', on_delete=models.CASCADE)
+        Category, related_name='categories', on_delete=models.CASCADE, default=1)
     subcategory = models.ForeignKey(
-        SubCategory, related_name='subcategories', on_delete=models.CASCADE)
+        SubCategory, related_name='subcategories', on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255)
     price_usd = models.FloatField(default=0)

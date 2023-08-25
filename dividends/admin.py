@@ -7,8 +7,6 @@ from django import forms
 from django.db.models import Q
 from investments.models import Asset
 
-
-
 class DividendFormBase(forms.ModelForm):
     record_date = forms.DateField(widget=AdminDateWidget)
     pay_date = forms.DateField(widget=AdminDateWidget)
@@ -29,7 +27,6 @@ class DividendAdminBase(admin.ModelAdmin):
         return obj.pay_date.strftime('%d/%m/%Y')
 
     def save_model(self, request, obj, form, change):
-        # Set the time to 8AM
         obj.record_date = datetime.combine(obj.record_date, time(8))
         obj.pay_date = datetime.combine(obj.pay_date, time(8))
         super().save_model(request, obj, form, change)
@@ -42,9 +39,22 @@ class DividendBrForm(DividendFormBase):
             Q(privateasset__isnull=False) | Q(brstocks__isnull=False) | Q(fii__isnull=False)
         )
 
-
     class Meta(DividendFormBase.Meta):
         model = models.DividendBr
+        labels = {
+            'asset': 'Ativo',
+            'value_per_share_brl': 'Valor por cota R$',
+            'record_date': 'Data Com',
+            'pay_date': 'Data de Pagamento',
+        }
+        help_texts = {
+                'value_per_share_brl': 'Esta operação gera:<br>'
+                            '- PortfolioDividend (Para cada Portfolio que tiver cotas do ativo),<br>'
+                            '- DividendReceive,<br>'
+                            '- CurrencyTransaction,<br>'
+                            '- Conversão de moeda para criar um valor por cota em USD.',
+        }
+
 
 
 class DividendBrAdmin(DividendAdminBase):
@@ -63,6 +73,19 @@ class DividendUsForm(DividendFormBase):
 
     class Meta(DividendFormBase.Meta):
         model = models.DividendUs
+        labels = {
+            'asset': 'Ativo',
+            'value_per_share_usd': 'Valor por cota U$',
+            'record_date': 'Data Com',
+            'pay_date': 'Data de Pagamento',
+        }
+        help_texts = {
+                'value_per_share_usd': 'Esta operação gera:<br>'
+                            '- PortfolioDividend (Para cada Portfolio que tiver ações do ativo),<br>'
+                            '- DividendReceive,<br>'
+                            '- CurrencyTransaction,<br>'
+                            '- Conversão de moeda para criar um valor por cota em BRL.',
+        }
 
 
 class DividendUsAdmin(DividendAdminBase):

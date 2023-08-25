@@ -42,6 +42,24 @@ class Dividend(models.Model):
                 ).first()
                 self.create_dividends_for_portfolios(latest_asset_transaction)
 
+    def create_dividend_receive_events(self, portfolio_dividend):
+        # buscar o total de ações na data do pagamento de dividendos
+        latest_asset_transaction = self.get_latest_asset_transaction(portfolio_dividend.portfolio_investment)
+
+        # se existir uma transação, utilize o total de ações para calcular o valor do dividendo
+        if latest_asset_transaction:
+            total_shares_on_pay_date = latest_asset_transaction.total_shares
+            transaction_amount = total_shares_on_pay_date * self.value_per_share_brl
+        else:
+            transaction_amount = 0
+
+        DividendReceiveEvent.objects.create(
+            portfolio = portfolio_dividend.portfolio_investment.portfolio,
+            broker = portfolio_dividend.portfolio_investment.broker,
+            transaction_amount = transaction_amount,
+            transaction_date = self.pay_date,
+        )
+
     def get_portfolio_investments(self):
         portfolio_investments_by_asset = PortfolioInvestment.objects.filter(
             asset=self.asset
@@ -72,7 +90,11 @@ class Dividend(models.Model):
     def create_dividends_for_portfolios(self, latest_asset_transaction):
         if latest_asset_transaction.total_shares > 0:
             # Crie PortfolioDividend através da função centralizada
-            PortfolioDividend.create_portfolio_dividend(latest_asset_transaction, self)  # foi alterado aqui
+            # portfolio_dividend = PortfolioDividend.create_portfolio_dividend(latest_asset_transaction, self)
+            PortfolioDividend.create_portfolio_dividend(latest_asset_transaction, self)
+            
+            # Agora, cria o evento de recebimento de dividendos
+            # self.create_dividend_receive_events(portfolio_dividend)
         
     def delete(self, *args, **kwargs):
         portfolio_dividends = PortfolioDividend.objects.filter(dividend=self)
@@ -101,7 +123,7 @@ class PortfolioDividend(models.Model):
 
     @classmethod
     def create_portfolio_dividend(cls, trade_history, dividend):
-        cls.objects.create(
+        portfolio_dividend = cls.objects.create(
             portfolio_investment=trade_history.portfolio_investment,
             asset=dividend.asset,
             trade_history=trade_history,
@@ -115,20 +137,11 @@ class PortfolioDividend(models.Model):
             average_price_brl=trade_history.share_average_price_brl,
             average_price_usd=trade_history.share_average_price_usd,
         )
+        return portfolio_dividend
 
     def save(self, *args, **kwargs):
         self.category = self.asset.category
-        super(PortfolioDividend, self).save(*args, **kwargs)
-        self.create_dividend_receive_event()
-
-    # Cria automaticamente um evento de recebimento de dividendos para cada PortfolioDividend criado.
-    def create_dividend_receive_event(self):
-        DividendReceiveEvent.objects.create(
-            portfolio = self.portfolio_investment.portfolio,
-            broker = self.portfolio_investment.broker,
-            transaction_amount = self.shares_amount * self.value_per_share_brl,
-            transaction_date = self.pay_date,
-        )
+        super().save(*args, **kwargs)
 
     @property
     def pay_date_by_month_year(self):
@@ -171,7 +184,6 @@ class DividendBr(Dividend):
         self.value_per_share_usd = self.value_per_share_brl * currency_price.close
 
         super().save(*args, **kwargs)
-
 
 
     def __str__(self):

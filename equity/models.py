@@ -20,6 +20,7 @@ class QuotaHistory(models.Model):
             ('dividend receive', 'dividend receive'),
             ('dividend payment', 'dividend payment'),
             ('invest br', 'invest br'),
+            ('divest br', 'divest br'),
             # ('redeem br', 'redeem br'),
             ('tax payment', 'tax payment'),
         ],
@@ -200,8 +201,8 @@ class TaxPayEvent(CurrencyTransaction):
         )
     
     class Meta:
-        verbose_name = 'Pagamento de Dividendos'
-        verbose_name_plural = ' Pagamento de Dividendos'
+        verbose_name = 'Pagamento de Impostos'
+        verbose_name_plural = ' Pagamento de Impostos'
 
 class InvestBrEvent(CurrencyTransaction):
     to_broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
@@ -241,6 +242,116 @@ class InvestBrEvent(CurrencyTransaction):
 
     class Meta:
         verbose_name_plural = '  Comprar / Investir no Brasil'
+
+class InvestUsEvent(CurrencyTransaction):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
+    trade_amount = models.FloatField(default=0)
+    asset_price_usd = models.FloatField(default=0)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Make sure the transaction_type is always 'withdraw'
+        self.transaction_type = 'withdraw'
+        trade = self.create_trade()
+        self.transaction_amount = (trade.trade_amount * trade.price_usd) 
+        super().save(*args, **kwargs)
+
+        value_brl = self.transaction_amount * self.price_brl * -1
+        value_usd = self.transaction_amount * self.price_usd * -1
+
+        QuotaHistory.objects.create(
+            portfolio=self.portfolio,
+            date=self.transaction_date,
+            event_type='invest us',
+            value_brl=value_brl,
+            value_usd=value_usd,
+        )
+    
+    def create_trade(self):
+        trade = Trade.objects.create(
+            portfolio=self.portfolio,
+            asset=self.asset,
+            broker=self.broker,
+            trade_amount=self.trade_amount,
+            trade_date=self.transaction_date,
+            trade_type='buy',
+        )
+        return trade
+
+class DivestBrEvent(CurrencyTransaction):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
+    trade_amount = models.FloatField(default=0)
+    asset_price_brl = models.FloatField(default=0)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Make sure the transaction_type is always 'deposit'
+        self.transaction_type = 'deposit'
+        trade = self.create_trade()
+        self.transaction_amount = (trade.trade_amount * trade.price_brl) 
+        super().save(*args, **kwargs)
+
+        value_brl = self.transaction_amount * self.price_brl * -1
+        value_usd = self.transaction_amount * self.price_usd * -1
+
+        QuotaHistory.objects.create(
+            portfolio=self.portfolio,
+            date=self.transaction_date,
+            event_type='divest br',
+            value_brl=value_brl,
+            value_usd=value_usd,
+        )
+
+    def create_trade(self):
+        trade = Trade.objects.create(
+            portfolio=self.portfolio,
+            asset=self.asset,
+            broker=self.broker,
+            trade_amount=self.trade_amount,
+            trade_date=self.transaction_date,
+            trade_type='sell',
+            price_brl=self.asset_price_brl,
+        )
+        return trade
+
+    class Meta:
+        verbose_name_plural = '  Vender / Desinvestir no Brasil'
+
+class DivestUsEvent(CurrencyTransaction):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
+    trade_amount = models.FloatField(default=0)
+    asset_price_usd = models.FloatField(default=0)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Make sure the transaction_type is always 'deposit'
+        self.transaction_type = 'deposit'
+        trade = self.create_trade()
+        self.transaction_amount = (trade.trade_amount * trade.price_usd) 
+        super().save(*args, **kwargs)
+
+        value_brl = self.transaction_amount * self.price_brl * -1
+        value_usd = self.transaction_amount * self.price_usd * -1
+
+        QuotaHistory.objects.create(
+            portfolio=self.portfolio,
+            date=self.transaction_date,
+            event_type='divest us',
+            value_brl=value_brl,
+            value_usd=value_usd,
+        )
+
+    def create_trade(self):
+        trade = Trade.objects.create(
+            portfolio=self.portfolio,
+            asset=self.asset,
+            broker=self.broker,
+            trade_amount=self.trade_amount,
+            trade_date=self.transaction_date,
+            trade_type='sell',
+            price_usd=self.asset_price_usd,
+        )
+        return trade
 
 class PortfolioTotalHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
