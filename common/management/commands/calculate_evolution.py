@@ -32,6 +32,6 @@ class Command(BaseCommand):
                 category_id=index,
                 category_total_brl=row['total_today_brl'],
                 category_total_usd=row['total_today_usd'],
-                # date='2023-04-01' 
+                # date='2023-09-01' 
                 date=datetime.today().strftime('%Y-%m-%d')
             )

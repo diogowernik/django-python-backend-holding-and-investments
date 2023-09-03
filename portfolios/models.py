@@ -119,8 +119,6 @@ class PortfolioEvolution(models.Model):
         verbose_name_plural = 'Evolução do Patrimonio'
 
 class PortfolioDividend(models.Model):
-    # portfolio_asset = models.ForeignKey(
-    #     PortfolioInvestment, on_delete=models.CASCADE, default=1)
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, default=2)
 

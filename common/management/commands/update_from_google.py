@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from investments.models import BrStocks, Fii, Stocks, Reit
+from investments.models import BrStocks, Fii, Stocks, Reit, Etf
 from common.utils.fuctions import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment
 
 def update_data_from_google(AppModel, sheet_url):
@@ -31,7 +31,8 @@ class Command(BaseCommand):
         for model, url in [(BrStocks, 'https://docs.google.com/spreadsheets/d/1-RnGncfUTlyYMSZZ6CHbLZtPLLhdKG8sGPNFeopbeHs/edit?usp=sharing'), 
                            (Fii, 'https://docs.google.com/spreadsheets/d/1aOn6Fw_7arz-XcNB8KPIooK1Xgkg3lanRPh90PkB3O8/edit?usp=sharing'), 
                            (Stocks, 'https://docs.google.com/spreadsheets/d/18rUBtnbn0x9VarS2XUL3Vxs7ZyHlHR2v_RNBNn3VssE/edit?usp=sharing'), 
-                           (Reit, 'https://docs.google.com/spreadsheets/d/16zJuluKOqz2rEqrQ2O_ijapdPsEshbBhOa-hRFn2Dl8/edit?usp=sharing')]:
+                           (Reit, 'https://docs.google.com/spreadsheets/d/16zJuluKOqz2rEqrQ2O_ijapdPsEshbBhOa-hRFn2Dl8/edit?usp=sharing'),
+                           (Etf, 'https://docs.google.com/spreadsheets/d/1FZst_R7U8OhTMPb-Bu97dGOicO9uCsU2mE-ZfkY6heM/edit?usp=sharing')]:
             try:
                 update_data_from_google(model, url)
             except Exception as e:

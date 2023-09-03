@@ -182,3 +182,6 @@ class Reit(InternationalAssets):
         verbose_name_plural = "Internacional / REIT"
 
 
+class Etf(InternationalAssets):
+    class Meta:
+        verbose_name_plural = "Internacional / ETF"

@@ -21,11 +21,11 @@ class PortfolioInvestmentSum(ChangeList):
 class PortfolioInvestmentAdmin(admin.ModelAdmin):
     list_display = (
         'asset',
-        'broker',
         'shares_amount',
         'share_average_price_brl',
-        'total_cost_brl',
         'share_average_price_usd',
+        'broker',
+        'total_cost_brl',
         'total_cost_usd',
         'total_today_brl',
         'total_today_usd',
@@ -37,7 +37,11 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
         'portfolio',
         'category'
     )
-    list_editable = ['shares_amount']
+    list_editable = [
+        'shares_amount',
+        'share_average_price_brl',
+        'share_average_price_usd',
+        ]
     list_filter = [
         ('broker', RelatedFieldListFilter), ('portfolio', RelatedFieldListFilter), 'asset__category', ]
 
@@ -57,7 +61,7 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
         'ticker',
         'category',
         'subcategory',
-        'record_date',
+        # 'record_date',
         'pay_date',
         'shares_amount',
         'value_per_share_usd',
