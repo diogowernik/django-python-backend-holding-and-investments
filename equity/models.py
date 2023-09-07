@@ -21,7 +21,8 @@ class QuotaHistory(models.Model):
             ('dividend payment', 'dividend payment'),
             ('invest br', 'invest br'),
             ('divest br', 'divest br'),
-            # ('redeem br', 'redeem br'),
+            ('invest us', 'invest us'),
+            ('divest us', 'divest us'),
             ('tax payment', 'tax payment'),
         ],
         default='deposit'

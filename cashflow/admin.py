@@ -76,9 +76,5 @@ class InternationalCurrencyTransferAdmin(admin.ModelAdmin):
         )
     search_fields = ['portfolio__name']
 
-    def save_model(self, request, obj, form, change):
-        # Somente chame save() quando todos os campos necessários forem preenchidos
-        if obj.portfolio and obj.broker and obj.transaction_type is not None and obj.transaction_amount is not None:
-            super().save_model(request, obj, form, change)
 admin.site.register(InternationalCurrencyTransfer, InternationalCurrencyTransferAdmin)
 

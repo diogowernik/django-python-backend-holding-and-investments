@@ -14,9 +14,14 @@ class DividendFormBase(forms.ModelForm):
     class Meta:
         fields = '__all__'
 
-
 class DividendAdminBase(admin.ModelAdmin):
-    list_display = ('asset', 'value_per_share_usd', 'value_per_share_brl', 'record_date_date', 'pay_date_date')
+    list_display = (
+        'pay_date_date',
+        'asset', 
+        'value_per_share_usd', 
+        'value_per_share_brl',
+        'record_date_date',
+        )
     list_filter = ('record_date', 'pay_date')
     search_fields = ('asset__ticker',)
 
@@ -30,7 +35,6 @@ class DividendAdminBase(admin.ModelAdmin):
         obj.record_date = datetime.combine(obj.record_date, time(8))
         obj.pay_date = datetime.combine(obj.pay_date, time(8))
         super().save_model(request, obj, form, change)
-
 
 class DividendBrForm(DividendFormBase):
     def __init__(self, *args, **kwargs):
@@ -54,8 +58,6 @@ class DividendBrForm(DividendFormBase):
                             '- CurrencyTransaction,<br>'
                             '- Conversão de moeda para criar um valor por cota em USD.',
         }
-
-
 
 class DividendBrAdmin(DividendAdminBase):
     exclude = ('value_per_share_usd',)
