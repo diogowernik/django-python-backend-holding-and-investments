@@ -6,15 +6,15 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         commands = [
-            'update_prices', 
+            'get_historical_currency',
             'update_cripto_price', 
             'update_currencies_price', 
             'update_from_google',
-            'update_from_fundamentus',
             'update_from_fmp',
+            'update_from_fundamentus',
+            'update_from_yahoo',
             'update_total_dividends', 
-            'update_total_today',
-            'update_historical_currency'
+            'update_total_today'
             ]
 
         errors = []

@@ -22,7 +22,7 @@ class Portfolio(models.Model):
 class PortfolioInvestment(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
+    broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=22)
     shares_amount = models.FloatField(default=0)
 
     dividends_profit_brl = models.FloatField(default=0, editable=False)
@@ -126,7 +126,7 @@ class PortfolioDividend(models.Model):
     categoryChoice = (
         ('Ações Brasileiras', 'Ações Brasileiras'),
         ('Fundos Imobiliários', 'Fundos Imobiliários'),
-        ('ETFs', 'ETFs'),
+        ('ETF', 'ETF'),
         ('Stocks', 'Stocks'),
         ('REITs', 'REITs'),
         ('Propriedades', 'Propriedades'),

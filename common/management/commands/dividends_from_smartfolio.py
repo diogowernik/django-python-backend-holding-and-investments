@@ -1,22 +1,15 @@
 # update dividends price
-from tokenize import group
-from numpy import average
 import pandas as pd
 from django.core.management.base import BaseCommand
-from dividends.models import Dividend
-from investments.models import Asset
 import requests
-from portfolios.models import PortfolioInvestment, PortfolioDividend
-
-# This file updates Dividends from Degiro
-
+from portfolios.models import PortfolioDividend
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print("Updating Dividends from Meus Dividendos...")
 
-        # Get the data from the FundExplorer
+        # Get the data from google sheet
         url = 'https://docs.google.com/spreadsheets/d/1jV3rxkIJxcg-GU9H0tN6Pao-bzzOJxLdtlmJN_ztSIQ/edit?usp=sharing'
         header = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
@@ -73,8 +66,6 @@ class Command(BaseCommand):
 
         # REIT to REITs
         dividends['subcategory'] = dividends['subcategory'].str.replace('REIT', 'REITs')
-
-
 
         # print(dividends)
 
@@ -142,4 +133,4 @@ class Command(BaseCommand):
 
 
 
-        print("Done!")
+        print("Dividendo Updated!")

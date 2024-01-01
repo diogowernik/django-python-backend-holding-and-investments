@@ -1,8 +1,7 @@
-# update fiis price_brl
 import pandas as pd
 from django.core.management.base import BaseCommand
 import yfinance as yf
-from investments.models import Asset, BrStocks
+from investments.models import Asset
 
 
 class Command(BaseCommand):
@@ -21,6 +20,8 @@ class Command(BaseCommand):
 
         yahoo_df = yf.download(app_list, period="1min")["Adj Close"]
         yahoo_df = yahoo_df.T.reset_index()
+        print("DataFrame após transposição e antes do processamento:")
+        print(yahoo_df)
         if yahoo_df.shape[1] == 3:
             try:
                 yahoo_df.columns = ["ticker",  "price_brl", "price_brl2"]
@@ -55,6 +56,7 @@ class Command(BaseCommand):
         # Merge app_df and yahoo_df
         df = app_df.merge(yahoo_df, left_on="ticker",
                           right_on="ticker", how='inner')
+        print(df)
 
         # get usd price today
         economia_df = pd.read_json(
@@ -69,13 +71,23 @@ class Command(BaseCommand):
         # Update BrStock price_brl
         for index, row in df.iterrows():
             try:
-                asset = Asset.objects.get(id=df.loc[index]['id'])
-                asset.price_brl = df.loc[index]['price_brl']
-                asset.price_usd = df.loc[index]['price_usd']
+                asset = Asset.objects.get(id=row['id'])
+                price_brl = row['price_brl']
+                price_usd = row['price_usd']
+                
+                if price_brl is None or price_usd is None:
+                    print(f"Missing price data for ticker {row['ticker']}: price_brl={price_brl}, price_usd={price_usd}")
+                    continue
+
+                asset.price_brl = price_brl
+                asset.price_usd = price_usd
                 asset.save()
             except Exception as e:
-                print(f' Key Exception 3 - {e}')
-                # show ticker that has problem
-                print(df.loc[index]['id'])
+                ticker = df.loc[index, 'ticker'] if 'ticker' in df.columns else 'Unknown'
+                print(f"Key Exception 3 - {e} for ticker: {ticker}")
+                print("Asset ID:", row['id'])
                 pass
+
         print("BrStocks and Fiis price_brl and price usd_update updated")
+
+
