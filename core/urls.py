@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls import url
@@ -26,9 +26,9 @@ schema_view = get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    # permissions only owner
-    # permission_classes=(permissions.IsAuthenticated,),
-    # permission_classes=[permissions.AllowAny],
+    permission_classes=(IsAuthenticated,),
+    # permissions only autenticated users can see the docs
+
 )
 
 # url permission_classes=[permissions.AllowAny]
@@ -44,7 +44,7 @@ urlpatterns = [
      path('admin/', admin.site.urls),
 
 
-     # removed registration
+     # remove registration endpoint only login
      path('auth/', include('djoser.urls')),
      path('auth/', include('djoser.urls.authtoken')),
      path('auth/token/login/', TokenCreateView.as_view(), name='login'),

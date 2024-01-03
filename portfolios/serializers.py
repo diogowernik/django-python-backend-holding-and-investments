@@ -5,7 +5,13 @@ from investments.models import Category
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
-        fields = "__all__"
+        exclude = ('owner', )  # Exclui 'owner' da validação direta
+
+    def create(self, validated_data):
+        # Aqui você pode adicionar o 'owner' se necessário,
+        # mas como você já está tratando isso na view, pode não ser necessário.
+        return models.Portfolio.objects.create(**validated_data)
+
 
 class PortfolioDetailSerializer(serializers.ModelSerializer):
     class Meta:
