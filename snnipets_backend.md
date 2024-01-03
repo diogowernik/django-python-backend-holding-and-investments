@@ -61,3 +61,6 @@ python manage.py startapp timewarp
 
     python manage.py startapp cashflow
 
+# update requirements.txt
+
+    pip freeze > requirements.txt
