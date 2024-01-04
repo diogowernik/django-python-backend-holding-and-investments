@@ -143,3 +143,5 @@ DJOSER = {
         'user_create': ['rest_framework.permissions.IsAdminUser'],
     },
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')

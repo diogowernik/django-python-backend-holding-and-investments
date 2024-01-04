@@ -2,6 +2,8 @@ from django.contrib import admin
 from . import models
 # from django.contrib.auth.models import User
 # from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 
 # Register your models here.
 
@@ -67,5 +69,12 @@ def app_resort(func):
         return resorted_app_list
     return inner
 
+class CustomUserAdmin(UserAdmin):
+    list_display = ('id',) + UserAdmin.list_display
 
+# Desregistrar o modelo User padrão do admin
+admin.site.unregister(User)
+
+# Registrar novamente com a classe CustomUserAdmin
+admin.site.register(User, CustomUserAdmin)
 admin.site.get_app_list = app_resort(admin.site.get_app_list)
