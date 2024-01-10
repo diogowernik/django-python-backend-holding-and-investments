@@ -27,11 +27,8 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(IsAuthenticated,),
-    # permissions only autenticated users can see the docs
 
 )
-
-# url permission_classes=[permissions.AllowAny]
 
 urlpatterns = [
      re_path(r'^swagger(?P<format>\.json|\.yaml)$',

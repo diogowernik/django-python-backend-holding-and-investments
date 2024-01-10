@@ -24,10 +24,6 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     broker = serializers.CharField(source='broker.name')
     asset_price_brl = serializers.FloatField(source='asset.price_brl')
     asset_price_usd = serializers.FloatField(source='asset.price_usd')
-    twelve_m_dividend = serializers.FloatField(
-        source='asset.twelve_m_dividend')
-    twelve_m_yield = serializers.FloatField(source='asset.twelve_m_yield')
-    p_vpa = serializers.FloatField(source='asset.p_vpa')
 
     class Meta:
         model = models.PortfolioInvestment
@@ -52,9 +48,6 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
             'trade_profit_brl',
             'trade_profit_usd',
             'broker',
-            'twelve_m_yield',
-            'twelve_m_dividend',
-            'p_vpa',
             'portfolio_percentage',
             'av_price_minus_div_brl',
             'av_price_minus_div_usd',
