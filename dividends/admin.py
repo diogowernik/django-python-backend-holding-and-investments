@@ -95,3 +95,20 @@ class DividendUsAdmin(DividendAdminBase):
     form = DividendUsForm
 admin.site.register(models.DividendUs, DividendUsAdmin)
 
+class DividendAdmin(DividendAdminBase):
+    list_display = (
+        'pay_date_date',
+        'asset', 
+        'value_per_share_usd', 
+        'value_per_share_brl',
+        'record_date_date',
+        )
+    list_filter = ('record_date', 'pay_date')
+    search_fields = ('asset__ticker',)
+
+    def record_date_date(self, obj):
+        return obj.record_date.strftime('%d/%m/%Y')
+
+    def pay_date_date(self, obj):
+        return obj.pay_date.strftime('%d/%m/%Y')
+admin.site.register(models.Dividend, DividendAdmin)
