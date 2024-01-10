@@ -27,8 +27,8 @@ class PortfolioDetail(generics.RetrieveUpdateDestroyAPIView):
 
 # PortfolioInvestmentList, apenas donos podem CRUD
 class PortfolioInvestmentList(generics.ListAPIView):
-    # authentication_classes = (TokenAuthentication,)
-    # permission_classes = (IsOwner, )  # Somente o dono pode acessar
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsOwner, )  # Somente o dono pode acessar
     serializer_class = serializers.PortfolioInvestmentSerializer
 
     def get_queryset(self):
@@ -40,10 +40,10 @@ class PortfolioInvestmentList(generics.ListAPIView):
 
 # PortfolioInvestmentDetail, apenas donos podem CRUD
 class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):
-    # authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioInvestmentSerializer
     queryset = models.PortfolioInvestment.objects.all()
-    # permission_classes = (IsOwner, )  # Somente o dono pode acessar
+    permission_classes = (IsOwner, )  # Somente o dono pode acessar
 
 # CategoryList, todos podem ver, apenas admin podem CRUD
 class CategoryList(generics.ListAPIView):
