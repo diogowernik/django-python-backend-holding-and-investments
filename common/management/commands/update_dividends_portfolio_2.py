@@ -1,29 +1,34 @@
 from django.core.management.base import BaseCommand
-from investments.models import Asset
-from timewarp.models import CurrencyHistoricalPrice
 from dividends.models import Dividend
 from portfolios.models import PortfolioDividend, PortfolioInvestment
-import requests
 import pandas as pd
-from datetime import datetime
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         portfolio_id = 4
+        start_year = 2022  # Definindo o ano de início
 
         # Obter PortfolioInvestments para o portfolio especificado
         portfolio_investments = PortfolioInvestment.objects.filter(portfolio_id=portfolio_id)
 
-        # criar uma tabela do pandas com os dados de investimentos do portfólio com os campos: ticker, shares_amount, share_average_price_brl, share_average_price_usd, category
-        df = pd.DataFrame(list(portfolio_investments.values('asset__ticker', 'shares_amount', 'share_average_price_brl', 'share_average_price_usd', 'asset__category__name')))
-        # filter by category = 'Fundos Imobiliários'
-        df = df[df['asset__category__name'] == 'Fundos Imobiliários']
-        print(df)
+        # Criar DataFrame do pandas com os dados de investimentos do portfólio
+        df = pd.DataFrame(list(portfolio_investments.values(
+            'asset__ticker', 'shares_amount', 
+            'share_average_price_brl', 'share_average_price_usd', 
+            'asset__category__name')))
 
-        # criar pandas dataframe com os dados de dividendos filtrando por ticker
+        # Filtrar por categoria = 'Fundos Imobiliários'
+        df = df[df['asset__category__name'] == 'Fundos Imobiliários']
+
+        # Obter os dados de dividendos filtrando por ticker
         dividends = Dividend.objects.filter(asset__ticker__in=df['asset__ticker'].tolist())
-        df_dividends = pd.DataFrame(list(dividends.values('asset__ticker', 'record_date', 'pay_date', 'value_per_share_brl', 'value_per_share_usd')))
-        print(df_dividends)
+        df_dividends = pd.DataFrame(list(dividends.values(
+            'asset__ticker', 'record_date', 'pay_date', 
+            'value_per_share_brl', 'value_per_share_usd')))
+
+        # Filtrar para incluir apenas dividendos a partir de 2022
+        df_dividends['pay_date'] = pd.to_datetime(df_dividends['pay_date'])
+        df_dividends = df_dividends[df_dividends['pay_date'].dt.year >= start_year]
 
         # criar PortfolioDividends para cada Dividend
 

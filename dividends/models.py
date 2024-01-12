@@ -107,6 +107,8 @@ class Dividend(models.Model):
     class Meta:
         verbose_name_plural = "Dividendos"
 
+    
+
 class PortfolioDividend(models.Model):
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)

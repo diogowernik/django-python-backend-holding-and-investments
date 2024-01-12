@@ -62,11 +62,10 @@ class Command(BaseCommand):
         update_asset_historical_prices('HGLG11')
         update_asset_historical_prices('HGRE11')
         update_asset_historical_prices('HGBS11')
-        update_asset_historical_prices('BTAL11')
         update_asset_historical_prices('KNRI11')
-        update_asset_historical_prices('RZTR11')
+        update_asset_historical_prices('BRCO11')
+        update_asset_historical_prices('HGCR11')
 
-        update_asset_historical_prices('TAEE11')
 
 
         

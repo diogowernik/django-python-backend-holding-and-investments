@@ -6,6 +6,9 @@ from django.contrib.admin.widgets import AdminDateWidget
 from django import forms
 from django.db.models import Q
 from investments.models import Asset
+from django.utils.translation import gettext_lazy as _
+from .models import Dividend, Asset  # Importe seus modelos aqui
+
 
 class DividendFormBase(forms.ModelForm):
     record_date = forms.DateField(widget=AdminDateWidget)
@@ -95,20 +98,37 @@ class DividendUsAdmin(DividendAdminBase):
     form = DividendUsForm
 admin.site.register(models.DividendUs, DividendUsAdmin)
 
-class DividendAdmin(DividendAdminBase):
+class HasDividendListFilter(admin.SimpleListFilter):
+    title = _('asset with dividend')
+    parameter_name = 'asset_with_dividend'
+
+    def lookups(self, request, model_admin):
+        # Retorna uma lista de tuplas com ativos que têm dividendos
+        assets_with_dividend = Dividend.objects.values_list('asset', flat=True).distinct()
+        return Asset.objects.filter(id__in=assets_with_dividend).values_list('id', 'ticker')
+
+    def queryset(self, request, queryset):
+        if self.value():
+            # Filtra o queryset por ativos que têm dividendos
+            return queryset.filter(asset__id__exact=self.value())
+        return queryset
+
+class DividendAdmin(admin.ModelAdmin):
     list_display = (
-        'pay_date_date',
+        'pay_date',
         'asset', 
         'value_per_share_usd', 
         'value_per_share_brl',
-        'record_date_date',
-        )
-    list_filter = ('record_date', 'pay_date')
+        'record_date',
+    )
+    list_filter = (
+        HasDividendListFilter,  # Usando o filtro personalizado
+    )
     search_fields = ('asset__ticker',)
 
-    def record_date_date(self, obj):
-        return obj.record_date.strftime('%d/%m/%Y')
+    # def record_date_date(self, obj):
+    #     return obj.record_date.strftime('%d/%m/%Y')
 
-    def pay_date_date(self, obj):
-        return obj.pay_date.strftime('%d/%m/%Y')
+    # def pay_date_date(self, obj):
+    #     return obj.pay_date.strftime('%d/%m/%Y')
 admin.site.register(models.Dividend, DividendAdmin)
