@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         portfolio_id = 4
         category_id = 1  # ID para Fundos Imobiliários
-        start_year = 2022
+        start_year = 2023  # Ano de início (pode ser ajustado)
         start_month = 2  # Fevereiro
         end_date = datetime.now().date()  # Data final (pode ser ajustada)
 
@@ -44,11 +44,15 @@ class Command(BaseCommand):
         print("Preview dos dados a serem salvos:")
         print(df_preview)
 
+        df_new_records = df_preview.copy() 
+
         # Filtrar os registros que já existem
-        if 'date' in existing_records.columns:
-            df_new_records = df_preview[~df_preview['date'].isin(existing_records['date'])]
-        else:
-            df_new_records = df_preview
+        for _, existing_row in existing_records.iterrows():
+            df_new_records = df_new_records[~(
+                (df_new_records['date'] == existing_row['date']) & 
+                (df_new_records['category_id'] == existing_row['category_id']) &
+                (df_new_records['portfolio_id'] == existing_row['portfolio_id']) 
+            )]
 
         print("Registros que serão criados:")
         print(df_new_records)
