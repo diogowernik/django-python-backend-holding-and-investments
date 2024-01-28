@@ -13,6 +13,8 @@ from brokers import views as broker_views
 from investments import views as investment_views
 from radar import views as radar_views
 from cashflow import views as cashflow_views
+from kids import views as kids_views
+
 from .views import home
 
 
@@ -73,6 +75,12 @@ urlpatterns = [
      # cashflow currency transactions
      path('api/portfolios/<pk>/currency_transactions', cashflow_views.CurrencyTransactionList.as_view()),
      path('api/currency_transactions/<pk>', cashflow_views.CurrencyTransactionDetail.as_view()),
+     # kids
+     # path('api/kids/', kids_views.KidProfileList.as_view()),
+     path('api/kids/<slug:slug>', kids_views.KidProfileDetail.as_view()),
+     path('api/kids/<slug:slug>/assets', kids_views.KidPortfolioInvestmentList.as_view()),
+     path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()),
+
 
 
      url(r'^$', home, name='home'),

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'timewarp',
     'trade',
     'equity',
+    'kids',
 
 ]
 
