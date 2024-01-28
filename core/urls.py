@@ -80,6 +80,8 @@ urlpatterns = [
      path('api/kids/<slug:slug>', kids_views.KidProfileDetail.as_view()),
      path('api/kids/<slug:slug>/assets', kids_views.KidPortfolioInvestmentList.as_view()),
      path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()),
+     path('api/kids/<slug:slug>/quests', kids_views.KidsQuestList.as_view()),
+     path('api/kids/quests/<quest_key>', kids_views.KidsQuestDetail.as_view()),
 
 
 
