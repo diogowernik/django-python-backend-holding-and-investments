@@ -76,7 +76,7 @@ urlpatterns = [
      path('api/portfolios/<pk>/currency_transactions', cashflow_views.CurrencyTransactionList.as_view()),
      path('api/currency_transactions/<pk>', cashflow_views.CurrencyTransactionDetail.as_view()),
      # kids
-     # path('api/kids/', kids_views.KidProfileList.as_view()),
+     path('api/kids/', kids_views.KidProfileList.as_view()),
      path('api/kids/<slug:slug>', kids_views.KidProfileDetail.as_view()),
      path('api/kids/<slug:slug>/assets', kids_views.KidPortfolioInvestmentList.as_view()),
      path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()),

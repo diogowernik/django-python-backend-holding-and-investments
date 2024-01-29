@@ -4,6 +4,7 @@ from portfolios.models import Portfolio, PortfolioInvestment, PortfolioDividend
 class KidProfile(models.Model):
     belongs_to = models.ForeignKey(Portfolio, on_delete=models.CASCADE) # aqui é associado ao id do portfolio
     name = models.CharField(max_length=255)
+    current_balance = models.FloatField(default=0)
     slug = models.CharField(max_length=255)
     age = models.IntegerField()
     image = models.CharField(max_length=255)

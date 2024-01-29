@@ -4,7 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from common.permissions import IsOwner
 from .models import KidProfile, KidsQuest
 from portfolios.models import PortfolioInvestment, PortfolioDividend
-from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer
+from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer, KidsProfilesSerializer
+
+class KidProfileList(generics.ListAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, IsOwner)
+    serializer_class = KidsProfilesSerializer
+    queryset = KidProfile.objects.all()
 
 class KidProfileDetail(generics.RetrieveAPIView):
     # authentication_classes = (TokenAuthentication,)

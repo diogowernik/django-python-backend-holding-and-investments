@@ -23,6 +23,7 @@ class KidProfileSerializer(serializers.ModelSerializer):
             'age', 
             'image', 
             'description', 
+            'current_balance',
             # 'portfolio_investments', 
             # 'portfolio_dividends'
             ]
@@ -41,3 +42,7 @@ class KidsQuestSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class KidsProfilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KidProfile
+        fields = '__all__'
