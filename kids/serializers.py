@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import KidProfile, PortfolioInvestment, PortfolioDividend, KidsQuest
+from .models import KidProfile, PortfolioInvestment, PortfolioDividend, KidsQuest, KidsEarns, KidsExpenses
 
 class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,13 +28,13 @@ class KidProfileSerializer(serializers.ModelSerializer):
             # 'portfolio_dividends'
             ]
 
-    def get_portfolio_investments(self, obj):
-        investments = PortfolioInvestment.objects.filter(portfolio=obj.belongs_to)
-        return PortfolioInvestmentSerializer(investments, many=True).data
+    # def get_portfolio_investments(self, obj):
+    #     investments = PortfolioInvestment.objects.filter(portfolio=obj.belongs_to)
+    #     return PortfolioInvestmentSerializer(investments, many=True).data
     
-    def get_portfolio_dividends(self, obj):
-        dividends = PortfolioDividend.objects.filter(portfolio=obj.belongs_to)
-        return PortfolioDividendSerializer(dividends, many=True).data
+    # def get_portfolio_dividends(self, obj):
+    #     dividends = PortfolioDividend.objects.filter(portfolio=obj.belongs_to)
+    #     return PortfolioDividendSerializer(dividends, many=True).data
 
 class KidsQuestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,4 +45,14 @@ class KidsQuestSerializer(serializers.ModelSerializer):
 class KidsProfilesSerializer(serializers.ModelSerializer):
     class Meta:
         model = KidProfile
+        fields = '__all__'
+
+class KidsEarnsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KidsEarns
+        fields = '__all__'
+
+class KidsExpensesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KidsExpenses
         fields = '__all__'

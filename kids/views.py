@@ -2,9 +2,9 @@ from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from common.permissions import IsOwner
-from .models import KidProfile, KidsQuest
+from .models import KidProfile, KidsQuest, KidsEarns, KidsExpenses
 from portfolios.models import PortfolioInvestment, PortfolioDividend
-from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer, KidsProfilesSerializer
+from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer, KidsProfilesSerializer, KidsEarnsSerializer, KidsExpensesSerializer
 
 class KidProfileList(generics.ListAPIView):
     # authentication_classes = (TokenAuthentication,)
@@ -49,3 +49,17 @@ class KidsQuestDetail(generics.RetrieveAPIView):
     serializer_class = KidsQuestSerializer
     queryset = KidsQuest.objects.all()
     lookup_field = 'quest_key'
+
+class KidsEarnsList(generics.ListAPIView):
+    serializer_class = KidsEarnsSerializer
+    
+    def get_queryset(self):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        return KidsEarns.objects.filter(belongs_to=kid_profile)
+
+class KidsExpensesList(generics.ListAPIView):
+    serializer_class = KidsExpensesSerializer
+
+    def get_queryset(self):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        return KidsExpenses.objects.filter(belongs_to=kid_profile)

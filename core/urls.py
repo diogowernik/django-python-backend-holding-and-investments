@@ -82,6 +82,9 @@ urlpatterns = [
      path('api/kids/<slug:slug>/quests/<quest_key>', kids_views.KidsQuestDetail.as_view()),
      # kids dividends list
      path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()),
+     # kids expenses and earns
+     path('api/kids/<slug:slug>/earns', kids_views.KidsEarnsList.as_view()),
+     path('api/kids/<slug:slug>/expenses', kids_views.KidsExpensesList.as_view()),
 
      url(r'^$', home, name='home'),
 
