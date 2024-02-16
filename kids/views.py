@@ -2,9 +2,10 @@ from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from common.permissions import IsOwner
-from .models import KidProfile, KidsQuest, KidsEarns, KidsExpenses
+from .models import KidProfile, KidsQuest, KidsEarns, KidsExpenses, KidsButtons
 from portfolios.models import PortfolioInvestment, PortfolioDividend
-from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer, KidsProfilesSerializer, KidsEarnsSerializer, KidsExpensesSerializer
+from .serializers import KidProfileSerializer, PortfolioInvestmentSerializer, PortfolioDividendSerializer, KidsQuestSerializer, KidsProfilesSerializer, KidsEarnsSerializer, KidsExpensesSerializer, KidsButtonsSerializer
+from django.shortcuts import get_object_or_404
 
 class KidProfileList(generics.ListAPIView):
     # authentication_classes = (TokenAuthentication,)
@@ -63,3 +64,12 @@ class KidsExpensesList(generics.ListAPIView):
     def get_queryset(self):
         kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
         return KidsExpenses.objects.filter(belongs_to=kid_profile)
+    
+class KidsButtonsDetail(generics.ListAPIView):
+    serializer_class = KidsButtonsSerializer
+
+    def get_queryset(self):
+        slug = self.kwargs.get('slug')
+        kid_profile = get_object_or_404(KidProfile, slug=slug)
+        return KidsButtons.objects.filter(belongs_to=kid_profile)
+    

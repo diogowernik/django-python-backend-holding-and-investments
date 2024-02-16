@@ -49,13 +49,13 @@ class KidsTransactions(models.Model):
     description = models.CharField(max_length=255, verbose_name='Descrição')
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Valor')
 
-    class Meta:
-        abstract = True
-        verbose_name = 'Transação'
-        verbose_name_plural = 'Transações'
-
     def __str__(self):
         return f"{self.date} - {self.description} - R$ {self.amount}"
+    
+    class Meta:
+        abstract = True
+        
+        
 
 class KidsEarns(KidsTransactions):
     CATEGORY_CHOICES = [
@@ -65,6 +65,9 @@ class KidsEarns(KidsTransactions):
         ('outros', 'Outros'),
     ]
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
+
+    class Meta:
+        verbose_name_plural = "KidsEarns"
 
 
 class KidsExpenses(KidsTransactions):
@@ -76,3 +79,22 @@ class KidsExpenses(KidsTransactions):
     ]
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
 
+    class Meta:
+        verbose_name_plural = "KidsExpenses"
+
+class KidsButtons(models.Model):
+    belongs_to = models.OneToOneField(KidProfile, on_delete=models.CASCADE, related_name='dashboard_buttons')
+    show_dividends = models.BooleanField(default=True)
+    show_quests = models.BooleanField(default=True)
+    show_earnings = models.BooleanField(default=True)
+    show_expenses = models.BooleanField(default=True)
+    show_games = models.BooleanField(default=False)
+    show_events = models.BooleanField(default=True)
+    show_goals = models.BooleanField(default=False)
+    show_education = models.BooleanField(default=False)
+    show_growth = models.BooleanField(default=True)
+    show_banks = models.BooleanField(default=True)
+    show_explore = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "KidsButtons"

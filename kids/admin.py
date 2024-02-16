@@ -1,5 +1,5 @@
 from django.contrib import admin
-from kids.models import KidProfile, KidsQuest, KidsEarns, KidsExpenses
+from kids.models import KidProfile, KidsQuest, KidsEarns, KidsExpenses, KidsButtons
 
 
 class KidProfileAdmin(admin.ModelAdmin):
@@ -33,3 +33,8 @@ class KidsExpensesAdmin(admin.ModelAdmin):
     search_fields = ['description', 'belongs_to__name']
 
 admin.site.register(KidsExpenses, KidsExpensesAdmin)
+
+class KidsButtonsAdmin(admin.ModelAdmin):
+    list_display = ('belongs_to',)
+
+admin.site.register(KidsButtons, KidsButtonsAdmin)
