@@ -13,7 +13,7 @@ class KidProfileList(generics.ListAPIView):
     serializer_class = KidsProfilesSerializer
     queryset = KidProfile.objects.all()
 
-class KidProfileDetail(generics.RetrieveAPIView):
+class KidProfileDetail(generics.RetrieveUpdateAPIView):
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated, IsOwner)
     serializer_class = KidProfileSerializer
@@ -51,12 +51,17 @@ class KidsQuestDetail(generics.RetrieveAPIView):
     queryset = KidsQuest.objects.all()
     lookup_field = 'quest_key'
 
-class KidsEarnsList(generics.ListAPIView):
+class KidsEarnsList(generics.ListCreateAPIView):
     serializer_class = KidsEarnsSerializer
     
     def get_queryset(self):
         kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
         return KidsEarns.objects.filter(belongs_to=kid_profile)
+    
+class KidsEarnsDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = KidsEarnsSerializer
+    queryset = KidsEarns.objects.all()
+    lookup_field = 'pk'
 
 class KidsExpensesList(generics.ListAPIView):
     serializer_class = KidsExpensesSerializer
