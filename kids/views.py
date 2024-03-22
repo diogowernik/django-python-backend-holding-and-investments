@@ -69,6 +69,11 @@ class KidsExpensesList(generics.ListAPIView):
     def get_queryset(self):
         kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
         return KidsExpenses.objects.filter(belongs_to=kid_profile)
+
+class KidsExpensesDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = KidsExpensesSerializer
+    queryset = KidsExpenses.objects.all()
+    lookup_field = 'pk'
     
 class KidsButtonsDetail(generics.ListAPIView):
     serializer_class = KidsButtonsSerializer
