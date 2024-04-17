@@ -43,7 +43,7 @@ class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.PortfolioInvestmentSerializer
     queryset = models.PortfolioInvestment.objects.all()
-    permission_classes = (IsOwner, )  # Somente o dono pode acessar
+    # permission_classes = (IsOwner, )  # Somente o dono pode acessar
 
 # CategoryList, todos podem ver, apenas admin podem CRUD
 class CategoryList(generics.ListAPIView):
