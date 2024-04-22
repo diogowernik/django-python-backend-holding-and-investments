@@ -44,6 +44,7 @@ python manage.py startapp <app_name>
 - app comum
 python manage.py startapp trade
 python manage.py startapp timewarp
+python manage.py startapp wtree
 
 # install pandas
 

@@ -28,6 +28,26 @@ class RadarDetailSerializer(serializers.ModelSerializer):
             'slug', 
             )
 
+class RadarCategoryDetailSerializer(serializers.ModelSerializer):
+    portfolio_total_value = serializers.FloatField(source='radar.portfolio_total_value', read_only=True)
+    category = serializers.CharField(source='category.name', read_only=True)
+    radar_id = serializers.IntegerField(source='radar.id', read_only=True)
+    id = serializers.IntegerField(source='radar.portfolio.id', read_only=True)
+    radar_category_id = serializers.IntegerField(source='id', read_only=True)
+
+
+    class Meta:
+        model = RadarCategory
+        fields = (
+            'radar_id',
+            'id',
+            'portfolio_total_value',
+            'radar',
+            'ideal_category_percentage',
+            'category',
+            'radar_category_id',
+        )
+
 class RadarCategorySerializer(serializers.ModelSerializer):
     portfolio_total_value = serializers.FloatField(source='radar.portfolio_total_value', read_only=True)
     category = serializers.CharField(source='category.name', read_only=True)
@@ -36,6 +56,7 @@ class RadarCategorySerializer(serializers.ModelSerializer):
     category_total_value = serializers.SerializerMethodField()
     category_percentage_on_portfolio = serializers.FloatField(read_only=True)
     delta_ideal_actual_percentage = serializers.SerializerMethodField()
+    radar_category_id = serializers.IntegerField(source='id', read_only=True)
 
     def get_delta_ideal_actual_percentage(self, obj):
         return obj.delta_ideal_actual_percentage
@@ -55,6 +76,7 @@ class RadarCategorySerializer(serializers.ModelSerializer):
             'category_percentage_on_portfolio',
             'category_total_value',
             'delta_ideal_actual_percentage',
+            'radar_category_id',
         )
 
 

@@ -43,7 +43,6 @@ urlpatterns = [
      path('admin/', admin.site.urls),
 
 
-     # remove registration endpoint only login
      path('auth/', include('djoser.urls')),
      path('auth/', include('djoser.urls.authtoken')),
      path('auth/token/login/', TokenCreateView.as_view(), name='login'),
@@ -69,9 +68,9 @@ urlpatterns = [
      path('api/portfolios/<pk>/radars',
           radar_views.RadarList.as_view()),
      path('api/radars/<pk>', radar_views.RadarDetail.as_view()),
-     path('api/radars/<pk>/categories',
-          radar_views.RadarCategoryList.as_view()),
-     path('api/radars/<pk>/assets', radar_views.RadarAssetList.as_view()),
+     path('api/radars/<pk>/categories', radar_views.RadarCategoryList.as_view()),
+     path('api/radar_categories/<pk>', radar_views.RadarCategoryDetail.as_view()),
+     path('api/radars/<pk>/assets', radar_views.RadarAssetList.as_view(), name='radar_category_detail'),
      # cashflow currency transactions
      path('api/portfolios/<pk>/currency_transactions', cashflow_views.CurrencyTransactionList.as_view()),
      path('api/currency_transactions/<pk>', cashflow_views.CurrencyTransactionDetail.as_view()),

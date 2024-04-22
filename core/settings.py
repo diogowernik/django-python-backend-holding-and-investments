@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'trade',
     'equity',
     'kids',
+    'wtree',
 
 ]
 
@@ -139,10 +140,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://wtr.ee',
 ]
 # Apenas admin podem criar contas
-DJOSER = {
-    'PERMISSIONS': {
-        'user_create': ['rest_framework.permissions.IsAdminUser'],
-    },
-}
+# DJOSER = {
+#     'PERMISSIONS': {
+#         'user_create': ['rest_framework.permissions.IsAdminUser'],
+#     },
+# }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

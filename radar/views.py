@@ -36,3 +36,10 @@ class RadarAssetList(generics.ListAPIView):
     def get_queryset(self):
         queryset = RadarAsset.objects.filter(radar_id=self.kwargs['pk'])
         return sorted(queryset, key=lambda x: x.delta_ideal_actual_percentage_on_portfolio, reverse=True)
+
+class RadarCategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = serializers.RadarCategoryDetailSerializer
+    queryset = RadarCategory.objects.all()
+    
+
+    
