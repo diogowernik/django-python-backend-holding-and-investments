@@ -1,29 +1,58 @@
-# views.py
+# wtree/views.py
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from web3 import Web3
 from django.contrib.auth import get_user_model
-from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import MetaMaskRegistrationSerializer, MetaMaskLoginSerializer
+from djoser.utils import login_user
 
 User = get_user_model()
 
-@api_view(['POST'])
-def authenticate_metamask(request):
-    address = request.data.get('address')
-    signature = request.data.get('signature')
-    message = "Please sign this message to log in."
+class MetaMaskRegisterView(APIView):
+    def post(self, request):
+        serializer = MetaMaskRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "User created successfully.", "username": user.username}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Usar web3.py para recuperar o endereço que assinou a mensagem
-    w3 = Web3(Web3.HTTPProvider('YOUR_PROVIDER_URL'))
-    signer = w3.eth.account.recover_message(text=message, signature=signature)
+class MetaMaskLoginView(APIView):
+    def post(self, request):
+        serializer = MetaMaskLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.get(username=serializer.validated_data['address'])
+            if user:
+                login_user(request, user)  # Djoser handles login and token creation
+                token = user.auth_token.key  # Access the token created by Djoser
+                return Response({
+                    'token': token,
+                    'user_id': user.pk,
+                    'message': 'Login via MetaMask successful!'
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if signer.lower() == address.lower():
-        # O endereço é o mesmo que assinou a mensagem
-        user, created = User.objects.get_or_create(username=address)
-        token, created = Token.objects.get_or_create(user=user)
-
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'Invalid signature'}, status=status.HTTP_401_UNAUTHORIZED)
+# class MetaMaskLoginView(APIView):
+#     def post(self, request):
+#         serializer = MetaMaskLoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             username = serializer.validated_data['address']
+#             # Buscar o usuário diretamente, pois a autenticação da assinatura já foi feita
+#             try:
+#                 user = User.objects.get(username=username)
+#                 login_user(request, user)
+#                 token = settings.TOKEN_MODEL.objects.create(user=user)
+#                 return Response({
+#                     'token': str(token),
+#                     'user_id': user.pk,
+#                     'message': 'Login via MetaMask successful!'
+#                 }, status=status.HTTP_200_OK)
+#             except User.DoesNotExist:
+#                 print(f"User not found with address: {username}")
+#                 return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+#         else:
+#             print(f"Serializer errors: {serializer.errors}")
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

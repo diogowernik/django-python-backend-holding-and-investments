@@ -1,21 +1,21 @@
+# core/urls.py
+
 from django.contrib import admin
 from django.urls import path, include, re_path
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls import url
-from djoser.views import (
-    TokenCreateView
-)
-
+from djoser.views import (TokenCreateView)
+from .views import home
 from portfolios import views as portfolio_views
 from brokers import views as broker_views
 from investments import views as investment_views
 from radar import views as radar_views
 from cashflow import views as cashflow_views
 from kids import views as kids_views
-
-from .views import home
+from wtree.views import MetaMaskRegisterView, MetaMaskLoginView
+from django.conf import settings
 
 
 schema_view = get_schema_view(
@@ -28,7 +28,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=(IsAuthenticated,),
+    permission_classes=(AllowAny,) if settings.DEBUG else (IsAuthenticated,),
 
 )
 
@@ -42,11 +42,12 @@ urlpatterns = [
 
      path('admin/', admin.site.urls),
 
-
      path('auth/', include('djoser.urls')),
      path('auth/', include('djoser.urls.authtoken')),
-     path('auth/token/login/', TokenCreateView.as_view(), name='login'),
-
+     # path('auth/token/login/', TokenCreateView.as_view(), name='login'),
+     path('auth/metamask/register/', MetaMaskRegisterView.as_view(), name='register_with_metamask'),
+     path('auth/metamask/login/', MetaMaskLoginView.as_view(), name='login_with_metamask'),
+# 
      path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
      path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),
      path('api/portfolios/<pk>/assets',
@@ -80,7 +81,7 @@ urlpatterns = [
      path('api/kids/<slug:slug>/quests', kids_views.KidsQuestList.as_view()),
      path('api/kids/<slug:slug>/quests/<quest_key>', kids_views.KidsQuestDetail.as_view()),
      # kids dividends list
-     path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()),
+     # path('api/kids/<slug:slug>/dividends', kids_views.KidPortfolioDividendList.as_view()), # mudar e usar o PortfolioDividendList
      # kids expenses and earns
      path('api/kids/<slug:slug>/earns', kids_views.KidsEarnsList.as_view()),
      path('api/kids/<slug:slug>/earns/<int:pk>', kids_views.KidsEarnsDetail.as_view()),

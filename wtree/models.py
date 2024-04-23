@@ -1,3 +1,3 @@
-from django.db import models
+# wtrees/models.py
 
-# Create your models here.
+# em branco
