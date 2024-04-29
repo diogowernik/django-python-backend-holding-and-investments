@@ -14,7 +14,7 @@ from investments import views as investment_views
 from radar import views as radar_views
 from cashflow import views as cashflow_views
 from kids import views as kids_views
-from wtree.views import MetaMaskRegisterView, MetaMaskLoginView
+from wtree.views import MetaMaskRegisterView, MetaMaskLoginView, MetaMaskAuthView
 from django.conf import settings
 
 
@@ -44,9 +44,10 @@ urlpatterns = [
 
      path('auth/', include('djoser.urls')),
      path('auth/', include('djoser.urls.authtoken')),
-     # path('auth/token/login/', TokenCreateView.as_view(), name='login'),
+     path('auth/token/login/', TokenCreateView.as_view(), name='login'),
      path('auth/metamask/register/', MetaMaskRegisterView.as_view(), name='register_with_metamask'),
      path('auth/metamask/login/', MetaMaskLoginView.as_view(), name='login_with_metamask'),
+     path('auth/metamask/auth/', MetaMaskAuthView.as_view(), name='auth_with_metamask'),
 # 
      path('api/portfolios/', portfolio_views.PortfolioList.as_view()),
      path('api/portfolios/<pk>', portfolio_views.PortfolioDetail.as_view()),

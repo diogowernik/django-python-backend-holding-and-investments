@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import MetaMaskRegistrationSerializer, MetaMaskLoginSerializer
+from .serializers import MetaMaskRegistrationSerializer, MetaMaskLoginSerializer, MetaMaskAuthSerializer
 from djoser.utils import login_user
 
 User = get_user_model()
@@ -35,24 +35,16 @@ class MetaMaskLoginView(APIView):
                 return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class MetaMaskLoginView(APIView):
-#     def post(self, request):
-#         serializer = MetaMaskLoginSerializer(data=request.data)
-#         if serializer.is_valid():
-#             username = serializer.validated_data['address']
-#             # Buscar o usuário diretamente, pois a autenticação da assinatura já foi feita
-#             try:
-#                 user = User.objects.get(username=username)
-#                 login_user(request, user)
-#                 token = settings.TOKEN_MODEL.objects.create(user=user)
-#                 return Response({
-#                     'token': str(token),
-#                     'user_id': user.pk,
-#                     'message': 'Login via MetaMask successful!'
-#                 }, status=status.HTTP_200_OK)
-#             except User.DoesNotExist:
-#                 print(f"User not found with address: {username}")
-#                 return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-#         else:
-#             print(f"Serializer errors: {serializer.errors}")
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class MetaMaskAuthView(APIView):
+    def post(self, request):
+        serializer = MetaMaskAuthSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save(request=request)
+            token = user.auth_token.key  # Assumes that Djoser handles token creation on login
+            return Response({
+                'token': token,
+                'user_id': user.pk,
+                'message': 'Login/Registration via MetaMask successful!'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
