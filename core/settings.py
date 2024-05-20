@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'equity',
     'kids',
     'wtree',
-
+    'blockchains',
+    'contracts',
 ]
 
 MIDDLEWARE = [
