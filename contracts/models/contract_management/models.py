@@ -2,7 +2,6 @@
 
 from django.db import models
 from blockchains.models import Token, Native, Blockchain
-from wtree.models import Wallet # Wallet seriam as "Accounts" ex: wallet.address
 from simple_history.models import HistoricalRecords
  
 
@@ -24,7 +23,7 @@ class AllowedToken(models.Model):
         return f"{self.token.name} ({self.token.symbol}) is {status}"
 
 class ContractStatus(models.Model):
-    contract = models.ForeignKey(Contract, on_delete=models.CASCADE)
+    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)
     is_paused = models.BooleanField(default=False)
     last_updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()

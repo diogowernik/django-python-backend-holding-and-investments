@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import UniqueConstraint
 
 class Blockchain(models.Model):
     name = models.CharField(max_length=50) # Ex: Ethereum, Binance Smart Chain, Bitcoin
@@ -16,9 +15,6 @@ class CryptoBase(models.Model):
     icon_url = models.URLField(blank=True, null=True)
     slug = models.SlugField()
 
-    class Meta:
-        abstract = True
-
 # USDT, USDC, DAI, etc
 class Token(CryptoBase):
     contract_address = models.CharField(max_length=42)  # Endereço típico do Ethereum
@@ -26,11 +22,6 @@ class Token(CryptoBase):
 
     def __str__(self):
         return f"{self.name} ({self.symbol}) on {self.blockchain}"
-    
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['contract_address', 'blockchain'], name='unique_contract_address_blockchain')
-        ]
 
 # Ethereum, Binance Coin, Bitcoin, etc
 class Native(CryptoBase):

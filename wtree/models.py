@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class WtreeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    username = models.CharField(max_length=50, unique=True) # no frontend será algo do tipo https://wtr.ee/user.name
+    username = models.CharField(max_length=50) # no frontend será algo do tipo https://wtr.ee/user.name
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
@@ -16,7 +16,7 @@ class WtreeProfile(models.Model):
     ]
     theme = models.CharField(max_length=50, default='defaultTheme', choices=theme_options)
 
-    accepted_cryptos = models.ManyToManyField('blockchains.CriptoBase', related_name='profiles', blank=True) # base cryptos that this profile uses, initially it will be only one base crypto per profile, ethereum (matic, bnb and eth), but need to think for example in bitcoin or fiat base cryptos in same profile.
+    accepted_cryptos = models.ManyToManyField('blockchains.CryptoBase', related_name='profiles', blank=True) # base cryptos that this profile uses, initially it will be only one base crypto per profile, ethereum (matic, bnb and eth), but need to think for example in bitcoin or fiat base cryptos in same profile.
     wallets = models.ManyToManyField('Wallet', related_name='profiles', blank=True) # wallets that this profile uses, initially it will be only one wallet per profile, ethereum wallet (matic, bnb and eth), but need to think for example in bitcoin or fiat wallets in same profile.
 
     def __str__(self):
