@@ -18,6 +18,7 @@ from wtree.views import MetaMaskRegisterView, MetaMaskLoginView, MetaMaskAuthVie
 from django.conf import settings
 
 
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Snippets API",
@@ -59,6 +60,8 @@ urlpatterns = [
           portfolio_views.PortfolioDividendList.as_view()),
      path('api/portfolio_assets/<pk>',
           portfolio_views.PortfolioInvestmentDetail.as_view()),
+     path('api/add-portfolio-asset',
+          portfolio_views.PortfolioInvestmentCreateView.as_view()),
      path('api/portfolio/<pk>/evolution',
           portfolio_views.PortfolioEvolutionList.as_view()),
      path('api/brokers/', broker_views.BrokerList.as_view()),

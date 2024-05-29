@@ -60,6 +60,19 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
 
         )
 
+class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PortfolioInvestment
+        fields = (
+            'id', # auto
+            'portfolio', # foreign key
+            'asset', # foreign key
+            'broker', # foreign key
+            'shares_amount', # float
+            'share_average_price_brl', # float
+            'share_average_price_usd', # float
+        )
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category

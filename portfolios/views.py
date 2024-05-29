@@ -5,6 +5,11 @@ from common.permissions import IsOwner, IsOwnerOrReadOnly  # Importando do commo
 from . import serializers
 from . import models
 from investments.models import Category
+from django.db import IntegrityError
+from rest_framework import status
+from rest_framework.response import Response
+
+
 
 # PortfolioList, apenas donos podem CRUD
 class PortfolioList(generics.ListCreateAPIView):
@@ -75,3 +80,39 @@ class PortfolioEvolutionList(generics.ListAPIView):
         return models.PortfolioEvolution.objects.filter(
             portfolio_id=self.kwargs['pk'],
         ).order_by('date')
+
+class PortfolioInvestmentCreateView(generics.ListCreateAPIView):
+    queryset = models.PortfolioInvestment.objects.all()
+    serializer_class = serializers.CreatePortfolioInvestmentSerializer
+
+    def perform_create(self, serializer):
+        try:
+            return serializer.save()  # Modifique para retornar o objeto criado
+        except IntegrityError as e:
+            if 'unique_together' in str(e):
+                return Response({
+                    'success': False,
+                    'message': 'You already have this asset on this broker, try to update the amount.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({
+                    'success': False,
+                    'message': 'An error occurred while saving the investment: {}'.format(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': 'An unexpected error occurred: {}'.format(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    def post(self, request, *args, **kwargs):
+        created_investment = self.create(request, *args, **kwargs)
+        if created_investment.status_code == 400:
+            return created_investment  # Return error response directly
+        investment_data = created_investment.data
+        investment_data['id'] = created_investment.data['id']  # Ensure 'id' is included
+        return Response({
+            'success': True,
+            'message': 'Investment created successfully',
+            'data': investment_data  # Return complete data including 'id'
+        }, status=status.HTTP_201_CREATED)
