@@ -5,9 +5,9 @@ from . import serializers
 from . import models
 
 class BrokerList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.BrokerSerializer
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Broker.objects.all()

@@ -60,18 +60,29 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
 
         )
 
+from rest_framework import serializers
+
 class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
+    broker_name = serializers.CharField(source='broker.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    asset_ticker = serializers.CharField(source='asset.ticker', read_only=True)
+    
+
     class Meta:
         model = models.PortfolioInvestment
         fields = (
-            'id', # auto
-            'portfolio', # foreign key
-            'asset', # foreign key
-            'broker', # foreign key
-            'shares_amount', # float
-            'share_average_price_brl', # float
-            'share_average_price_usd', # float
+            'id',
+            'portfolio',
+            'asset',
+            'broker',
+            'shares_amount',
+            'share_average_price_brl',
+            'share_average_price_usd',
+            'broker_name',
+            'asset_ticker',
+            'category_name',
         )
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

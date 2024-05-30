@@ -4,4 +4,4 @@ from . import models
 class BrokerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Broker
-        fields = ('id', 'name', 'slug')
+        fields = '__all__'
