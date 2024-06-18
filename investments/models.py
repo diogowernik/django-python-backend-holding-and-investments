@@ -1,5 +1,5 @@
 from django.db import models
-from categories.models import Category, SubCategory
+from categories.models import Category, SubCategory, GeoLocation
 from common.models import Currency
 
 
@@ -10,7 +10,7 @@ class Asset(models.Model):
         SubCategory, related_name='subcategories', on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=255, unique=True)
     geolocation = models.ForeignKey(
-        'categories.GeoLocation', on_delete=models.CASCADE, default=1)
+        GeoLocation, related_name='geolocations', on_delete=models.CASCADE, default=1)
     slug = models.SlugField(max_length=255)
     price_usd = models.FloatField(default=0)
     price_brl = models.FloatField(default=0)

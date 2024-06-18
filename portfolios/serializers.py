@@ -22,9 +22,9 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='asset.category.name')
     subcategory = serializers.CharField(source='asset.subcategory.name')
     broker = serializers.CharField(source='broker.name')
+    geolocation = serializers.CharField(source='asset.geolocation.name')
     asset_price_brl = serializers.FloatField(source='asset.price_brl')
     asset_price_usd = serializers.FloatField(source='asset.price_usd')
-    geolocation_name = serializers.CharField(source='geolocation.name', read_only=True)
 
 
     class Meta:
@@ -60,7 +60,6 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
             'profit_with_div_trade_brl',
             'profit_with_div_trade_usd',
             'geolocation',
-            'geolocation_name',
 
         )
 
@@ -69,7 +68,6 @@ from rest_framework import serializers
 class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
     broker_name = serializers.CharField(source='broker.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
-    geolocation_name = serializers.CharField(source='geolocation.name', read_only=True)
     asset_ticker = serializers.CharField(source='asset.ticker', read_only=True)
     
 
@@ -80,14 +78,12 @@ class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
             'portfolio',
             'asset',
             'broker',
-            'geolocation',
             'shares_amount',
             'share_average_price_brl',
             'share_average_price_usd',
             'broker_name',
             'asset_ticker',
             'category_name',
-            'geolocation_name',
             'total_today_brl',
             'total_today_usd',
         )
