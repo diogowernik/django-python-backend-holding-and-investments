@@ -65,6 +65,7 @@ from rest_framework import serializers
 class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
     broker_name = serializers.CharField(source='broker.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
+    geolocation_name = serializers.CharField(source='geolocation.name', read_only=True)
     asset_ticker = serializers.CharField(source='asset.ticker', read_only=True)
     
 
@@ -75,12 +76,14 @@ class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
             'portfolio',
             'asset',
             'broker',
+            'geolocation',
             'shares_amount',
             'share_average_price_brl',
             'share_average_price_usd',
             'broker_name',
             'asset_ticker',
             'category_name',
+            'geolocation_name',
             'total_today_brl',
             'total_today_usd',
         )
