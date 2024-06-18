@@ -9,8 +9,8 @@ class Asset(models.Model):
     subcategory = models.ForeignKey(
         SubCategory, related_name='subcategories', on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=255, unique=True)
-    geolocation = models.ForeignKey(
-        'categories.GeoLocation', on_delete=models.CASCADE, default=1)
+    # geolocation = models.ForeignKey(
+    #     'categories.GeoLocation', on_delete=models.CASCADE, default=1)
     slug = models.SlugField(max_length=255)
     price_usd = models.FloatField(default=0)
     price_brl = models.FloatField(default=0)

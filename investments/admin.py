@@ -3,10 +3,11 @@ from django.contrib.admin import RelatedFieldListFilter
 from . import models
 
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('id', 'ranking' ,'is_radar', 'ticker', 'ideal_percentage', 'price_brl', 'price_usd', 'category', 'subcategory', 'geolocation', 
+    list_display = ('id', 'ranking' ,'is_radar', 'ticker', 'ideal_percentage', 'price_brl', 'price_usd', 'category', 'subcategory', # 'geolocation', 
                     'twelve_m_dividend', 'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w', 'is_leveraged', 'leverage_percentage')
     prepopulated_fields = {'slug': ('ticker',)}
-    list_editable = ['is_radar', 'category', 'subcategory', 'geolocation', 'twelve_m_dividend',
+    list_editable = ['is_radar', 'category', 'subcategory', # 'geolocation', 
+                     'twelve_m_dividend',
                      'twelve_m_yield', 'p_vpa', 'top_52w', 'bottom_52w', 'is_leveraged', 'leverage_percentage', 'ideal_percentage']
     list_filter = (('category', RelatedFieldListFilter),)
     search_fields = ['ticker']
