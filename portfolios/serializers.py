@@ -24,6 +24,8 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
     broker = serializers.CharField(source='broker.name')
     asset_price_brl = serializers.FloatField(source='asset.price_brl')
     asset_price_usd = serializers.FloatField(source='asset.price_usd')
+    geolocation_name = serializers.CharField(source='geolocation.name', read_only=True)
+
 
     class Meta:
         model = models.PortfolioInvestment
@@ -57,6 +59,8 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
             'profit_without_div_trade_usd',
             'profit_with_div_trade_brl',
             'profit_with_div_trade_usd',
+            'geolocation',
+            'geolocation_name',
 
         )
 
