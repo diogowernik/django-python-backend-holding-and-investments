@@ -24,8 +24,9 @@ class Command(BaseCommand):
             {'ticker': 'KIT 522', 'value_per_share': 1.20, 'average_price': 260.00, 'shares_amount': 1000.00, 'pay_date': 8, 'portfolio_id': 2},
             {'ticker': 'KIT 106 B', 'value_per_share': 0.93, 'average_price': 180.00, 'shares_amount': 1000.00, 'pay_date': 8, 'portfolio_id': 2},
             {'ticker': 'KIT 204 B', 'value_per_share': 0.85, 'average_price': 180.00, 'shares_amount': 1000.00, 'pay_date': 8, 'portfolio_id': 2},
-            {'ticker': 'KIT 320 D', 'value_per_share': 0.90, 'average_price': 240.00, 'shares_amount': 334.00, 'pay_date': 8, 'portfolio_id': 2},
-            {'ticker': 'CASA QL9', 'value_per_share': 0.81, 'average_price': 220.00, 'shares_amount': 3334.00, 'pay_date': 25, 'portfolio_id': 2},
+            # A venda, sem dividendos
+            # {'ticker': 'KIT 320 D', 'value_per_share': 0.90, 'average_price': 240.00, 'shares_amount': 334.00, 'pay_date': 8, 'portfolio_id': 2},
+            {'ticker': 'CASA QL9', 'value_per_share': 0.80, 'average_price': 220.00, 'shares_amount': 3334.00, 'pay_date': 25, 'portfolio_id': 2},
             {'ticker': 'AP 315', 'value_per_share': 3.00, 'average_price': 900.00, 'shares_amount': 1000.00, 'pay_date': 8, 'portfolio_id': 7},
             {'ticker': 'Sala 906', 'value_per_share': 1.00, 'average_price': 180.00, 'shares_amount': 1000.00, 'pay_date': 8, 'portfolio_id': 7},
         ]

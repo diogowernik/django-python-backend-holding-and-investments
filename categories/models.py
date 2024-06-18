@@ -26,3 +26,17 @@ class SubCategory(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+    
+class GeoLocation(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True)
+
+    def __str__(self):
+        return "{}".format(self.name)
+
+    class Meta:
+        verbose_name_plural = "Localizações"
+        ordering = ('name',)
+
+    def __str__(self):
+        return "{}".format(self.name)

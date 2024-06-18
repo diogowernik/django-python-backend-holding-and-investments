@@ -81,6 +81,8 @@ class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
             'broker_name',
             'asset_ticker',
             'category_name',
+            'total_today_brl',
+            'total_today_usd',
         )
 
 
