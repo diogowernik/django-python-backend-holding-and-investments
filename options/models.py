@@ -11,15 +11,16 @@ class Expiration(models.Model):
 
 class Option(models.Model):
     """Model representing a general option."""
-    option_ticker = models.CharField(max_length=20)
+    option_ticker = models.CharField(max_length=20) # Ticker
     option_type = models.CharField(max_length=4, choices=[
         ('CALL', 'Call'),
         ('PUT', 'Put')
-    ], default='CALL')
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    expiration = models.ForeignKey(Expiration, on_delete=models.CASCADE)
-    price_brl = models.FloatField()
-    strike_price = models.FloatField()
+    ], default='CALL') # Tipo
+    has_market_maker = models.BooleanField(default=False) # F.M.
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE) # Asset.ticker eu informo o ticker do ativo
+    expiration = models.ForeignKey(Expiration, on_delete=models.CASCADE) # Expiration.date eu informo a data de vencimento
+    price_brl = models.FloatField() # Último
+    strike_price = models.FloatField() # Strike
 
     def __str__(self):
         return f"{self.asset.ticker} - {self.option_type} - Expires on {self.expiration.date}"

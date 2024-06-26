@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import Expiration, Call, Put, PortfolioCalls, PortfolioPuts
+from .filters import CallAssetTickerFilter, PutAssetTickerFilter
+
 
 @admin.register(Expiration)
 class ExpirationAdmin(admin.ModelAdmin):
@@ -8,15 +10,15 @@ class ExpirationAdmin(admin.ModelAdmin):
 
 @admin.register(Call)
 class CallAdmin(admin.ModelAdmin):
-    list_display = ('option_ticker', 'asset', 'expiration', 'price_brl', 'strike_price', 'option_type', 'premium_percentage')
+    list_display = ('option_ticker', 'has_market_maker', 'price_brl', 'premium_percentage', 'strike_price', 'asset', 'expiration', 'option_type')
     search_fields = ('option_ticker', 'asset__ticker')
-    list_filter = ('option_type', 'expiration__date', 'asset__ticker')
+    list_filter = ('option_type', 'expiration__date', 'has_market_maker', CallAssetTickerFilter)
 
 @admin.register(Put)
 class PutAdmin(admin.ModelAdmin):
-    list_display = ('option_ticker', 'asset', 'expiration', 'price_brl', 'strike_price', 'option_type', 'premium_percentage')
+    list_display = ('option_ticker', 'has_market_maker', 'price_brl', 'premium_percentage', 'strike_price', 'asset', 'expiration', 'option_type', 'premium_percentage')
     search_fields = ('option_ticker', 'asset__ticker')
-    list_filter = ('option_type', 'expiration__date', 'asset__ticker')
+    list_filter = ('option_type', 'expiration__date', 'has_market_maker', PutAssetTickerFilter)  # Usa o filtro personalizado
 
 @admin.register(PortfolioCalls)
 class PortfolioCallsAdmin(admin.ModelAdmin):

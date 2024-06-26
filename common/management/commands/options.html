@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Opções WEGE3 - CALLs e PUTs - lista, pesquisa e cotações</title>
+    <meta name="description" content="Lista completa de opções CALL e PUT de WEGE3, possibilitando pesquisar por vencimento, liquidez e distância do strike.">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="/css/legacy-bundle.css?v=AMWi_OsE-OY2LHF5HtWlWI1hX1c">
+    <script src="https://www.google-analytics.com/analytics.js" async></script>
+    <script src="https://www.googletagmanager.com/gtag/js?id=G-YH2ELJFQPC&amp;l=dataLayer&amp;cx=c" async></script>
+    <script src="https://www.googletagmanager.com/gtag/js?id=UA-130714908-1" async></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="/js/common-bundle-before.js?v=7A7-6jhjN19s2sp6IVM6m-PAQNc"></script>
+    <script src="https://www.gstatic.com/charts/51/loader.js" charset="UTF-8"></script>
+    <script src="https://www.gstatic.com/charts/51/i18n/jsapi_compiled_i18n_default_module__pt_br.js" charset="UTF-8"></script>
+    <script src="https://www.gstatic.com/charts/51/i18n/jsapi_compiled_i18n_graphics_module__pt_br.js" charset="UTF-8"></script>
+    <script src="https://www.gstatic.com/charts/51/i18n/jsapi_compiled_i18n_ui_module__pt_br.js" charset="UTF-8"></script>
+    <script src="https://www.gstatic.com/charts/51/i18n/jsapi_compiled_i18n_corechart_module__pt_br.js" charset="UTF-8"></script>
+    <script src="https://www.gstatic.com/charts/51/i18n/jsapi_compiled_i18n_gauge_module__pt_br.js" charset="UTF-8"></script>
+    <link href="https://opcoes.net.br/opcoes/bovespa/WEGE3" rel="canonical">
+    <link href="/css/datatables.min.css" rel="stylesheet">
+    <link href="/css/grade-common.css" rel="stylesheet">
+    <link href="/css/grade-laptop.css" rel="stylesheet">
+    <link href="https://www.gstatic.com/charts/51/css/core/tooltip.css" rel="stylesheet">
+    <link href="https://www.gstatic.com/charts/51/css/util/util.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">Opções.Net.Br</a>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-center">
+                    <li class="menu-item dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Ações <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="menu-item"><a href="/acoes">Ações e volatilidades</a></li>
+                            <li class="menu-item"><a href="/resumo/2020">Resumo de 2020</a></li>
+                            <li class="menu-item"><a href="/resumo/2021">Resumo de 2021</a></li>
+                            <li class="menu-item"><a href="/resumo/2022">Resumo de 2022</a></li>
+                            <li class="menu-item"><a href="/resumo/2023">Resumo de 2023</a></li>
+                            <li class="menu-item"><a href="/acoes/variacao-diaria">Variação diária</a></li>
+                            <li class="menu-item"><a href="/acoes/variacao-mensal">Variação mensal</a></li>
+                            <li class="menu-item"><a href="/acoes/variacao-anual">Variação anual</a></li>
+                            <li class="menu-item"><a href="/acoes/estudo-variacao">Variação em N pregões</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Calculadoras <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="menu-item"><a href="/calculadora-Black-Scholes">Calculadora Black–Scholes</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Educacional <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="menu-item"><a href="/documentarios">Documentários</a></li>
+                            <li class="menu-item"><a href="/filmes">Filmes</a></li>
+                            <li class="menu-item"><a href="/livros">Livros</a></li>
+                            <li class="menu-item"><a href="/series">Séries</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="/opcoes/bovespa">Opções <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="menu-item"><a href="/opcoes2/bovespa">Grade de opções - antiga</a></li>
+                            <li class="menu-item"><a href="/opcoes/bovespa">Grade de opções - nova</a></li>
+                            <li class="menu-item"><a href="/estudos/liquidez/opcoes">Liquidez nas opções</a></li>
+                            <li class="menu-item"><a href="/matriz-opcoes-strike-x-vencimento">Matriz de opções</a></li>
+                            <li class="menu-item"><a href="/opcoes/pozinhos/estatisticas/maiores-valorizacoes/por-ativo/grafico">Pozinhos - maiores valorizações</a></li>
+                            <li class="menu-item"><a href="/opcoes/pozinhos">Pozinhos de todos ativos</a></li>
+                            <li class="menu-item"><a href="/opcoes/skew-curva-de-volatilidade-implicita">Skew, negócios e volume</a></li>
+                            <li class="menu-item"><a href="/opcoes/bovespa/vencimentos-longos">Vencimentos longos</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/opcoes/estrategias">Simulador</a></li>
+                    <li class="menu-item dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Volatilidade implícita <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="menu-item"><a href="/historico/volatilidade-implicita">Histórico de vol. impl.</a></li>
+                            <li class="menu-item"><a href="/opcoes/skew-curva-de-volatilidade-implicita">Skew / Curva de vol. impl.</a></li>
+                            <li class="menu-item"><a href="/visao-3d/volatilidade-implicita/PETR4">Visão 3d da vol. implícita</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/login?ReturnUrl=%2Fopcoes%2Fbovespa%2FWEGE3">Entrar</a></li>
+                    <li><a href="/Account/Register?ReturnUrl=%2Fopcoes%2Fbovespa%2FWEGE3">Cadastrar-se</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="padding-adjust" id="divmiddle">
+        <div class="container-fluid" id="grade-opcoes">
+            <div>
+                <div class="fSetAtivoBase grade-bloco">
+                    <strong> Lista </strong>
+                    <select name="IdLista">
+                        <option data-acoes="ABCB4,BBAS3,BBDC3,BBDC4,BBTG11,BIDI11,BPAC11,BPAN4,BRSR6,ITSA4,ITUB3,ITUB4,SANB11" data-load="false" value="BA">Bancos</option>
+                        <option data-acoes="AAPL34,AMZO34,BABA34,EXCO32,GOGL34,INBR32,M1TA34,MELI34,MSFT34,NFLX34,NVDC34,PYPL34,ROXO34,STOC31,TSLA34,TSMC34,XPBR31" data-load="false" value="BD">BDRs</option>
+                        <option data-acoes="AERI3,AESB3,ALUP11,CESP6,CLSC3,CMIG4,CPFE3,CPLE6,EGIE3,ELET3,ENBR3,ENEV3,ENGI11,EQTL3,LIGT3,NEOE3,OMGE3,TAEE11,TRPL4" data-load="false" value="EL">Elétricas</option>
+                        <option data-acoes="BOVA11,BOVB11,BOVV11,BRAX11,IVVB11,PIBB11,SMAL11,SPXI11,XBOV11" data-load="false" value="ET">ETFs</option>
+                        <option data-acoes="ABEV3,ALOS3,ARZZ3,ASAI3,AZUL4,B3SA3,BBAS3,BBDC3,BBDC4,BBSE3,BEEF3,BHIA3,BOVA11,BOVV11,BPAC11,BRAP4,BRFS3,BRKM5,CMIG4,CMIN3,COGN3,CPLE6,CSAN3,CSNA3,CVCB3,CXSE3,CYRE3,EGIE3,ELET3,ELET6,EMBR3,ENEV3,EQTL3,EZTC3,GFSA3,GGBR4,GOAU4,HAPV3,HYPE3,IFCM3,IGTI11,IRBR3,ITSA4,ITUB4,JBSS3,JHSF3,KLBN11,LREN3,LWSA3,MGLU3,MRFG3,MRVE3,MULT3,NTCO3,PCAR3,PETR3,PETR4,PETZ3,PRIO3,QUAL3,RADL3,RAIL3,RAIZ4,RDOR3,RENT3,RRRP3,SANB11,SAPR11,SBSP3,SLCE3,SMAL11,SOMA3,SUZB3,TAEE11,TRPL4,TUPY3,UGPA3,USIM5,VALE3,VBBR3,VIVT3,WEGE3,YDUQ3" data-load="false" selected="selected" value="ML">Mais líquidos</option>
+                        <option data-acoes="PETR3,PETR4,VALE3" data-load="false" value="PV">PETR e VALE</option>
+                        <option data-acoes="ABCB4,ABEV3,AESB3,AGRO3,ALOS3,ALPA4,AMBP3,ANIM3,ARZZ3,ASAI3,AURE3,AZUL4,B3SA3,BBAS3,BBDC3,BBDC4,BBSE3,BEEF3,BHIA3,BMGB4,BOVA11,BOVV11,BPAC11,BPAN4,BRAP4,BRFS3,BRKM5,BRSR6,CAML3,CASH3,CBAV3,CCRO3,CEAB3,CIEL3,CMIG4,CMIN3,COGN3,CPFE3,CPLE6,CRFB3,CSAN3,CSMG3,CSNA3,CVCB3,CXSE3,CYRE3,DASA3,DXCO3,ECOR3,EGIE3,ELET3,ELET6,EMBR3,ENEV3,ENGI11,ENJU3,EQTL3,ESPA3,EVEN3,EZTC3,FESA4,FLRY3,GFSA3,GGBR4,GMAT3,GOAU4,GOLL4,GRND3,HAPV3,HYPE3,IFCM3,IGTI11,INTB3,IRBR3,ITSA4,ITUB4,JALL3,JBSS3,JHSF3,KEPL3,KLBN11,LEVE3,LJQQ3,LREN3,LWSA3,MEAL3,MGLU3,MOVI3,MRFG3,MRVE3,MTRE3,MULT3,MYPK3,NEOE3,NTCO3,ODPV3,ONCO3,PCAR3,PETR3,PETR4,PETZ3,PNVL3,POMO4,POSI3,PRIO3,PSSA3,QUAL3,RADL3,RAIL3,RAIZ4,RANI3,RAPT4,RDOR3,RECV3,RENT3,ROMI3,RRRP3,SANB11,SAPR11,SBFG3,SBSP3,SEER3,SEQL3,SIMH3,SLCE3,SMAL11,SMFT3,SMTO3,SOMA3,STBP3,SUZB3,TAEE11,TASA4,TEND3,TIMS3,TOTS3,TRIS3,TRPL4,TUPY3,UGPA3,USIM5,VALE3,VAMO3,VBBR3,VIVA3,VIVT3,VLID3,VULC3,WEGE3,WIZC3,YDUQ3,ZAMP3" data-load="true" value="PO">Pozinhos</option>
+                        <option data-acoes="AAPL34,ABCB4,ABEV3,AERI3,AESB3,AGRO3,ALOS3,ALPA4,ALUP11,AMAR3,AMBP3,AMER3,AMZO11B,AMZO34,ANIM3,ARML3,ARZZ3,ASAI3,AURE3,AZUL4,B3SA3,BABA34,BBAS3,BBDC3,BBDC4,BBSE3,BEEF3,BHIA3,BLAU3,BMGB4,BMOB3,BOVA11,BOVB11,BOVV11,BPAC11,BPAN4,BRAP4,BRAX11,BRFS3,BRKM5,BRSR6,CAML3,CASH3,CBAV3,CCRO3,CEAB3,CIEL3,CLSA3,CMIG3,CMIG4,CMIN3,COGN3,CPFE3,CPLE3,CPLE6,CRFB3,CSAN3,CSMG3,CSNA3,CURY3,CVCB3,CXSE3,CYRE3,DASA3,DIRR3,DXCO3,ECOR3,EGIE3,ELET3,ELET6,EMBR3,ENAT3,ENEV3,ENGI11,ENJU3,EQTL3,ESPA3,EVEN3,EXCO32,EZTC3,FESA4,FLRY3,GFSA3,GGBR4,GGPS3,GMAT3,GOAU4,GOGL34,GOLL4,GRND3,GUAR3,HAPV3,HBOR3,HBSA3,HYPE3,IBOV11,IFCM3,IGTI11,INBR31,INBR32,INTB3,IRBR3,ITSA4,ITUB3,ITUB4,IVVB11,JALL3,JBSS3,JHSF3,KEPL3,KLBN11,LAVV3,LEVE3,LIGT3,LJQQ3,LOGG3,LOGN3,LREN3,LWSA3,M1TA34,MATD3,MBLY3,MDIA3,MEAL3,MELI34,MGLU3,MILS3,MLAS3,MOVI3,MRFG3,MRVE3,MSFT11B,MSFT34,MTRE3,MULT3,MYPK3,NEOE3,NFLX34,NTCO3,NVDC34,ODPV3,ONCO3,PCAR3,PCAR99,PETR3,PETR4,PETZ3,PIBB11,PLPL3,PNVL3,POMO4,POSI3,PRIO3,PSSA3,PTBL3,PYPL34,QUAL3,RADL3,RAIL3,RAIZ4,RANI3,RAPT4,RDOR3,RECV3,RENT3,ROMI3,ROXO34,RRRP3,SANB11,SANB99,SAPR11,SBFG3,SBSP3,SEER3,SEQL3,SIMH3,SLCE3,SMAL11,SMFT3,SMTO3,SOMA3,SPXI11,SQIA3,SRNA3,STBP3,STOC31,SUZB3,TAEE11,TASA4,TCSA3,TEND3,TIMS3,TOTS3,TRAD3,TRIS3,TRPL4,TSLA34,TSMC34,TTEN3,TUPY3,UGPA3,UNIP6,USIM5,VALE3,VAMO3,VBBR3,VIIA3,VIVA3,VIVT3,VLID3,VULC3,WEGE3,WIZC3,XBOV11,XPBR31,YDUQ3,ZAMP3" data-load="false" value="TA">Todos ativos</option>
+                    </select>
+                    <strong> Ativo </strong>
+                    <select name="IdAcao">
+                        <option></option>
+                        <option value="ABEV3">ABEV3</option>
+                        <option value="ALOS3">ALOS3</option>
+                        <option value="ARZZ3">ARZZ3</option>
+                        <option value="ASAI3">ASAI3</option>
+                        <option value="AZUL4">AZUL4</option>
+                        <option value="B3SA3">B3SA3</option>
+                        <option value="BBAS3">BBAS3</option>
+                        <option value="BBDC3">BBDC3</option>
+                        <option value="BBDC4">BBDC4</option>
+                        <option value="BBSE3">BBSE3</option>
+                        <option value="BEEF3">BEEF3</option>
+                        <option value="BHIA3">BHIA3</option>
+                        <option value="BOVA11">BOVA11</option>
+                        <option value="BOVV11">BOVV11</option>
+                        <option value="BPAC11">BPAC11</option>
+                        <option value="BRAP4">BRAP4</option>
+                        <option value="BRFS3">BRFS3</option>
+                        <option value="BRKM5">BRKM5</option>
+                        <option value="CMIG4">CMIG4</option>
+                        <option value="CMIN3">CMIN3</option>
+                        <option value="COGN3">COGN3</option>
+                        <option value="CPLE6">CPLE6</option>
+                        <option value="CSAN3">CSAN3</option>
+                        <option value="CSNA3">CSNA3</option>
+                        <option value="CVCB3">CVCB3</option>
+                        <option value="CXSE3">CXSE3</option>
+                        <option value="CYRE3">CYRE3</option>
+                        <option value="EGIE3">EGIE3</option>
+                        <option value="ELET3">ELET3</option>
+                        <option value="ELET6">ELET6</option>
+                        <option value="EMBR3">EMBR3</option>
+                        <option value="ENEV3">ENEV3</option>
+                        <option value="EQTL3">EQTL3</option>
+                        <option value="EZTC3">EZTC3</option>
+                        <option value="GFSA3">GFSA3</option>
+                        <option value="GGBR4">GGBR4</option>
+                        <option value="GOAU4">GOAU4</option>
+                        <option value="HAPV3">HAPV3</option>
+                        <option value="HYPE3">HYPE3</option>
+                        <option value="IFCM3">IFCM3</option>
+                        <option value="IGTI11">IGTI11</option>
+                        <option value="IRBR3">IRBR3</option>
+                        <option value="ITSA4">ITSA4</option>
+                        <option value="ITUB4">ITUB4</option>
+                        <option value="JBSS3">JBSS3</option>
+                        <option value="JHSF3">JHSF3</option>
+                        <option value="KLBN11">KLBN11</option>
+                        <option value="LREN3">LREN3</option>
+                        <option value="LWSA3">LWSA3</option>
+                        <option value="MGLU3">MGLU3</option>
+                        <option value="MRFG3">MRFG3</option>
+                        <option value="MRVE3">MRVE3</option>
+                        <option value="MULT3">MULT3</option>
+                        <option value="NTCO3">NTCO3</option>
+                        <option value="PCAR3">PCAR3</option>
+                        <option value="PETR3">PETR3</option>
+                        <option value="PETR4">PETR4</option>
+                        <option value="PETZ3">PETZ3</option>
+                        <option value="PRIO3">PRIO3</option>
+                        <option value="QUAL3">QUAL3</option>
+                        <option value="RADL3">RADL3</option>
+                        <option value="RAIL3">RAIL3</option>
+                        <option value="RAIZ4">RAIZ4</option>
+                        <option value="RDOR3">RDOR3</option>
+                        <option value="RENT3">RENT3</option>
+                        <option value="RRRP3">RRRP3</option>
+                        <option value="SANB11">SANB11</option>
+                        <option value="SAPR11">SAPR11</option>
+                        <option value="SBSP3">SBSP3</option>
+                        <option value="SLCE3">SLCE3</option>
+                        <option value="SMAL11">SMAL11</option>
+                        <option value="SOMA3">SOMA3</option>
+                        <option value="SUZB3">SUZB3</option>
+                        <option value="TAEE11">TAEE11</option>
+                        <option value="TRPL4">TRPL4</option>
+                        <option value="TUPY3">TUPY3</option>
+                        <option value="UGPA3">UGPA3</option>
+                        <option value="USIM5">USIM5</option>
+                        <option value="VALE3">VALE3</option>
+                        <option value="VBBR3">VBBR3</option>
+                        <option value="VIVT3">VIVT3</option>
+                        <option selected="selected" value="WEGE3">WEGE3</option>
+                        <option value="YDUQ3">YDUQ3</option>
+                    </select>
+                    <strong> Cotações </strong>
+                    <select name="quotesMode">
+                        <option value="RT">Tempo real</option>
+                        <option selected="selected" value="UP">Último pregão</option>
+                    </select>
+                    <div id="divCotacoes">
+                        <div id="divMinMax">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Mínima:</td>
+                                        <td> <span class="" data-mkt-prop="mi" data-mkt-render="renderBRL">R$ 40,63</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Máxima:</td>
+                                        <td> <span class="" data-mkt-prop="ma" data-mkt-render="renderBRL">R$ 41,29</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="divCotacaoAtual">
+                            <span class="" data-mkt-prop="sta"></span>
+                            <span class="red" data-mkt-classfnc="getClassForChange" data-mkt-prop="p" data-mkt-render="renderBRL">R$ 40,87</span>
+                            <span class="red" data-mkt-classfnc="getClassForChange" data-mkt-prop="c" data-mkt-render="renderPercentNumberWithSignAndSymbol">-0,51%</span>
+                            <span class="" data-mkt-prop="h">24/06/2024</span>
+                        </div>
+                    </div>
+                    <div class="immediate-collapse" id="volatilities">
+                        <table class="table table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th colspan="2"></th>
+                                    <th>Última</th>
+                                    <th>IV Rank</th>
+                                    <th>Percentil</th>
+                                    <th>Mín</th>
+                                    <th>Máx</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2"><strong>Volatilidade Histórica</strong></td>
+                                    <td><span class="" data-mkt-prop="evl" data-mkt-render="renderPercentNumberWithOneDecimal">18,3</span></td>
+                                    <td><span class="" data-mkt-prop="evr_12m" data-mkt-render="renderPercentNumberWithOneDecimal">11,5</span></td>
+                                    <td><span class="" data-mkt-prop="evp_12m" data-mkt-render="renderPercentNumberWithOneDecimal">18,5</span></td>
+                                    <td><span class="" data-mkt-prop="evmi_12m" data-mkt-render="renderPercentNumberWithOneDecimal">14,4</span></td>
+                                    <td><span class="" data-mkt-prop="evma_12m" data-mkt-render="renderPercentNumberWithOneDecimal">48,5</span></td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="2" style="padding-top:20px"><strong>Volatilidade Implícita</strong></td>
+                                    <td>CALLs</td>
+                                    <td><span class="" data-mkt-prop="iv_c" data-mkt-render="renderPercentNumberWithOneDecimal">14,8</span></td>
+                                    <td><span class="" data-mkt-prop="ivr_c_12m" data-mkt-render="renderPercentNumberWithOneDecimal">2,4</span></td>
+                                    <td><span class="" data-mkt-prop="ivp_c_12m" data-mkt-render="renderPercentNumberWithOneDecimal">0,8</span></td>
+                                    <td><span class="" data-mkt-prop="ivmi_c_12m" data-mkt-render="renderPercentNumberWithOneDecimal">14,4</span></td>
+                                    <td><span class="" data-mkt-prop="ivma_c_12m" data-mkt-render="renderPercentNumberWithOneDecimal">31,5</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center">PUTs</td>
+                                    <td><span class="" data-mkt-prop="iv_p" data-mkt-render="renderPercentNumberWithOneDecimal">17,0</span></td>
+                                    <td><span class="" data-mkt-prop="ivr_p_12m" data-mkt-render="renderPercentNumberWithOneDecimal">7,9</span></td>
+                                    <td><span class="" data-mkt-prop="ivp_p_12m" data-mkt-render="renderPercentNumberWithOneDecimal">8,0</span></td>
+                                    <td><span class="" data-mkt-prop="ivmi_p_12m" data-mkt-render="renderPercentNumberWithOneDecimal">15,6</span></td>
+                                    <td><span class="" data-mkt-prop="ivma_p_12m" data-mkt-render="renderPercentNumberWithOneDecimal">32,4</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="noselect" id="divFiltros">
+                    <div class="grade-bloco" id="grade-tipo">
+                        <div id="grade-tipo-label"><strong> Tipo </strong></div>
+                        <div id="grade-tipo-items">
+                            <input id="tpCalls" name="tpOpcao" type="radio" value="calls">
+                            <label for="tpCalls">CALLs</label>
+                            <input id="tpPuts" name="tpOpcao" type="radio" value="puts">
+                            <label for="tpPuts">PUTs</label>
+                            <input checked="checked" id="tpTodas" name="tpOpcao" type="radio" value="">
+                            <label for="tpTodas">TODAS</label>
+                        </div>
+                    </div>
+                    <div class="grade-bloco" id="grade-vencimentos">
+                        <div id="grade-vencimentos-label"><strong> Vencimentos </strong></div>
+                        <div id="grade-vencimentos-dates">
+                            <ul id="listavencimentos" style="width: 2520px;">
+                                <li>
+                                    <input data-du="18" data-w="3" id="v2024-07-19" type="checkbox" value="2024-07-19">
+                                    <label for="v2024-07-19" title="Vencimento mensal"><b>19/07 - W3 - 18 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="38" data-w="3" id="v2024-08-16" type="checkbox" value="2024-08-16">
+                                    <label for="v2024-08-16" title="Vencimento mensal"><b>16/08 - W3 - 38 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="63" data-w="3" id="v2024-09-20" type="checkbox" value="2024-09-20">
+                                    <label for="v2024-09-20" title="Vencimento mensal"><b>20/09 - W3 - 63 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="83" data-w="3" id="v2024-10-18" type="checkbox" value="2024-10-18">
+                                    <label for="v2024-10-18" title="Vencimento mensal"><b>18/10 - W3 - 83 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="102" data-w="3" id="v2024-11-14" type="checkbox" value="2024-11-14">
+                                    <label for="v2024-11-14" title="Vencimento mensal"><b>14/11 - W3 - 102 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="126" data-w="3" id="v2024-12-20" type="checkbox" value="2024-12-20">
+                                    <label for="v2024-12-20" title="Vencimento mensal"><b>20/12 - W3 - 126 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="142" data-w="3" id="v2025-01-17" type="checkbox" value="2025-01-17">
+                                    <label for="v2025-01-17" title="Vencimento mensal"><b>17/01/2025 - W3 - 142 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="167" data-w="3" id="v2025-02-21" type="checkbox" value="2025-02-21">
+                                    <label for="v2025-02-21" title="Vencimento mensal"><b>21/02/2025 - W3 - 167 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="185" data-w="3" id="v2025-03-21" type="checkbox" value="2025-03-21">
+                                    <label for="v2025-03-21" title="Vencimento mensal"><b>21/03/2025 - W3 - 185 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="204" data-w="3" id="v2025-04-17" type="checkbox" value="2025-04-17">
+                                    <label for="v2025-04-17" title="Vencimento mensal"><b>17/04/2025 - W3 - 204 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="222" data-w="3" id="v2025-05-16" type="checkbox" value="2025-05-16">
+                                    <label for="v2025-05-16" title="Vencimento mensal"><b>16/05/2025 - W3 - 222 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="246" data-w="3" id="v2025-06-20" type="checkbox" value="2025-06-20">
+                                    <label for="v2025-06-20" title="Vencimento mensal"><b>20/06/2025 - W3 - 246 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="286" data-w="3" id="v2025-08-15" type="checkbox" value="2025-08-15">
+                                    <label for="v2025-08-15" title="Vencimento mensal"><b>15/08/2025 - W3 - 286 d.u.</b></label>
+                                </li>
+                                <li>
+                                    <input data-du="355" data-w="3" id="v2025-11-21" type="checkbox" value="2025-11-21">
+                                    <label for="v2025-11-21" title="Vencimento mensal"><b>21/11/2025 - W3 - 355 d.u.</b></label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="grade-bloco" id="grade-strikes">
+                        <div id="grade-strikes-label"><strong>Faixa de strikes</strong></div>
+                        <div id="grade-strikes-range">
+                            <div class="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content" id="strike-range">
+                                <div class="ui-slider-range ui-corner-all ui-widget-header" style="left: 52.7221%; width: 11.4613%;"></div>
+                                <span class="ui-slider-handle ui-corner-all ui-state-default" style="left: 52.7221%;" tabindex="0">39,70</span>
+                                <span class="ui-slider-handle ui-corner-all ui-state-default" style="left: 64.1834%;" tabindex="0">42,15</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fSetLiquidez grade-bloco immediate-collapse">
+                        <div style="float:left;width:80px"><strong> Filtro de <br/>Liquidez </strong></div>
+                        <div style="float:left">
+                            <div>Negociadas
+                                <input id="ultimosDias" name="ultNegociacao" type="radio" value="ultimosDias">
+                                <label for="ultimosDias">em algum dos últimos</label>
+                                <select id="qtdDias" name="qtdDias">
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                    <option>6</option>
+                                    <option selected="selected">7</option>
+                                    <option>10</option>
+                                    <option>30</option>
+                                    <option>60</option>
+                                    <option>90</option>
+                                </select>
+                                <label for="ultimosDias">dias</label>
+                                <input id="hoje" name="ultNegociacao" type="radio" value="hoje">
+                                <label for="hoje">hoje</label>
+                                <input checked="checked" id="todas" name="ultNegociacao" type="radio" value="todas">
+                                <label for="todas">todas</label>
+                            </div>
+                            <div>Mínimo
+                                <input id="minNegocios" maxlength="5" min="0" name="minNegocios" step="10" style="width:60px;text-align:center" type="number" value="">
+                                negócios    |
+                                <div class="divPortraitBreak">Volume financeiro R$
+                                    <input id="minVolume" maxlength="12" min="0" name="minVolume" step="100" style="width:100px;text-align:center" type="number" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grade-bloco immediate-collapse" id="grade-mensagens">
+                        <div style="float:left;width:100px"><strong>Mensagens</strong></div>
+                        <div id="grade-mensagens-texto" style="float:left;padding-top:0"></div>
+                    </div>
+                </div>
+                <button class="btn btn-block btn-default active" id="btnToggle" type="button"></button>
+                <div class="alert alert-warning alert-dismissible" id="alert-ultima-cotacao" role="alert" style="display:none">
+                    <button aria-label="Close" class="close" data-dismiss="alert" type="button"><span aria-hidden="true">×</span></button>
+                    <p><strong>ATENÇÃO:</strong> Você está visualizando as cotações de fechamento do pregão anterior. Para visualizar as cotações em tempo real é necessário ser assinante. <a href="/planos" target="_blank">Conheça nossos planos</a>.</p>
+                </div>
+                <script>setTimeout(function(){var $alert=$('#alert-ultima-cotacao');$alert.fadeIn(1300);},5000);</script>
+                <div class="alert alert-warning alert-dismissible" id="alert-resultados" role="alert" style="display:none">
+                    <button aria-label="Close" class="close" data-dismiss="alert" type="button"><span aria-hidden="true">×</span></button>
+                    <span id="msg-alert-resultados"></span>
+                </div>
+                <div class="dataTables_wrapper no-footer" id="tblListaOpc_wrapper">
+                    <div aria-live="polite" class="dataTables_info" id="tblListaOpc_info" role="status">20 opções filtradas de um total de 142</div>
+                    <div class="dt-buttons">
+                        <button aria-controls="tblListaOpc" class="dt-button buttons-copy buttons-html5" tabindex="0" type="button"><span>Copiar tabela</span></button>
+                        <button aria-controls="tblListaOpc" class="dt-button buttons-excel buttons-html5" tabindex="0" type="button"><span>Exportar para Excel</span></button>
+                    </div>
+                    <div class="dataTables_scroll dtfc-has-left" style="position: relative;">
+                        <div class="dataTables_scrollHead" style="overflow: hidden; position: relative; border: 0px; width: 100%;">
+                            <div class="dataTables_scrollHeadInner" style="box-sizing: content-box; width: 1506.11px; padding-right: 0px;">
+                                <table aria-describedby="tblListaOpc_info" class="dataTable compact stripe hover no-footer" style="margin-left: 0px; width: 1506.11px;">
+                                    <thead>
+                                        <tr>
+                                            <th aria-controls="tblListaOpc" aria-label="Ticker: Ordenar colunas de forma ascendente" class="sorting dtfc-fixed-left" colspan="1" rowspan="2" style="width: 74.8906px; left: 0px; position: sticky;" tabindex="0">Ticker          </th>
+                                            <th aria-controls="tblListaOpc" aria-label="Tipo: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="2" style="width: 27.1875px;" tabindex="0">Tipo</th>
+                                            <th aria-controls="tblListaOpc" aria-label="F.M.: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="width: 28.3125px;" tabindex="0" title="Indica se a série possui formador de mercado, ou seja, se há agentes responsáveis por assegurar liquidez ao ativo">F.M. </th>
+                                            <th aria-controls="tblListaOpc" aria-label="Mod.: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="width: 31.2969px;" tabindex="0" title="Indica se é uma opção do estilo |A|mericana ou |E|uropeia">Mod.</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Strike: Ordenar colunas de forma descendente" aria-sort="ascending" class="dt-body-right sorting sorting_asc" colspan="1" rowspan="1" style="width: 47.2031px;" tabindex="0">Strike   </th>
+                                            <th aria-controls="tblListaOpc" aria-label="A/I/OTM: Ordenar colunas de forma ascendente" class="dt-body-center text-nowrap sorting" colspan="1" rowspan="1" style="width: 52.2344px;" tabindex="0">A/I/OTM</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Dist. (%) do Strike: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="2" style="width: 36.3594px;" tabindex="0" title="Distância percentual do strike para a última cotação">Dist. (%) do Strike</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Último: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 40.6406px;" tabindex="0">Último</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Var. (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 46.7344px;" tabindex="0" title="Variação percentual">Var. (%)</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Data/Hora: Ordenar colunas de forma ascendente" class="dt-body-center text-nowrap sorting" colspan="1" rowspan="2" style="width: 64.0625px;" tabindex="0">Data/Hora</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Núm. de Neg.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 32.7344px;" tabindex="0" title="Número de negócios">Núm. de Neg.</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Vol. Financeiro: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 65px;" tabindex="0" title="Volume Financeiro (R$)">Vol. Financeiro</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Vol. Impl. (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 30.5312px;" tabindex="0" title="Volatilidade implícita">Vol. Impl. (%)</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Delta: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 32.5px;" tabindex="0">Delta</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Gamma: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 48.3594px;" tabindex="0">Gamma</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Theta ($): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 35.1562px;" tabindex="0">Theta ($)</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Theta (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 35.1562px;" tabindex="0">Theta (%)</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Vega: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 30.3438px;" tabindex="0">Vega</th>
+                                            <th aria-controls="tblListaOpc" aria-label="IQ: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 13.9531px;" tabindex="0" title="IQ = Titulares / lançadores">IQ</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Coberto: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 50.5625px;" tabindex="0" title="Coberto">Coberto</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Travado: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 49.375px;" tabindex="0" title="Travado">Travado</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Descob.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 51.0469px;" tabindex="0" title="Descoberto">Descob.</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Tit.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 19.5px;" tabindex="0" title="Titulares">Tit.</th>
+                                            <th aria-controls="tblListaOpc" aria-label="Lanç.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="2" style="width: 33.9688px;" tabindex="0" title="Lançadores">Lanç.</th>
+                                        </tr>
+                                        <tr role="row">
+                                            <th><select data-dtcolindex="2"><option value=""></option><option value="✔">✔</option></select></th>
+                                            <th><select data-dtcolindex="3"><option value=""></option><option value="A">A</option><option value="E">E</option></select></th>
+                                            <th><select data-dtcolindex="4"><option value=""></option><option value="26,15">26,15</option><option value="26,40">26,40</option><option value="28,90">28,90</option><option value="29,40">29,40</option><option value="29,90">29,90</option><option value="30,40">30,40</option><option value="30,90">30,90</option><option value="31,15">31,15</option><option value="31,40">31,40</option><option value="31,65">31,65</option><option value="31,90">31,90</option><option value="32,15">32,15</option><option value="32,40">32,40</option><option value="32,65">32,65</option><option value="32,90">32,90</option><option value="33,15">33,15</option><option value="33,40">33,40</option><option value="33,65">33,65</option><option value="33,90">33,90</option><option value="34,15">34,15</option><option value="34,40">34,40</option><option value="34,65">34,65</option><option value="34,90">34,90</option><option value="35,15">35,15</option><option value="35,40">35,40</option><option value="35,65">35,65</option><option value="35,90">35,90</option><option value="36,15">36,15</option><option value="36,40">36,40</option><option value="36,65">36,65</option><option value="36,90">36,90</option><option value="37,15">37,15</option><option value="37,40">37,40</option><option value="37,65">37,65</option><option value="37,90">37,90</option><option value="38,15">38,15</option><option value="38,40">38,40</option><option value="38,65">38,65</option><option value="38,90">38,90</option><option value="39,15">39,15</option><option value="39,40">39,40</option><option value="39,65">39,65</option><option value="39,90">39,90</option><option value="40,15">40,15</option><option value="40,40">40,40</option><option value="40,65">40,65</option><option value="40,90">40,90</option><option value="41,15">41,15</option><option value="41,40">41,40</option><option value="41,65">41,65</option><option value="41,90">41,90</option><option value="42,15">42,15</option><option value="42,40">42,40</option><option value="42,65">42,65</option><option value="42,90">42,90</option><option value="43,15">43,15</option><option value="43,40">43,40</option><option value="43,65">43,65</option><option value="43,90">43,90</option><option value="44,15">44,15</option><option value="44,40">44,40</option><option value="44,65">44,65</option><option value="44,90">44,90</option><option value="45,15">45,15</option><option value="45,40">45,40</option><option value="45,90">45,90</option><option value="46,40">46,40</option><option value="46,90">46,90</option><option value="47,40">47,40</option><option value="47,90">47,90</option><option value="48,40">48,40</option></select></th>
+                                            <th><select data-dtcolindex="5"><option value=""></option><option value="ATM">ATM</option><option value="ITM">ITM</option><option value="OTM">OTM</option></select></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="dataTables_scrollBody" style="position: relative; overflow: auto; width: 100%;">
+                            <table aria-describedby="tblListaOpc_info" class="dataTable compact stripe hover no-footer dtfc-has-left" id="tblListaOpc">
+                                <thead>
+                                    <tr style="height: 0px;">
+                                        <th aria-controls="tblListaOpc" aria-label="Ticker: Ordenar colunas de forma ascendente" class="sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 74.8906px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Ticker</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Tipo: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 27.1875px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Tipo</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="F.M.: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 28.3125px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">F.M.</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Mod.: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 31.2969px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Mod.</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Strike: Ordenar colunas de forma descendente" aria-sort="ascending" class="dt-body-right sorting sorting_asc" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 47.2031px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Strike</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="A/I/OTM: Ordenar colunas de forma ascendente" class="dt-body-center text-nowrap sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 52.2344px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">A/I/OTM</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Dist. (%) do Strike: Ordenar colunas de forma ascendente" class="dt-body-center sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 36.3594px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Dist. (%) do Strike</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Último: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 40.6406px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Último</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Var. (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 46.7344px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Var. (%)</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Data/Hora: Ordenar colunas de forma ascendente" class="dt-body-center text-nowrap sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 64.0625px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Data/Hora</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Núm. de Neg.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 32.7344px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Núm. de Neg.</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Vol. Financeiro: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 65px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Vol. Financeiro</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Vol. Impl. (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 30.5312px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Vol. Impl. (%)</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Delta: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 32.5px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Delta</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Gamma: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 48.3594px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Gamma</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Theta ($): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 35.1562px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Theta ($)</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Theta (%): Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 35.1562px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Theta (%)</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Vega: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 30.3438px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Vega</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="IQ: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 13.9531px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">IQ</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Coberto: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 50.5625px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Coberto</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Travado: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 49.375px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Travado</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Descob.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 51.0469px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Descob.</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Tit.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 19.5px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Tit.</div>
+                                        </th>
+                                        <th aria-controls="tblListaOpc" aria-label="Lanç.: Ordenar colunas de forma ascendente" class="dt-body-right sorting" colspan="1" rowspan="1" style="padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px; width: 33.9688px;">
+                                            <div class="dataTables_sizing" style="height: 0px; overflow: hidden;">Lanç.</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG399</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">A</td>
+                                        <td class="dt-body-right sorting_1">39,90</td>
+                                        <td class="dt-body-center text-nowrap">ITM</td>
+                                        <td class="dt-body-center">-2,37</td>
+                                        <td class="dt-body-right">1,85</td>
+                                        <td class="dt-body-right"><span style="color: green">+1,09</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">1</td>
+                                        <td class="dt-body-right">185,00</td>
+                                        <td class="dt-body-right">13,7</td>
+                                        <td class="dt-body-right">0,8714</td>
+                                        <td class="dt-body-right">0,1322</td>
+                                        <td class="dt-body-right">-0,0226</td>
+                                        <td class="dt-body-right">-1,22</td>
+                                        <td class="dt-body-right">2,4434</td>
+                                        <td class="dt-body-right">0,06</td>
+                                        <td class="dt-body-right">68.200</td>
+                                        <td class="dt-body-right">85.400</td>
+                                        <td class="dt-body-right">65.100</td>
+                                        <td class="dt-body-right">18</td>
+                                        <td class="dt-body-right">316</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES399</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">39,90</td>
+                                        <td class="dt-body-center text-nowrap">OTM</td>
+                                        <td class="dt-body-center">-2,37</td>
+                                        <td class="dt-body-right">0,27</td>
+                                        <td class="dt-body-right"><span style="color: green">+35,00</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">36</td>
+                                        <td class="dt-body-right">20.464,00</td>
+                                        <td class="dt-body-right">17,7</td>
+                                        <td class="dt-body-right">-0,2164</td>
+                                        <td class="dt-body-right">0,1513</td>
+                                        <td class="dt-body-right">-0,0120</td>
+                                        <td class="dt-body-right">-4,44</td>
+                                        <td class="dt-body-right">3,2179</td>
+                                        <td class="dt-body-right">1,04</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">109.700</td>
+                                        <td class="dt-body-right">12.800</td>
+                                        <td class="dt-body-right">29</td>
+                                        <td class="dt-body-right">28</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG402</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,15</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-1,76</td>
+                                        <td class="dt-body-right">1,33</td>
+                                        <td class="dt-body-right"><span style="color: red">-20,83</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">39</td>
+                                        <td class="dt-body-right">324.006,00</td>
+                                        <td class="dt-body-right">15,5</td>
+                                        <td class="dt-body-right">0,7448</td>
+                                        <td class="dt-body-right">0,1840</td>
+                                        <td class="dt-body-right">-0,0269</td>
+                                        <td class="dt-body-right">-2,02</td>
+                                        <td class="dt-body-right">3,6106</td>
+                                        <td class="dt-body-right">0,08</td>
+                                        <td class="dt-body-right">66.000</td>
+                                        <td class="dt-body-right">98.600</td>
+                                        <td class="dt-body-right">28.200</td>
+                                        <td class="dt-body-right">7</td>
+                                        <td class="dt-body-right">85</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES402</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,15</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-1,76</td>
+                                        <td class="dt-body-right">0,35</td>
+                                        <td class="dt-body-right"><span style="color: green">+40,00</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">14</td>
+                                        <td class="dt-body-right">3.310,00</td>
+                                        <td class="dt-body-right">17,4</td>
+                                        <td class="dt-body-right">-0,2591</td>
+                                        <td class="dt-body-right">0,1699</td>
+                                        <td class="dt-body-right">-0,0126</td>
+                                        <td class="dt-body-right">-3,59</td>
+                                        <td class="dt-body-right">3,5494</td>
+                                        <td class="dt-body-right">0,57</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">61.600</td>
+                                        <td class="dt-body-right">2.600</td>
+                                        <td class="dt-body-right">8</td>
+                                        <td class="dt-body-right">14</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG407</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">A</td>
+                                        <td class="dt-body-right sorting_1">40,40</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-1,15</td>
+                                        <td class="dt-body-right">1,20</td>
+                                        <td class="dt-body-right"><span style="color: red">-17,81</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">368</td>
+                                        <td class="dt-body-right">243.582,00</td>
+                                        <td class="dt-body-right">15,8</td>
+                                        <td class="dt-body-right">0,7197</td>
+                                        <td class="dt-body-right">0,1941</td>
+                                        <td class="dt-body-right">-0,0280</td>
+                                        <td class="dt-body-right">-2,34</td>
+                                        <td class="dt-body-right">3,6960</td>
+                                        <td class="dt-body-right">0,17</td>
+                                        <td class="dt-body-right">32.200</td>
+                                        <td class="dt-body-right">138.600</td>
+                                        <td class="dt-body-right">1.369.600</td>
+                                        <td class="dt-body-right">16</td>
+                                        <td class="dt-body-right">93</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES407</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,40</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-1,15</td>
+                                        <td class="dt-body-right">0,44</td>
+                                        <td class="dt-body-right"><span style="color: green">+46,67</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">44</td>
+                                        <td class="dt-body-right">42.872,00</td>
+                                        <td class="dt-body-right">17,5</td>
+                                        <td class="dt-body-right">-0,2999</td>
+                                        <td class="dt-body-right">0,1809</td>
+                                        <td class="dt-body-right">-0,0133</td>
+                                        <td class="dt-body-right">-3,02</td>
+                                        <td class="dt-body-right">3,8142</td>
+                                        <td class="dt-body-right">1,24</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">194.500</td>
+                                        <td class="dt-body-right">12.000</td>
+                                        <td class="dt-body-right">26</td>
+                                        <td class="dt-body-right">21</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG40</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,65</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-0,54</td>
+                                        <td class="dt-body-right">1,18</td>
+                                        <td class="dt-body-right"><span style="color: green">+1,72</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">4</td>
+                                        <td class="dt-body-right">10.811,00</td>
+                                        <td class="dt-body-right">14,8</td>
+                                        <td class="dt-body-right">0,6007</td>
+                                        <td class="dt-body-right">0,2224</td>
+                                        <td class="dt-body-right">-0,0258</td>
+                                        <td class="dt-body-right">-2,18</td>
+                                        <td class="dt-body-right">4,5370</td>
+                                        <td class="dt-body-right">0,11</td>
+                                        <td class="dt-body-right">27.500</td>
+                                        <td class="dt-body-right">121.100</td>
+                                        <td class="dt-body-right">149.200</td>
+                                        <td class="dt-body-right">16</td>
+                                        <td class="dt-body-right">150</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES40</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,65</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">-0,54</td>
+                                        <td class="dt-body-right">0,54</td>
+                                        <td class="dt-body-right"><span style="color: green">+42,11</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">30</td>
+                                        <td class="dt-body-right">21.811,00</td>
+                                        <td class="dt-body-right">17,4</td>
+                                        <td class="dt-body-right">-0,3442</td>
+                                        <td class="dt-body-right">0,1932</td>
+                                        <td class="dt-body-right">-0,0134</td>
+                                        <td class="dt-body-right">-2,48</td>
+                                        <td class="dt-body-right">4,0397</td>
+                                        <td class="dt-body-right">0,92</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">30.700</td>
+                                        <td class="dt-body-right">7.500</td>
+                                        <td class="dt-body-right">12</td>
+                                        <td class="dt-body-right">13</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG409</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">A</td>
+                                        <td class="dt-body-right sorting_1">40,90</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">+0,07</td>
+                                        <td class="dt-body-right">0,83</td>
+                                        <td class="dt-body-right"><span style="color: red">-25,23</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">535</td>
+                                        <td class="dt-body-right">114.097,00</td>
+                                        <td class="dt-body-right">15,8</td>
+                                        <td class="dt-body-right">0,6122</td>
+                                        <td class="dt-body-right">0,2207</td>
+                                        <td class="dt-body-right">-0,0285</td>
+                                        <td class="dt-body-right">-3,44</td>
+                                        <td class="dt-body-right">4,2024</td>
+                                        <td class="dt-body-right">0,20</td>
+                                        <td class="dt-body-right">13.700</td>
+                                        <td class="dt-body-right">95.100</td>
+                                        <td class="dt-body-right">73.800</td>
+                                        <td class="dt-body-right">19</td>
+                                        <td class="dt-body-right">96</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES409</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">40,90</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">+0,07</td>
+                                        <td class="dt-body-right">0,57</td>
+                                        <td class="dt-body-right"><span style="color: green">+23,91</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">116</td>
+                                        <td class="dt-body-right">27.087,00</td>
+                                        <td class="dt-body-right">17,2</td>
+                                        <td class="dt-body-right">-0,3933</td>
+                                        <td class="dt-body-right">0,2034</td>
+                                        <td class="dt-body-right">-0,0132</td>
+                                        <td class="dt-body-right">-2,32</td>
+                                        <td class="dt-body-right">4,2204</td>
+                                        <td class="dt-body-right">1,38</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">407.000</td>
+                                        <td class="dt-body-right">3.600</td>
+                                        <td class="dt-body-right">29</td>
+                                        <td class="dt-body-right">21</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG412</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">41,15</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">+0,69</td>
+                                        <td class="dt-body-right">0,75</td>
+                                        <td class="dt-body-right"><span style="color: red">-21,88</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">139</td>
+                                        <td class="dt-body-right">41.596,00</td>
+                                        <td class="dt-body-right">15,7</td>
+                                        <td class="dt-body-right">0,5563</td>
+                                        <td class="dt-body-right">0,2290</td>
+                                        <td class="dt-body-right">-0,0281</td>
+                                        <td class="dt-body-right">-3,75</td>
+                                        <td class="dt-body-right">4,3332</td>
+                                        <td class="dt-body-right">0,32</td>
+                                        <td class="dt-body-right">17.900</td>
+                                        <td class="dt-body-right">84.200</td>
+                                        <td class="dt-body-right">27.300</td>
+                                        <td class="dt-body-right">24</td>
+                                        <td class="dt-body-right">76</td>
+                                    </tr>
+                                    <tr class="even">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGES412</td>
+                                        <td class="dt-body-center">PUT</td>
+                                        <td class="dt-body-center"></td>
+                                        <td class="dt-body-center">E</td>
+                                        <td class="dt-body-right sorting_1">41,15</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">+0,69</td>
+                                        <td class="dt-body-right">0,80</td>
+                                        <td class="dt-body-right"><span style="color: green">+45,45</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">62</td>
+                                        <td class="dt-body-right">18.790,00</td>
+                                        <td class="dt-body-right">17,1</td>
+                                        <td class="dt-body-right">-0,4467</td>
+                                        <td class="dt-body-right">0,2114</td>
+                                        <td class="dt-body-right">-0,0126</td>
+                                        <td class="dt-body-right">-1,58</td>
+                                        <td class="dt-body-right">4,3377</td>
+                                        <td class="dt-body-right">1,64</td>
+                                        <td class="dt-body-right">0</td>
+                                        <td class="dt-body-right">43.100</td>
+                                        <td class="dt-body-right">4.900</td>
+                                        <td class="dt-body-right">18</td>
+                                        <td class="dt-body-right">11</td>
+                                    </tr>
+                                    <tr class="odd">
+                                        <td class="dtfc-fixed-left" style="left: 0px; position: sticky;">WEGEG414</td>
+                                        <td class="dt-body-center">CALL</td>
+                                        <td class="dt-body-center">✔</td>
+                                        <td class="dt-body-center">A</td>
+                                        <td class="dt-body-right sorting_1">41,40</td>
+                                        <td class="dt-body-center text-nowrap">ATM</td>
+                                        <td class="dt-body-center">+1,30</td>
+                                        <td class="dt-body-right">0,60</td>
+                                        <td class="dt-body-right"><span style="color: red">-26,83</span></td>
+                                        <td class="dt-body-center text-nowrap">24/06/2024</td>
+                                        <td class="dt-body-right">17</td>
+                                        <td class="dt-body-right">4.547,00</td>
+                                        <td class="dt-body-right">15,5</td>
+                                        <td class="dt-body-right">0,4988</td>
+                                        <td class="dt-body-right">0,2341</td>
+                                        <td class="dt-body-right">-0,0271</td>
+                                        <td class="dt-body-right">-4,52</td>
+                                        <td class="dt-body-right">4,3768</td>
+                                        <td class="dt-body-right">0,53</td>
+                                        <td class="dt-body-right">15.500</td>
+                                        <td class="dt-body-right">89.300</td>
+                                        <td class="dt-body-right">20.200</td>
+                                        <td class="dt-body-right">19</td>
+                                        <td class="dt-body-right">36</td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+
+                            
+                                      
