@@ -433,11 +433,12 @@ class PortfolioTotalHistory(models.Model):
         total_brl = 0
         total_usd = 0
 
+        # verificar aqui se é / ou * no cálculo do total_usd e vice-versa
         if historical_price:
             if investment.broker.main_currency.ticker == 'BRL':
                 total_brl += historical_price.close * investment.shares_amount
                 if exchange_rate:
-                    total_usd += (historical_price.close * investment.shares_amount) / exchange_rate.close
+                    total_usd += (historical_price.close * investment.shares_amount) * exchange_rate.close
             elif investment.broker.main_currency.ticker == 'USD':
                 total_usd += historical_price.close * investment.shares_amount
                 if exchange_rate:
