@@ -41,7 +41,7 @@ class CurrencyTransaction(models.Model):
                 setattr(self, price_attribute, 1)
             else:
                 today = datetime.today().strftime('%Y-%m-%d')
-                transaction_date = self.transaction_date.strftime('%Y-%m-%d')
+                transaction_date = self.transaction_date
                 if transaction_date == today:
                     setattr(self, price_attribute, getattr(self.broker.main_currency, price_attribute))
                 elif transaction_date < today:

@@ -149,4 +149,5 @@ fixtures.json
 common/management/arquivo/*
 common/management/commands/portfolio_18_2019.py
 common/management/commands/portfolio_18_to_12_2018.py
+brokers/management/*
 

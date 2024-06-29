@@ -13,7 +13,7 @@ def set_price(trade, asset_ticker, target_currency):
     price_attribute = f'price_{target_currency.lower()}'
     if getattr(trade, price_attribute) is None:
         today = datetime.today().strftime('%Y-%m-%d')
-        trade_date = trade.trade_date.strftime('%Y-%m-%d')
+        trade_date = trade.trade_date
         if trade_date == today:
             setattr(trade, price_attribute, getattr(trade.asset, price_attribute))
         elif trade_date < today:

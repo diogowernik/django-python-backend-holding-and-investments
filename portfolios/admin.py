@@ -82,6 +82,7 @@ class PortfolioDividendAdmin(admin.ModelAdmin):
         ('portfolio', RelatedFieldListFilter),
         'category',
         'subcategory',
+        'ticker',
     )
 
     def yield_brl(self, obj):

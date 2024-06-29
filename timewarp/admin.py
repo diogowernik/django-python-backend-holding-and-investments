@@ -8,4 +8,5 @@ admin.site.register(models.CurrencyHistoricalPrice, CurrencyHistoricalPriceAdmin
 
 class AssetHistoricalPriceAdmin(admin.ModelAdmin):
     list_display = ('asset', 'currency', 'date', 'close')
+    list_filter = ('asset', 'currency')
 admin.site.register(models.AssetHistoricalPrice, AssetHistoricalPriceAdmin)
