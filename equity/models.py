@@ -3,7 +3,7 @@ from portfolios.models import Portfolio
 from django.db import transaction
 from django.db.models import Sum
 from datetime import datetime
-from cashflow.models import CurrencyTransaction
+from cashflow.models import CurrencyTransaction, InternationalCurrencyTransfer
 from timewarp.models import AssetHistoricalPrice, CurrencyHistoricalPrice
 from trade.models import Trade
 from brokers.models import Broker
@@ -25,6 +25,7 @@ class QuotaHistory(models.Model):
             ('invest us', 'invest us'),
             ('divest us', 'divest us'),
             ('tax payment', 'tax payment'),
+            ('send money', 'send money'),
         ],
         default='deposit'
     )
@@ -320,7 +321,6 @@ class InvestUsEvent(CurrencyTransaction):
         )
         return trade
 
-
 class DivestUsEvent(CurrencyTransaction):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
     trade_amount = models.FloatField(default=0)
@@ -494,3 +494,28 @@ class PortfolioTotalHistory(models.Model):
 
     class Meta:
         verbose_name_plural = 'Histórico dos Portfolios - Total'
+
+class SendMoneyEvent(InternationalCurrencyTransfer):
+    # portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
+    # from_broker = models.ForeignKey(Broker, related_name='international_transfer_from', on_delete=models.CASCADE, default=1)
+    # to_broker = models.ForeignKey(Broker, related_name='intternational_transfer_to', on_delete=models.CASCADE, default=2)
+    # from_transfer_amount = models.FloatField(default=0)  # Quantidade na moeda original
+    # transfer_fee = models.FloatField(default=0)  # Taxa de transferência cobrada pelo corretor
+    # exchange_rate = models.FloatField(default=0)  # Taxa de câmbio usada na transferência
+    # transfer_date = models.DateField(default=timezone.now)   
+     
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        QuotaHistory.objects.create(
+            portfolio=self.portfolio,
+            date=self.transaction_date,
+            event_type='send money',
+            value_brl=0,
+            value_usd=0,
+        )
+
+    class Meta:
+        verbose_name = 'Envio de Dinheiro'
+        verbose_name_plural = '  Envio de Dinheiro'
