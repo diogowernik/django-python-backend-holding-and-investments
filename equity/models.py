@@ -48,7 +48,8 @@ class QuotaHistory(models.Model):
     def create_portfolio_history(self):
         portfolio_history = PortfolioTotalHistory.objects.create(
             portfolio=self.portfolio,
-            date=self.date
+            date=self.date,
+            event_type=self.event_type,
         )
         return portfolio_history
 
@@ -376,6 +377,8 @@ class PortfolioTotalHistory(models.Model):
     date = models.DateField()
     total_brl = models.FloatField()
     total_usd = models.FloatField()
+    event_type = models.CharField(max_length=20, default='none')
+
 
     def __str__(self):
         return f'{self.portfolio.name} - {self.date}'
@@ -482,27 +485,21 @@ class PortfolioTotalHistory(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Salvando os totais por categoria
-        for category, totals in category_totals.items():
-            PortfolioHistoryByCategory.objects.create(
-                portfolio=self.portfolio,
-                category=category,
-                date=self.date,
-                total_brl=totals['total_brl'],
-                total_usd=totals['total_usd']
-            )
+        # Salvando os totais por categoria apenas no valuation
+        if self.event_type == 'valuation':
+            for category, totals in category_totals.items():
+                PortfolioHistoryByCategory.objects.create(
+                    portfolio=self.portfolio,
+                    category=category,
+                    date=self.date,
+                    total_brl=totals['total_brl'],
+                    total_usd=totals['total_usd']
+                )
 
     class Meta:
         verbose_name_plural = 'Histórico dos Portfolios - Total'
 
 class SendMoneyEvent(InternationalCurrencyTransfer):
-    # portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
-    # from_broker = models.ForeignKey(Broker, related_name='international_transfer_from', on_delete=models.CASCADE, default=1)
-    # to_broker = models.ForeignKey(Broker, related_name='intternational_transfer_to', on_delete=models.CASCADE, default=2)
-    # from_transfer_amount = models.FloatField(default=0)  # Quantidade na moeda original
-    # transfer_fee = models.FloatField(default=0)  # Taxa de transferência cobrada pelo corretor
-    # exchange_rate = models.FloatField(default=0)  # Taxa de câmbio usada na transferência
-    # transfer_date = models.DateField(default=timezone.now)   
      
     @transaction.atomic
     def save(self, *args, **kwargs):
@@ -510,7 +507,7 @@ class SendMoneyEvent(InternationalCurrencyTransfer):
 
         QuotaHistory.objects.create(
             portfolio=self.portfolio,
-            date=self.transaction_date,
+            date=self.transfer_date,
             event_type='send money',
             value_brl=0,
             value_usd=0,

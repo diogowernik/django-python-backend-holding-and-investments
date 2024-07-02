@@ -34,14 +34,17 @@ class CurrencyTransaction(models.Model):
         self.set_price('BRL', 'price_brl')
         self.set_price('USD', 'price_usd')
 
-    # set_price for set_prices
     def set_price(self, currency_ticker, price_attribute):
         if getattr(self, price_attribute) is None:
             if self.broker.main_currency.ticker == currency_ticker:
                 setattr(self, price_attribute, 1)
             else:
-                today = datetime.today().strftime('%Y-%m-%d')
+                today = datetime.today().date()  # Mudando para usar apenas a data, removendo o tempo.
                 transaction_date = self.transaction_date
+                if isinstance(transaction_date, str):
+                    transaction_date = datetime.strptime(transaction_date, '%Y-%m-%d').date()  # Converte para datetime.date
+
+                # Checa se transaction_date já é um datetime.date ou se precisa de conversão
                 if transaction_date == today:
                     setattr(self, price_attribute, getattr(self.broker.main_currency, price_attribute))
                 elif transaction_date < today:
