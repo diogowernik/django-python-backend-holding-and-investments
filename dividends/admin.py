@@ -7,8 +7,7 @@ from django import forms
 from django.db.models import Q
 from investments.models import Asset
 from django.utils.translation import gettext_lazy as _
-from .models import Dividend, Asset  # Importe seus modelos aqui
-
+from .models import Dividend
 
 class DividendFormBase(forms.ModelForm):
     record_date = forms.DateField(widget=AdminDateWidget)
@@ -67,7 +66,6 @@ class DividendBrAdmin(DividendAdminBase):
     form = DividendBrForm
 admin.site.register(models.DividendBr, DividendBrAdmin)
 
-
 class DividendUsForm(DividendFormBase):
 
     def __init__(self, *args, **kwargs):
@@ -91,7 +89,6 @@ class DividendUsForm(DividendFormBase):
                             '- CurrencyTransaction,<br>'
                             '- Conversão de moeda para criar um valor por cota em BRL.',
         }
-
 
 class DividendUsAdmin(DividendAdminBase):
     exclude = ('value_per_share_brl',)
@@ -132,3 +129,10 @@ class DividendAdmin(admin.ModelAdmin):
     # def pay_date_date(self, obj):
     #     return obj.pay_date.strftime('%d/%m/%Y')
 admin.site.register(models.Dividend, DividendAdmin)
+
+
+class PortfolioDividendAdmin(admin.ModelAdmin):
+    list_display = ('portfolio_investment', 'asset', 'trade_history', 'dividend', 'category', 'record_date', 'pay_date', 'shares_amount', 'value_per_share_brl', 'value_per_share_usd', 'average_price_brl', 'average_price_usd')
+    list_filter = ('category', 'portfolio_investment')
+    search_fields = ('asset__ticker',)
+admin.site.register(models.PortfolioDividend, PortfolioDividendAdmin)
