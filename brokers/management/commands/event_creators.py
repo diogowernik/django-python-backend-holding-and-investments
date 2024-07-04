@@ -9,6 +9,8 @@ from cashflow.models import CurrencyTransfer
 from categories.models import Category, SubCategory
 from timewarp.models import AssetHistoricalPrice
 from .utils import log_error, convert_to_datetime
+# ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 
 def create_valuation_event(portfolio_id, transaction_date):
     portfolio = Portfolio.objects.get(id=portfolio_id)
