@@ -1,7 +1,13 @@
-# utils.py
 import csv
 import os
 from datetime import datetime
+
+# Define o diretório base onde os arquivos de log serão salvos
+LOG_DIRECTORY = os.path.join('brokers', 'management', 'log_files')
+
+# Certifica-se de que o diretório de log existe, criando-o se não existir
+if not os.path.exists(LOG_DIRECTORY):
+    os.makedirs(LOG_DIRECTORY)
 
 # Lista global para registrar erros
 error_log = []
@@ -27,7 +33,7 @@ def convert_to_datetime(date_str):
         log_error(f"Falha ao converter a data: {date_str}")
         return None
 
-PROCESSED_BATCHES_FILE = 'processed_batches.csv'
+PROCESSED_BATCHES_FILE = os.path.join(LOG_DIRECTORY, 'processed_batches.csv')
 
 def read_processed_batches():
     if not os.path.exists(PROCESSED_BATCHES_FILE):
@@ -42,11 +48,10 @@ def write_processed_batch(batch_name):
         writer.writerow([batch_name])
 
 def write_error_log_to_csv(errors, batch_name):
-    filename = f'error_log_{batch_name}.csv'
+    filename = os.path.join(LOG_DIRECTORY, f'error_log_{batch_name}.csv')
     with open(filename, 'w', newline='') as csvfile:
         fieldnames = ['Error Message', 'Event Type', 'Event Date']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
         writer.writeheader()
         for error in errors:
             writer.writerow(error)

@@ -101,7 +101,7 @@ class PortfolioInvestment(models.Model):
         return round((self.total_profit_usd / self.total_cost_usd) if self.total_cost_usd > 0 else 0, 4)
 
     def __str__(self):
-        return ' {} | {} | {} '.format(self.broker.name, self.shares_amount, self.asset.ticker)
+        return ' {} | {} | {} '.format(self.asset.ticker, self.shares_amount, self.asset.ticker)
 
     class Meta:
         verbose_name_plural = "  Investimentos por Portfolio"

@@ -21,7 +21,6 @@ from .event_creators import (
     create_tax_pay_event,
     create_dividend_br_event,
     create_dividend_usd_event,
-    create_dividend_receive_event,
     create_transfer_event,
     create_or_update_asset_create_historical_price_create_invest_br_event,
     create_or_update_asset_create_historical_price_create_invest_us_event,
@@ -50,7 +49,6 @@ class Command(BaseCommand):
         divest_usd_events = pd.read_csv(f'{csv_directory}/divest_usd_events.csv')
         dividend_br_events = pd.read_csv(f'{csv_directory}/dividend_br_events.csv')
         dividend_usd_events = pd.read_csv(f'{csv_directory}/dividend_usd_events.csv')
-        dividend_receive_events = pd.read_csv(f'{csv_directory}/dividend_receive_events.csv')
         valuation_events = pd.read_csv(f'{csv_directory}/valuation_events.csv')
         send_money_events = pd.read_csv(f'{csv_directory}/send_money_events.csv')
 
@@ -66,7 +64,6 @@ class Command(BaseCommand):
             'create_divest_us_event': create_divest_us_event,
             'dividend_br': create_dividend_br_event,
             'dividend_usd': create_dividend_usd_event,
-            'dividend_receive': create_dividend_receive_event,
             'valuation': create_valuation_event,
             'send_money': send_money_event
         }
@@ -92,7 +89,6 @@ class Command(BaseCommand):
         divest_usd_list = create_event_list(divest_usd_events, 'create_divest_usd_event')
         dividend_br_list = create_event_list(dividend_br_events, 'dividend_br')
         dividend_usd_list = create_event_list(dividend_usd_events, 'dividend_usd')
-        dividend_receive_list = create_event_list(dividend_receive_events, 'dividend_receive')
         valuation_list = create_event_list(valuation_events, 'valuation')
         send_money_list = create_event_list(send_money_events, 'send_money')
 
@@ -108,7 +104,6 @@ class Command(BaseCommand):
                     divest_usd_list +
                     dividend_br_list + 
                     dividend_usd_list +
-                    # dividend_receive_list +
                     valuation_list  +
                     send_money_list
                     )
@@ -116,12 +111,12 @@ class Command(BaseCommand):
         # Definindo intervalos de datas para os lotes
         date_ranges = [
             # testes
-            ("8_2019", datetime.strptime('2019-08-01', '%Y-%m-%d'), datetime.strptime('2019-08-31', '%Y-%m-%d')),
-            ("9_2019", datetime.strptime('2019-09-01', '%Y-%m-%d'), datetime.strptime('2019-09-30', '%Y-%m-%d')),
+            # ("8_2019", datetime.strptime('2019-08-01', '%Y-%m-%d'), datetime.strptime('2019-08-31', '%Y-%m-%d')),
+            # ("9_2019", datetime.strptime('2019-09-01', '%Y-%m-%d'), datetime.strptime('2019-09-30', '%Y-%m-%d')),
             # valendo mas comentado para os testes serem em periodos menores.
-            # ("2006", datetime.strptime('2006-01-01', '%Y-%m-%d'), datetime.strptime('2006-12-31', '%Y-%m-%d')),
-            # ("2007_2018", datetime.strptime('2007-01-01', '%Y-%m-%d'), datetime.strptime('2018-12-31', '%Y-%m-%d')),
-            # ("2019", datetime.strptime('2019-01-01', '%Y-%m-%d'), datetime.strptime('2019-12-31', '%Y-%m-%d')),
+            ("2006", datetime.strptime('2006-01-01', '%Y-%m-%d'), datetime.strptime('2006-12-31', '%Y-%m-%d')),
+            ("2007_2018", datetime.strptime('2007-01-01', '%Y-%m-%d'), datetime.strptime('2018-12-31', '%Y-%m-%d')),
+            ("2019", datetime.strptime('2019-01-01', '%Y-%m-%d'), datetime.strptime('2019-12-31', '%Y-%m-%d')),
             # ("2020", datetime.strptime('2020-01-01', '%Y-%m-%d'), datetime.strptime('2020-12-31', '%Y-%m-%d')),
             # ("2021", datetime.strptime('2021-01-01', '%Y-%m-%d'), datetime.strptime('2021-12-31', '%Y-%m-%d')),
             # ("2022", datetime.strptime('2022-01-01', '%Y-%m-%d'), datetime.strptime('2022-12-31', '%Y-%m-%d')),
@@ -129,12 +124,6 @@ class Command(BaseCommand):
             # ("1_2024_6_2024", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
             # ("7_2024", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
 
-
-
-
-
-
-            
         ]
 
         # Ordenando a lista de eventos pela data
