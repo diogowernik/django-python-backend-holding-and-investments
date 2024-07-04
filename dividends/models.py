@@ -1,6 +1,6 @@
 from django.db import models
 from investments.models import Asset
-from portfolios.models import PortfolioInvestment
+from portfolios.models import PortfolioInvestment, Portfolio
 from trade.models import TradeHistory
 from categories.models import Category
 from django.db.models import Max
@@ -140,30 +140,6 @@ class PortfolioDividend(models.Model):
         )
 
 
-    @property
-    def pay_date_by_month_year(self):
-        return self.pay_date.strftime('%m/%Y')
-
-    @property
-    def pay_date_by_year(self):
-        return self.pay_date.strftime('%Y')
-
-    @property
-    def yield_on_cost_brl(self):
-        if self.average_price_brl > 0:
-            return round((self.value_per_share_brl / self.average_price_brl), 4)
-
-    @property
-    def yield_on_cost_usd(self):
-        if self.average_price_usd > 0:
-            return round((self.value_per_share_usd / self.average_price_usd), 4)
-        
-    def __str__(self):
-        return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
-    
-    class Meta:
-        verbose_name_plural = "Dividendos por Portfolio"
-
 class DividendBr(Dividend):
     def save(self, *args, **kwargs):
         # Obtém o preço de fechamento do par BRLUSD mais recente antes da data de pagamento do dividendo
@@ -214,3 +190,39 @@ class DividendUs(Dividend):
 
     class Meta:
         verbose_name_plural = "Dividendos US"
+
+
+class AccumulatedDividends(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    accumulated_dividends_brl = models.FloatField(default=0)
+    accumulated_dividends_usd = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name = "Dividendo Acumulado"
+        verbose_name_plural = "Dividendos Acumulados"
+        unique_together = ('portfolio', 'year', 'month')
+    @property
+    def pay_date_by_month_year(self):
+        return self.pay_date.strftime('%m/%Y')
+
+    @property
+    def pay_date_by_year(self):
+        return self.pay_date.strftime('%Y')
+
+    @property
+    def yield_on_cost_brl(self):
+        if self.average_price_brl > 0:
+            return round((self.value_per_share_brl / self.average_price_brl), 4)
+
+    @property
+    def yield_on_cost_usd(self):
+        if self.average_price_usd > 0:
+            return round((self.value_per_share_usd / self.average_price_usd), 4)
+        
+    def __str__(self):
+        return '  {}  |  {}  |  {}  |  {}  '.format(self.asset.ticker, self.value_per_share_brl, self.record_date, self.pay_date)
+    
+    class Meta:
+        verbose_name_plural = "Dividendos por Portfolio"

@@ -10,6 +10,7 @@ from brokers.models import Broker
 from investments.models import Asset
 from categories.models import Category
 
+# Registra o valor em reais e dolares e quantidades de cotas do portfolio
 class QuotaHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
     event_type = models.CharField( 
@@ -82,15 +83,28 @@ class QuotaHistory(models.Model):
                 raise Exception(f'Não há histórico de cotas para este portfolio, por isso voce não pode realizar a operação: {self.event_type}.')
 
     class Meta:
-        verbose_name_plural = "Historico dos Portfolios - Cotas"
+        verbose_name_plural = "       Quotas dos Portfolios"
         ordering = ['-date']
 
-class SubscriptionEvent(CurrencyTransaction):
-
+# Eventos de Valuation do Portfolio, registra o valor em reais e dolares e quantidades de cotas do portfolio mensalmente, está em reais.
+class ValuationEvent(QuotaHistory):
     @transaction.atomic
     def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'deposit'
-        self.transaction_type = 'deposit' # deixar hidden no admin e frontend
+        self.event_type = 'valuation'
+        self.value_brl = 0  
+        self.value_usd = 0 
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Valuation do Portfolio'
+        verbose_name_plural = '       Valuation dos Portfolios'
+
+# Eventos de Subscrição do Portfolio, entrada de dinheiro no portfolio e aumento de cotas.
+class SubscriptionEvent(CurrencyTransaction):
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # É um depósito nas reservas Brasileiras do Portfolio
+        self.transaction_type = 'deposit' 
         super().save(*args, **kwargs)
 
         value_brl = self.transaction_amount * self.price_brl
@@ -106,46 +120,13 @@ class SubscriptionEvent(CurrencyTransaction):
 
     class Meta:
         verbose_name = 'Subscrição'
-        verbose_name_plural = '     Subscrições - Aumento de Cotas'
+        verbose_name_plural = '      Subscrições - Aumento de Cotas'
 
-class DividendReceiveEvent(CurrencyTransaction):
-
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'deposit'
-        self.transaction_type = 'deposit'
-        super().save(*args, **kwargs)
-
-        value_brl = self.transaction_amount * self.price_brl
-        value_usd = self.transaction_amount * self.price_usd
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='dividend receive',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
-
-    class Meta:
-        verbose_name = 'Recebimento de Dividendos'
-        verbose_name_plural = '  Recebimento de Dividendos'
-
-class ValuationEvent(QuotaHistory):
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        self.event_type = 'valuation'
-        self.value_brl = 0  
-        self.value_usd = 0 
-        super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = 'Valuation do Portfolio'
-        verbose_name_plural = 'Valuation dos Portfolios'
-
+# Eventos de Resgate do Portfolio, saída de dinheiro no portfolio e diminuição de cotas.
 class RedemptionEvent(CurrencyTransaction):
     @transaction.atomic
     def save(self, *args, **kwargs):
+        # É um resgate nas reservas Brasileiras do Portfolio
         self.transaction_type = 'withdraw'
         super().save(*args, **kwargs)
 
@@ -162,52 +143,21 @@ class RedemptionEvent(CurrencyTransaction):
     
     class Meta:
         verbose_name = 'Resgate'
-        verbose_name_plural = '   Resgates - Diminuição de Cotas'
-  
-class DividendPayEvent(CurrencyTransaction):
+        verbose_name_plural = '     Resgates - Diminuição de Cotas'
+
+# Envio de dinheiro para o exterior, retirada de dinheiro das Reservas do Brasil e deposito das Reservas no Exterior. Não altera a quantidade de cotas.
+class SendMoneyEvent(InternationalCurrencyTransfer):
+    # é um resgate nas reservas Brasileiras do Portfolio e um depósito nas reservas do Exterior do Portfolio, model InternationalCurrencyTransfer
     @transaction.atomic
     def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'withdraw'
-        self.transaction_type = 'withdraw'
         super().save(*args, **kwargs)
 
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='dividend payment',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
-    
     class Meta:
-        verbose_name = 'Pagamento de Dividendos'
-        verbose_name_plural = ' Pagamento de Dividendos'
+        verbose_name = 'Remessa'
+        verbose_name_plural = '    Remessas Internacionais'
 
-class TaxPayEvent(CurrencyTransaction):
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'withdraw'
-        self.transaction_type = 'withdraw'
-        super().save(*args, **kwargs)
 
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='tax payment',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
-    
-    class Meta:
-        verbose_name = 'Pagamento de Impostos'
-        verbose_name_plural = ' Pagamento de Impostos'
-
+# Investimento em Ativos no Brasil, retirada de dinheiro das reservas e compra de ativos no Brasil. Se estiver zero é necessária uma subscrição.
 class InvestBrEvent(CurrencyTransaction):
     to_broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
@@ -216,21 +166,12 @@ class InvestBrEvent(CurrencyTransaction):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
+        # É um resgate nas reservas Brasileiras do Portfolio e um Trade de compra de ativos no Brasil
         self.transaction_type = 'withdraw'
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_brl) 
         super().save(*args, **kwargs)
 
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='invest br',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
 
     def create_trade(self):
         trade = Trade.objects.create(
@@ -244,8 +185,39 @@ class InvestBrEvent(CurrencyTransaction):
         return trade
 
     class Meta:
-        verbose_name_plural = '  Comprar / Investir no Brasil'
+        verbose_name_plural = '   Comprar / Investir no Brasil'
 
+
+# Investimento em Ativos no Exterior, retirada de dinheiro das reservas e compra de ativos no Exterior. Se estiver zero é necessária uma subscrição.
+class InvestUsEvent(CurrencyTransaction):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
+    trade_amount = models.FloatField(default=0)
+    asset_price_usd = models.FloatField(default=0)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # É um resgate nas reservas Internacionais do Portfolio e um Trade de compra de ativos no Exterior
+        self.transaction_type = 'withdraw'
+        trade = self.create_trade()
+        self.transaction_amount = (trade.trade_amount * trade.price_usd) 
+        super().save(*args, **kwargs)
+    
+    def create_trade(self):
+        trade = Trade.objects.create(
+            portfolio=self.portfolio,
+            asset=self.asset,
+            broker=self.broker,
+            trade_amount=self.trade_amount,
+            trade_date=self.transaction_date,
+            trade_type='buy',
+        )
+        return trade
+    
+    class Meta:
+        verbose_name_plural = '   Comprar / Investir no Exterior'
+
+
+# Desinvestimento em Ativos no Brasil, retorna o dinheiro para reservas.
 class DivestBrEvent(CurrencyTransaction):
     to_broker = models.ForeignKey(Broker, on_delete=models.CASCADE, default=1)  # Adicionado
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
@@ -254,23 +226,12 @@ class DivestBrEvent(CurrencyTransaction):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'deposit'
+        # É um Trade de venda de ativos no Brasil e um depósito nas reservas Brasileiras do Portfolio
         self.transaction_type = 'deposit'
         self.transaction_amount = self.trade_amount * self.asset_price_brl  # Declaração explícita do preço do ativo
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_brl) 
         super().save(*args, **kwargs)
-
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='divest br',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
 
     def create_trade(self):
         trade = Trade.objects.create(
@@ -285,43 +246,9 @@ class DivestBrEvent(CurrencyTransaction):
         return trade
 
     class Meta:
-        verbose_name_plural = '  Vender / Desinvestir no Brasil'
+        verbose_name_plural = '   Vender / Desinvestir no Brasil'
 
-class InvestUsEvent(CurrencyTransaction):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
-    trade_amount = models.FloatField(default=0)
-    asset_price_usd = models.FloatField(default=0)
-
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'withdraw'
-        self.transaction_type = 'withdraw'
-        trade = self.create_trade()
-        self.transaction_amount = (trade.trade_amount * trade.price_usd) 
-        super().save(*args, **kwargs)
-
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='invest us',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
-    
-    def create_trade(self):
-        trade = Trade.objects.create(
-            portfolio=self.portfolio,
-            asset=self.asset,
-            broker=self.broker,
-            trade_amount=self.trade_amount,
-            trade_date=self.transaction_date,
-            trade_type='buy',
-        )
-        return trade
-
+# Desinvestimento em Ativos no Exterior, retorna o dinheiro para reservas extrangeiras, na moeda da corretora.
 class DivestUsEvent(CurrencyTransaction):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, default=1)
     trade_amount = models.FloatField(default=0)
@@ -329,22 +256,11 @@ class DivestUsEvent(CurrencyTransaction):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
-        # Make sure the transaction_type is always 'deposit'
+        # É um Trade de venda de ativos no Exterior e um depósito nas reservas Internacionais do Portfolio
         self.transaction_type = 'deposit'
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_usd) 
         super().save(*args, **kwargs)
-
-        value_brl = self.transaction_amount * self.price_brl * -1
-        value_usd = self.transaction_amount * self.price_usd * -1
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transaction_date,
-            event_type='divest us',
-            value_brl=value_brl,
-            value_usd=value_usd,
-        )
 
     def create_trade(self):
         trade = Trade.objects.create(
@@ -357,7 +273,47 @@ class DivestUsEvent(CurrencyTransaction):
             price_usd=self.asset_price_usd,
         )
         return trade
+    
+    class Meta:
+        verbose_name_plural = '   Vender / Desinvestir no Exterior'
 
+# Recebimento de Dividendos dentro do portfolio, entrada de dinheiro no portfolio
+class DividendReceiveEvent(CurrencyTransaction):
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # É um depósito nas reservas Brasileiras do Portfolio
+        self.transaction_type = 'deposit'
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Recebimento de Dividendos'
+        verbose_name_plural = '  Recebimento de Dividendos'
+
+# Distribuição de Dividendos para os cotistas, retirada de dinheiro do portfolio, mantendo a quantidade de cotas.
+class DividendDistributionEvent(CurrencyTransaction):
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Retira o valor do dividendo das reservas do Portfolio em Reais. Sai do sistema.
+        self.transaction_type = 'withdraw'
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = 'Distribuição de Dividendos'
+        verbose_name_plural = ' Distribuição de Dividendos'
+
+# Pagamento de Impostos dentro do portfolio, retirada de dinheiro do portfolio, mantem a quantidade de cotas
+class TaxPayEvent(CurrencyTransaction):
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # É um resgate nas reservas Brasileiras do Portfolio.
+        self.transaction_type = 'withdraw'
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Pagamento de Impostos'
+        verbose_name_plural = '  Pagamento de Impostos'
+
+# Histórico de Totais do Portfolio por Categoria em Reais e Dólares
 class PortfolioHistoryByCategory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -372,13 +328,13 @@ class PortfolioHistoryByCategory(models.Model):
         verbose_name_plural = 'Histórico de Portfólios por Categoria'
         ordering = ('-date', 'category',)
 
+# Histórico de Totais do Portfolio em Reais e Dólares
 class PortfolioTotalHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     date = models.DateField()
     total_brl = models.FloatField()
     total_usd = models.FloatField()
     event_type = models.CharField(max_length=20, default='none')
-
 
     def __str__(self):
         return f'{self.portfolio.name} - {self.date}'
@@ -499,20 +455,3 @@ class PortfolioTotalHistory(models.Model):
     class Meta:
         verbose_name_plural = 'Histórico dos Portfolios - Total'
 
-class SendMoneyEvent(InternationalCurrencyTransfer):
-     
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        QuotaHistory.objects.create(
-            portfolio=self.portfolio,
-            date=self.transfer_date,
-            event_type='send money',
-            value_brl=0,
-            value_usd=0,
-        )
-
-    class Meta:
-        verbose_name = 'Envio de Dinheiro'
-        verbose_name_plural = '  Envio de Dinheiro'

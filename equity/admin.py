@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuotaHistory, SubscriptionEvent, PortfolioTotalHistory, RedemptionEvent, InvestBrEvent, DividendReceiveEvent, DividendPayEvent, ValuationEvent, TaxPayEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, PortfolioHistoryByCategory
+from .models import QuotaHistory, SubscriptionEvent, PortfolioTotalHistory, RedemptionEvent, InvestBrEvent, DividendReceiveEvent, ValuationEvent, TaxPayEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, PortfolioHistoryByCategory, SendMoneyEvent
 from django.utils import formats
 
 from django import forms
@@ -83,14 +83,14 @@ class DividendReceiveEventAdmin(admin.ModelAdmin):
     exclude = ('transaction_type', 'price_brl', 'price_usd')
 admin.site.register(DividendReceiveEvent, DividendReceiveEventAdmin)
 
-class DividendPayEventAdmin(admin.ModelAdmin):
-    list_display = ('transaction_date', 'price_brl','price_usd',
-                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
-    list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
-    search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
-    readonly_fields = ('portfolio_investment',)
-    exclude = ('transaction_type', 'price_brl', 'price_usd')
-admin.site.register(DividendPayEvent, DividendPayEventAdmin)
+# class DividendPayEventAdmin(admin.ModelAdmin):
+#     list_display = ('transaction_date', 'price_brl','price_usd',
+#                     'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+#     list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
+#     search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
+#     readonly_fields = ('portfolio_investment',)
+#     exclude = ('transaction_type', 'price_brl', 'price_usd')
+# admin.site.register(DividendPayEvent, DividendPayEventAdmin)
 
 class TaxPayEventAdmin(admin.ModelAdmin):
     list_display = ('transaction_date', 'price_brl','price_usd',
@@ -182,3 +182,9 @@ class PortfolioHistoryByCategoryAdmin(admin.ModelAdmin):
     search_fields = ('portfolio', 'category', 'date')
     ordering = ('-date', 'category',)
 admin.site.register(PortfolioHistoryByCategory, PortfolioHistoryByCategoryAdmin)
+
+class SendMoneyEventAdmin(admin.ModelAdmin):
+    list_display = ('portfolio', 'from_broker', 'to_broker', 'from_transfer_amount', 'to_transfer_amount', 'transfer_fee', 'exchange_rate', 'transfer_date')
+    list_filter = ('portfolio', 'from_broker', 'to_broker', 'transfer_date')
+    search_fields = ('portfolio', 'from_broker', 'to_broker', 'transfer_date')
+admin.site.register(SendMoneyEvent, SendMoneyEventAdmin)

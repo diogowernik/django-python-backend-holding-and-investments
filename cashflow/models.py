@@ -215,7 +215,6 @@ class CurrencyTransfer(models.Model):
         ordering = ['-transfer_date']
         verbose_name_plural = ' Transferências mesma moeda'
 
-
 # Transferência de moedas entre brokers internacionais. Ex: Transferir USD do Banco do Brasil para o TD Ameritrade
 class InternationalCurrencyTransfer(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, default=11)
