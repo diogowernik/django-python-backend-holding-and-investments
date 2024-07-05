@@ -18,6 +18,7 @@ class CurrencyTransaction(models.Model):
     transaction_date = models.DateTimeField(default=timezone.now)
     price_brl = models.FloatField(null=True, blank=True)
     price_usd = models.FloatField(null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
 
     portfolio_investment = models.ForeignKey(PortfolioInvestment, on_delete=models.CASCADE, blank=True, null=True)
     
@@ -240,6 +241,7 @@ class InternationalCurrencyTransfer(models.Model):
             transaction_type='withdraw',
             transaction_amount=self.from_transfer_amount,
             transaction_date=self.transfer_date,
+            description=f'Remessa internacional de {self.from_transfer_amount} {self.from_broker.main_currency.ticker} para {self.to_broker.name}',
         )
         self.to_transaction = CurrencyTransaction.objects.create(
             portfolio=self.portfolio,
@@ -247,6 +249,7 @@ class InternationalCurrencyTransfer(models.Model):
             transaction_type='deposit',
             transaction_amount=self.to_transfer_amount,
             transaction_date=self.transfer_date,
+            description=f'Recebimento internacional de {self.to_transfer_amount} {self.to_broker.main_currency.ticker} de {self.from_broker.name}',
         )
 
     def update_transactions(self):

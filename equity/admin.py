@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuotaHistory, SubscriptionEvent, PortfolioTotalHistory, RedemptionEvent, InvestBrEvent, DividendReceiveEvent, ValuationEvent, TaxPayEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, PortfolioHistoryByCategory, SendMoneyEvent
+from .models import QuotaHistory, SubscriptionEvent, PortfolioTotalHistory, RedemptionEvent, InvestBrEvent, DividendReceiveEvent, ValuationEvent, TaxPayEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, PortfolioHistoryByCategory, SendMoneyEvent, DividendDistributionEvent
 from django.utils import formats
 
 from django import forms
@@ -83,14 +83,14 @@ class DividendReceiveEventAdmin(admin.ModelAdmin):
     exclude = ('transaction_type', 'price_brl', 'price_usd')
 admin.site.register(DividendReceiveEvent, DividendReceiveEventAdmin)
 
-# class DividendPayEventAdmin(admin.ModelAdmin):
-#     list_display = ('transaction_date', 'price_brl','price_usd',
-#                     'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
-#     list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
-#     search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
-#     readonly_fields = ('portfolio_investment',)
-#     exclude = ('transaction_type', 'price_brl', 'price_usd')
-# admin.site.register(DividendPayEvent, DividendPayEventAdmin)
+class DividendDistributionEventAdmin(admin.ModelAdmin):
+    list_display = ('transaction_date', 'price_brl','price_usd',
+                    'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
+    list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
+    search_fields = ['portfolio__name', 'broker__name', 'transaction_type']
+    readonly_fields = ('portfolio_investment',)
+    exclude = ('transaction_type', 'price_brl', 'price_usd')
+admin.site.register(DividendDistributionEvent, DividendDistributionEventAdmin)
 
 class TaxPayEventAdmin(admin.ModelAdmin):
     list_display = ('transaction_date', 'price_brl','price_usd',

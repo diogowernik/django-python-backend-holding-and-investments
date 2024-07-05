@@ -3,7 +3,8 @@ from .models import InternationalCurrencyTransfer, CurrencyTransfer, CurrencyTra
 
 # Depósito e Saques
 class CurrencyTransactionAdmin(admin.ModelAdmin):
-    list_display = ('transaction_date', 'price_brl','price_usd',
+    list_display = ('transaction_date', 'description',
+                    'price_brl','price_usd',
                     'portfolio_investment', 'broker', 'transaction_type', 'transaction_amount', 'portfolio')
     list_filter = ('portfolio', 'broker', 'transaction_type', 'transaction_date')
     search_fields = ['portfolio__name', 'broker__name', 'transaction_type']

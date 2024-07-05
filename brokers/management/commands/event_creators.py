@@ -1,6 +1,6 @@
 # event_creators.py
 from datetime import timedelta
-from equity.models import SubscriptionEvent, InvestBrEvent, TaxPayEvent, DividendReceiveEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, ValuationEvent, SendMoneyEvent
+from equity.models import SubscriptionEvent, InvestBrEvent, TaxPayEvent, DividendReceiveEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, ValuationEvent, SendMoneyEvent, DividendDistributionEvent
 from portfolios.models import Portfolio
 from brokers.models import Broker
 from investments.models import Asset
@@ -32,6 +32,17 @@ def create_subscription_event(portfolio_id, broker_name, transaction_date, trans
         transaction_amount=transaction_amount # brl
     )
     print(f'Successfully created SubscriptionEvent for Portfolio ID {portfolio} on {transaction_date}')
+
+def create_dividend_distribution_event(portfolio_id, broker_name, transaction_date, transaction_amount):
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    broker = Broker.objects.get(name=broker_name)
+    DividendDistributionEvent.objects.create(
+        portfolio=portfolio,
+        broker=broker,
+        transaction_date=transaction_date,
+        transaction_amount=transaction_amount
+    )
+    print(f'Successfully created DividendDistributionEvent for Portfolio ID {portfolio} on {transaction_date}')
 
 # brl
 def create_tax_pay_event(portfolio_id, broker, transaction_date, transaction_amount):
@@ -233,6 +244,7 @@ def create_invest_usd_event(portfolio_id, broker_name, transaction_date, asset_t
         asset_price_usd=asset_price_usd
     )
     print(f'Successfully created InvestUsEvent for Portfolio ID {portfolio_id} on {transaction_date}')
+
 def create_or_update_asset_create_historical_price_create_invest_br_event(
     category_name, subcategory_name, ticker, price_usd, price_brl,
     trade_date, portfolio_id, broker_name, trade_amount

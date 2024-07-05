@@ -26,7 +26,8 @@ from .event_creators import (
     create_or_update_asset_create_historical_price_create_invest_us_event,
     create_divest_br_event,
     create_divest_us_event,
-    send_money_event
+    send_money_event,
+    create_dividend_distribution_event
 )
 
 class Command(BaseCommand):
@@ -51,6 +52,8 @@ class Command(BaseCommand):
         dividend_usd_events = pd.read_csv(f'{csv_directory}/dividend_usd_events.csv')
         valuation_events = pd.read_csv(f'{csv_directory}/valuation_events.csv')
         send_money_events = pd.read_csv(f'{csv_directory}/send_money_events.csv')
+        dividend_distribution_events = pd.read_csv(f'{csv_directory}/dividend_distribution_events.csv')
+        transfer_events = pd.read_csv(f'{csv_directory}/transfer_events.csv')
 
         # Funções de criação de eventos mapeadas
         event_creators = {
@@ -65,7 +68,8 @@ class Command(BaseCommand):
             'dividend_br': create_dividend_br_event,
             'dividend_usd': create_dividend_usd_event,
             'valuation': create_valuation_event,
-            'send_money': send_money_event
+            'send_money': send_money_event,
+            'dividend_distribution': create_dividend_distribution_event
         }
 
         # Função auxiliar para criar lista de eventos a partir de um DataFrame
@@ -91,6 +95,7 @@ class Command(BaseCommand):
         dividend_usd_list = create_event_list(dividend_usd_events, 'dividend_usd')
         valuation_list = create_event_list(valuation_events, 'valuation')
         send_money_list = create_event_list(send_money_events, 'send_money')
+        dividend_distribution_list = create_event_list(dividend_distribution_events, 'dividend_distribution')
 
         # Combinando todas as listas de eventos
         events_list = (
@@ -105,7 +110,8 @@ class Command(BaseCommand):
                     dividend_br_list + 
                     dividend_usd_list +
                     valuation_list  +
-                    send_money_list
+                    send_money_list +
+                    dividend_distribution_list
                     )
 
         # Definindo intervalos de datas para os lotes

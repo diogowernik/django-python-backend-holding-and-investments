@@ -137,6 +137,7 @@ class PortfolioDividend(models.Model):
             broker = self.portfolio_investment.broker,
             transaction_amount = transaction_amount,
             transaction_date = self.pay_date,
+            description = f'Dividendos recebido de {self.asset.ticker}, {transaction_amount} {self.currency}',
         )
 
 

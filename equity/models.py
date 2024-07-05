@@ -105,6 +105,7 @@ class SubscriptionEvent(CurrencyTransaction):
     def save(self, *args, **kwargs):
         # É um depósito nas reservas Brasileiras do Portfolio
         self.transaction_type = 'deposit' 
+        self.description = f'Subscrição {self.transaction_amount} - {self.broker.name}.'
         super().save(*args, **kwargs)
 
         value_brl = self.transaction_amount * self.price_brl
@@ -128,6 +129,7 @@ class RedemptionEvent(CurrencyTransaction):
     def save(self, *args, **kwargs):
         # É um resgate nas reservas Brasileiras do Portfolio
         self.transaction_type = 'withdraw'
+        self.description = f'Resgate {self.transaction_date} - {self.broker.name}.'
         super().save(*args, **kwargs)
 
         value_brl = self.transaction_amount * self.price_brl * -1
@@ -170,6 +172,7 @@ class InvestBrEvent(CurrencyTransaction):
         self.transaction_type = 'withdraw'
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_brl) 
+        self.description = f'Compra de {trade.trade_amount} {trade.asset.ticker} em {self.broker.name}.'
         super().save(*args, **kwargs)
 
 
@@ -200,6 +203,7 @@ class InvestUsEvent(CurrencyTransaction):
         self.transaction_type = 'withdraw'
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_usd) 
+        self.description = f'Compra de {trade.trade_amount} {trade.asset.ticker} em {self.broker.name}.'
         super().save(*args, **kwargs)
     
     def create_trade(self):
@@ -231,6 +235,7 @@ class DivestBrEvent(CurrencyTransaction):
         self.transaction_amount = self.trade_amount * self.asset_price_brl  # Declaração explícita do preço do ativo
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_brl) 
+        self.description = f'Venda de {trade.trade_amount} {trade.asset.ticker} em {self.broker.name}.'
         super().save(*args, **kwargs)
 
     def create_trade(self):
@@ -260,6 +265,7 @@ class DivestUsEvent(CurrencyTransaction):
         self.transaction_type = 'deposit'
         trade = self.create_trade()
         self.transaction_amount = (trade.trade_amount * trade.price_usd) 
+        self.description = f'Venda de {trade.trade_amount} {trade.asset.ticker} em {self.broker.name}.'
         super().save(*args, **kwargs)
 
     def create_trade(self):
@@ -291,10 +297,12 @@ class DividendReceiveEvent(CurrencyTransaction):
 
 # Distribuição de Dividendos para os cotistas, retirada de dinheiro do portfolio, mantendo a quantidade de cotas.
 class DividendDistributionEvent(CurrencyTransaction):
+    
     @transaction.atomic
     def save(self, *args, **kwargs):
         # Retira o valor do dividendo das reservas do Portfolio em Reais. Sai do sistema.
         self.transaction_type = 'withdraw'
+        self.description = f'Dividendo distribuídos de {self.broker.name} no valor de {self.transaction_amount} {self.broker.main_currency.ticker}.'
         super().save(*args, **kwargs)
     
     class Meta:
@@ -307,6 +315,7 @@ class TaxPayEvent(CurrencyTransaction):
     def save(self, *args, **kwargs):
         # É um resgate nas reservas Brasileiras do Portfolio.
         self.transaction_type = 'withdraw'
+        self.description = f'Pagamento de Impostos {self.transaction_amount}  {self.broker.main_currency.ticker}.'
         super().save(*args, **kwargs)
 
     class Meta:

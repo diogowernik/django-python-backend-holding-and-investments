@@ -151,5 +151,5 @@ common/management/commands/portfolio_18_2019.py
 common/management/commands/portfolio_18_to_12_2018.py
 brokers/management/csv_files/*
 brokers/management/commands/arquivo/*
-brokers/management/commands/log_files/*
+brokers/management/log_files/*
 
