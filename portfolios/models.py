@@ -38,12 +38,24 @@ class PortfolioInvestment(models.Model):
     total_today_brl = models.FloatField(editable=False, default=0)
     total_today_usd = models.FloatField(default=0, editable=False)
 
+    DECIMAL_PLACES_MAP = {
+        'Reservas': 2,
+        'Criptomoedas': 4,
+        # As outras categorias têm 0 casas decimais
+    }
+
+
     def save(self, *args, **kwargs):
         self.total_cost_brl = round(self.shares_amount * self.share_average_price_brl, 2)
         self.total_cost_usd = round(self.shares_amount * self.share_average_price_usd, 2)
 
         self.total_today_brl = round(self.shares_amount * self.asset.price_brl, 2)
         self.total_today_usd = round(self.shares_amount * self.asset.price_usd, 2)
+
+        category_name = self.asset.category.name
+        decimal_places = self.DECIMAL_PLACES_MAP.get(category_name, 0)
+        self.shares_amount = round(self.shares_amount, decimal_places)
+
         super(PortfolioInvestment, self).save(*args, **kwargs)
 
     @property

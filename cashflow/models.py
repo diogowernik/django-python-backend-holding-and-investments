@@ -172,6 +172,7 @@ class CurrencyTransfer(models.Model):
             transaction_type='withdraw',
             transaction_amount=self.transfer_amount,
             transaction_date=self.transfer_date,
+            description=f'Transferência de {self.transfer_amount} {self.from_broker.main_currency.ticker} para {self.to_broker.name}',
         )
         self.to_transaction = CurrencyTransaction.objects.create(
             portfolio=self.portfolio,
@@ -179,6 +180,7 @@ class CurrencyTransfer(models.Model):
             transaction_type='deposit',
             transaction_amount=self.transfer_amount,
             transaction_date=self.transfer_date,
+            description=f'Recebimento de {self.transfer_amount} {self.from_broker.main_currency.ticker} de {self.from_broker.name}',
         )
 
     def update_transactions(self):

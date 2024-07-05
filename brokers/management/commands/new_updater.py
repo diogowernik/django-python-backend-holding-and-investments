@@ -69,7 +69,8 @@ class Command(BaseCommand):
             'dividend_usd': create_dividend_usd_event,
             'valuation': create_valuation_event,
             'send_money': send_money_event,
-            'dividend_distribution': create_dividend_distribution_event
+            'dividend_distribution': create_dividend_distribution_event,
+            'transfer': create_transfer_event
         }
 
         # Função auxiliar para criar lista de eventos a partir de um DataFrame
@@ -96,6 +97,7 @@ class Command(BaseCommand):
         valuation_list = create_event_list(valuation_events, 'valuation')
         send_money_list = create_event_list(send_money_events, 'send_money')
         dividend_distribution_list = create_event_list(dividend_distribution_events, 'dividend_distribution')
+        transfer_list = create_event_list(transfer_events, 'transfer')
 
         # Combinando todas as listas de eventos
         events_list = (
@@ -111,7 +113,8 @@ class Command(BaseCommand):
                     dividend_usd_list +
                     valuation_list  +
                     send_money_list +
-                    dividend_distribution_list
+                    dividend_distribution_list +
+                    transfer_list
                     )
 
         # Definindo intervalos de datas para os lotes
