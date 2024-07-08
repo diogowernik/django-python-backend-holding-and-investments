@@ -12,8 +12,16 @@ def set_prices(trade):
 def set_price(trade, asset_ticker, target_currency):
     price_attribute = f'price_{target_currency.lower()}'
     if getattr(trade, price_attribute) is None:
-        today = datetime.today().strftime('%Y-%m-%d')
+        today = datetime.today().date()  # Obtém a data de hoje como um objeto datetime.date
         trade_date = trade.trade_date
+        
+        # Converte trade_date para um objeto datetime.date se for um objeto datetime.datetime
+        if isinstance(trade_date, datetime):
+            trade_date = trade_date.date()
+        # Converte trade_date para um objeto datetime.date se for uma string
+        elif isinstance(trade_date, str):
+            trade_date = datetime.strptime(trade_date, '%Y-%m-%d').date()
+        
         if trade_date == today:
             setattr(trade, price_attribute, getattr(trade.asset, price_attribute))
         elif trade_date < today:

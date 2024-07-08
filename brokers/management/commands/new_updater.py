@@ -91,7 +91,7 @@ class Command(BaseCommand):
         invest_br_list = create_event_list(invest_br_events, 'create_or_update_asset_create_historical_price_create_invest_br_event')
         invest_usd_list = create_event_list(invest_usd_events, 'create_or_update_asset_create_historical_price_create_invest_us_event')
         divest_br_list = create_event_list(divest_br_events, 'create_divest_br_event')
-        divest_usd_list = create_event_list(divest_usd_events, 'create_divest_usd_event')
+        divest_usd_list = create_event_list(divest_usd_events, 'create_divest_us_event')
         dividend_br_list = create_event_list(dividend_br_events, 'dividend_br')
         dividend_usd_list = create_event_list(dividend_usd_events, 'dividend_usd')
         valuation_list = create_event_list(valuation_events, 'valuation')
@@ -126,11 +126,11 @@ class Command(BaseCommand):
             ("2006", datetime.strptime('2006-01-01', '%Y-%m-%d'), datetime.strptime('2006-12-31', '%Y-%m-%d')),
             ("2007_2018", datetime.strptime('2007-01-01', '%Y-%m-%d'), datetime.strptime('2018-12-31', '%Y-%m-%d')),
             ("2019", datetime.strptime('2019-01-01', '%Y-%m-%d'), datetime.strptime('2019-12-31', '%Y-%m-%d')),
-            # ("2020", datetime.strptime('2020-01-01', '%Y-%m-%d'), datetime.strptime('2020-12-31', '%Y-%m-%d')),
-            # ("2021", datetime.strptime('2021-01-01', '%Y-%m-%d'), datetime.strptime('2021-12-31', '%Y-%m-%d')),
-            # ("2022", datetime.strptime('2022-01-01', '%Y-%m-%d'), datetime.strptime('2022-12-31', '%Y-%m-%d')),
-            # ("2023", datetime.strptime('2023-01-01', '%Y-%m-%d'), datetime.strptime('2023-12-31', '%Y-%m-%d')),
-            # ("1_2024_6_2024", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
+            ("2020", datetime.strptime('2020-01-01', '%Y-%m-%d'), datetime.strptime('2020-12-31', '%Y-%m-%d')),
+            ("2021", datetime.strptime('2021-01-01', '%Y-%m-%d'), datetime.strptime('2021-12-31', '%Y-%m-%d')),
+            ("2022", datetime.strptime('2022-01-01', '%Y-%m-%d'), datetime.strptime('2022-12-31', '%Y-%m-%d')),
+            ("2023", datetime.strptime('2023-01-01', '%Y-%m-%d'), datetime.strptime('2023-12-31', '%Y-%m-%d')),
+            ("1_2024_6_2024", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
             # ("7_2024", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
 
         ]
@@ -161,6 +161,9 @@ class Command(BaseCommand):
                         event_creators[event['type']](**event_without_type)
                     except Exception as e:
                         log_error(f'Error processing event: {str(e)}', event['type'], event['sort_date'])
+                        print(f'Error processing event: {str(e)}')
+                        print(event)
+                    
             
             # Escrevendo erros em um arquivo CSV para o lote atual
             write_error_log_to_csv(error_log, batch_name)

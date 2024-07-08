@@ -115,7 +115,7 @@ def create_transfer_event(portfolio_id, from_broker_name, to_broker_name, transf
         transfer_date=transfer_date,
         transfer_amount=transfer_amount
     )
-    print('Successfully created TransferEvent')
+    print(f'Successfully created TransferEvent from {from_broker_name} to {to_broker_name} on {transfer_date}')
 
 # brl and usd
 def create_or_update_asset(category_id, subcategory_id, ticker, price_usd, price_brl):
@@ -226,7 +226,7 @@ def create_property_divest_br_event(portfolio_id, broker_name, transaction_date,
         trade_amount=trade_amount,
         asset_price_brl=asset_price_brl
     )
-    print('Successfully created DivestBrEvent')
+    print('Successfully created DivestBrEvent of {asset.ticker} on {broker_name}')
 
 # usd
 def create_invest_usd_event(portfolio_id, broker_name, transaction_date, asset_ticker, trade_amount):
@@ -243,7 +243,7 @@ def create_invest_usd_event(portfolio_id, broker_name, transaction_date, asset_t
         trade_amount=trade_amount,
         asset_price_usd=asset_price_usd
     )
-    print(f'Successfully created InvestUsEvent for Portfolio ID {portfolio_id} on {transaction_date}')
+    print(f'Successfully created InvestUsEvent | {trade_amount} {asset.ticker}')
 
 def create_or_update_asset_create_historical_price_create_invest_br_event(
     category_name, subcategory_name, ticker, price_usd, price_brl,
@@ -318,28 +318,27 @@ def create_divest_br_event(portfolio_id, broker_name, trade_date, ticker, trade_
         trade_amount=trade_amount,
         asset_price_brl=price_brl
     )
-    print(f'Successfully created DivestBrEvent for Portfolio ID {portfolio_id} on {trade_date}')
+    print(f'Successfully created DivestBrEvent | {trade_amount} {ticker}')
 
 # usd
 def create_divest_us_event(portfolio_id, broker_name, trade_date, ticker, trade_amount, price_usd, price_brl):
     portfolio = Portfolio.objects.get(id=portfolio_id)
     broker = Broker.objects.get(name=broker_name)
-    
+    asset = Asset.objects.get(ticker=ticker)
+
     try:
-        asset = Asset.objects.get(ticker=ticker)
-    except Asset.DoesNotExist:
-        log_error(f'Error: Asset with ticker {ticker} does not exist for DivestUsEvent on {trade_date}')
-        return
-    
-    DivestUsEvent.objects.create(
-        portfolio=portfolio,
-        broker=broker,
-        transaction_date=trade_date,
-        asset=asset,
-        trade_amount=trade_amount,
-        asset_price_usd=price_usd
-    )
-    print(f'Successfully created DivestUsEvent for Portfolio ID {portfolio_id} on {trade_date}')
+        DivestUsEvent.objects.create(
+            portfolio=portfolio,
+            broker=broker,
+            transaction_date=trade_date,
+            asset=asset,
+            trade_amount=trade_amount,
+            asset_price_usd=price_usd
+        )
+        print(f'Successfully created DivestUsEvent | {trade_amount} {ticker}')
+    except Exception as e:
+        log_error(f'Error: {e}')
+        print(f'Error creating DivestUsEvent | {trade_amount} {ticker}')
 
 def send_money_event(portfolio_id, from_broker_name, to_broker_name, transfer_date, from_transfer_amount, exchange_rate):
     portfolio = Portfolio.objects.get(id=portfolio_id)
@@ -357,3 +356,5 @@ def send_money_event(portfolio_id, from_broker_name, to_broker_name, transfer_da
         print(f'Successfully created SendMoneyEvent for Portfolio ID {portfolio_id} on {transfer_date}')
     except Exception as e:
         log_error(f'Error: {e}')
+
+    
