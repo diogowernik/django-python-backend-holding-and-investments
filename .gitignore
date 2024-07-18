@@ -153,3 +153,13 @@ brokers/management/csv_files/*
 brokers/management/commands/arquivo/*
 brokers/management/log_files/*
 
+# db
+db.clean.sqlite3
+db.2018.sqlite3
+db.2019.sqlite3
+db.2020.sqlite3
+db.2021.sqlite3
+db.2022.sqlite3
+db.2023.sqlite3
+db.2024.sqlite3
+db.2025.sqlite3

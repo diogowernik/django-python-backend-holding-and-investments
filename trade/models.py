@@ -94,6 +94,10 @@ class Trade(models.Model):
         is_new = self.pk is None  # Check if the object is new
         # services/price_services.py
         set_prices(self)
+        # round price_brl and price_usd to 2 decimal places
+        self.price_brl = round(self.price_brl, 2)
+        self.price_usd = round(self.price_usd, 2)
+        
         # services/portfolio_investment_service.py
         set_portfolio_investment(self)
         super().save(*args, **kwargs)  # Save the object
@@ -138,6 +142,11 @@ class TradeCalculation(models.Model):
     total_brl = models.FloatField(default=0)
     total_usd = models.FloatField(default=0)
     trade_date = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        # round share_average_price_brl and share_average_price_usd to 2 decimal places
+        self.share_average_price_brl = round(self.share_average_price_brl, 2)
+        self.share_average_price_usd = round(self.share_average_price_usd, 2)
 
     def process_transaction(self, trade_date, is_new=False, transaction_id=None): 
         # TradeService
@@ -240,6 +249,10 @@ class TradeHistory(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        # round share_average_price_brl and share_average_price_usd to 2 decimal places
+        self.share_average_price_brl = round(self.share_average_price_brl, 2)
+        self.share_average_price_usd = round(self.share_average_price_usd, 2)
+        
         super().save(*args, **kwargs)
         if is_new:
             # services/dividend_service.py

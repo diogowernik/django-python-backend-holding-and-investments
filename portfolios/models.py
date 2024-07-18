@@ -55,6 +55,8 @@ class PortfolioInvestment(models.Model):
         category_name = self.asset.category.name
         decimal_places = self.DECIMAL_PLACES_MAP.get(category_name, 0)
         self.shares_amount = round(self.shares_amount, decimal_places)
+        self.share_average_price_brl = round(self.share_average_price_brl, 2)
+        self.share_average_price_usd = round(self.share_average_price_usd, 2)
 
         super(PortfolioInvestment, self).save(*args, **kwargs)
 

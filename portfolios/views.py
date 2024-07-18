@@ -41,7 +41,9 @@ class PortfolioInvestmentList(generics.ListAPIView):
             portfolio_id=self.kwargs['pk'],
         ).select_related(
             'asset__subcategory',
-        )
+        # não mostrar quando shares_amount == 0
+        ).exclude(shares_amount=0)
+                                            
 
 # PortfolioInvestmentDetail, apenas donos podem CRUD
 class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):

@@ -27,7 +27,8 @@ from .event_creators import (
     create_divest_br_event,
     create_divest_us_event,
     send_money_event,
-    create_dividend_distribution_event
+    create_dividend_distribution_event,
+    create_redemption_event
 )
 
 class Command(BaseCommand):
@@ -54,6 +55,7 @@ class Command(BaseCommand):
         send_money_events = pd.read_csv(f'{csv_directory}/send_money_events.csv')
         dividend_distribution_events = pd.read_csv(f'{csv_directory}/dividend_distribution_events.csv')
         transfer_events = pd.read_csv(f'{csv_directory}/transfer_events.csv')
+        redemption_events = pd.read_csv(f'{csv_directory}/redemption_events.csv')
 
         # Funções de criação de eventos mapeadas
         event_creators = {
@@ -70,7 +72,8 @@ class Command(BaseCommand):
             'valuation': create_valuation_event,
             'send_money': send_money_event,
             'dividend_distribution': create_dividend_distribution_event,
-            'transfer': create_transfer_event
+            'transfer': create_transfer_event,
+            'redemption': create_redemption_event
         }
 
         # Função auxiliar para criar lista de eventos a partir de um DataFrame
@@ -98,6 +101,7 @@ class Command(BaseCommand):
         send_money_list = create_event_list(send_money_events, 'send_money')
         dividend_distribution_list = create_event_list(dividend_distribution_events, 'dividend_distribution')
         transfer_list = create_event_list(transfer_events, 'transfer')
+        redemption_list = create_event_list(redemption_events, 'redemption')
 
         # Combinando todas as listas de eventos
         events_list = (
@@ -114,7 +118,8 @@ class Command(BaseCommand):
                     valuation_list  +
                     send_money_list +
                     dividend_distribution_list +
-                    transfer_list
+                    transfer_list +
+                    redemption_list
                     )
 
         # Definindo intervalos de datas para os lotes
@@ -130,8 +135,8 @@ class Command(BaseCommand):
             ("2021", datetime.strptime('2021-01-01', '%Y-%m-%d'), datetime.strptime('2021-12-31', '%Y-%m-%d')),
             ("2022", datetime.strptime('2022-01-01', '%Y-%m-%d'), datetime.strptime('2022-12-31', '%Y-%m-%d')),
             ("2023", datetime.strptime('2023-01-01', '%Y-%m-%d'), datetime.strptime('2023-12-31', '%Y-%m-%d')),
-            ("1_2024_6_2024", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
-            # ("7_2024", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
+            ("2024_1_6", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
+            ("7_2024", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
 
         ]
 
@@ -161,8 +166,7 @@ class Command(BaseCommand):
                         event_creators[event['type']](**event_without_type)
                     except Exception as e:
                         log_error(f'Error processing event: {str(e)}', event['type'], event['sort_date'])
-                        print(f'Error processing event: {str(e)}')
-                        print(event)
+                        continue
                     
             
             # Escrevendo erros em um arquivo CSV para o lote atual

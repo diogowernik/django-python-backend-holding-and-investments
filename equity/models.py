@@ -44,6 +44,13 @@ class QuotaHistory(models.Model):
     def save(self, *args, **kwargs):
         portfolio_history = self.create_portfolio_history()
         self.create_quota_history(portfolio_history) 
+        # round to 2 decimal places
+        self.total_brl = round(self.total_brl, 2)
+        self.total_usd = round(self.total_usd, 2)
+        self.quota_amount = round(self.quota_amount, 2)
+        self.quota_price_brl = round(self.quota_price_brl, 2)
+        self.quota_price_usd = round(self.quota_price_usd, 2)
+        self.percentage_change = round(self.percentage_change, 4)
         super().save(*args, **kwargs)
 
     def create_portfolio_history(self):

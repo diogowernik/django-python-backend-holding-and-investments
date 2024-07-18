@@ -25,8 +25,11 @@ class CurrencyTransaction(models.Model):
     @transaction.atomic
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if the object is new
-
+        # Round to 2 decimal places
+        self.transaction_amount = round(self.transaction_amount, 2)  
         self.set_prices()
+        self.price_brl = round(self.price_brl, 2) 
+        self.price_usd = round(self.price_usd, 2) 
         self.set_portfolio_investment()
         super().save(*args, **kwargs)  # Save the object
         self.process_transaction(is_new)

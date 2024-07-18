@@ -1,6 +1,6 @@
 # event_creators.py
 from datetime import timedelta
-from equity.models import SubscriptionEvent, InvestBrEvent, TaxPayEvent, DividendReceiveEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, ValuationEvent, SendMoneyEvent, DividendDistributionEvent
+from equity.models import SubscriptionEvent, InvestBrEvent, TaxPayEvent, DividendReceiveEvent, DivestBrEvent, InvestUsEvent, DivestUsEvent, ValuationEvent, SendMoneyEvent, DividendDistributionEvent, RedemptionEvent
 from portfolios.models import Portfolio
 from brokers.models import Broker
 from investments.models import Asset
@@ -32,6 +32,18 @@ def create_subscription_event(portfolio_id, broker_name, transaction_date, trans
         transaction_amount=transaction_amount # brl
     )
     print(f'Successfully created SubscriptionEvent for Portfolio ID {portfolio} on {transaction_date}')
+
+# brl
+def create_redemption_event(portfolio_id, broker_name, transaction_date, transaction_amount):
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    broker = Broker.objects.get(name=broker_name)
+    RedemptionEvent.objects.create(
+        portfolio=portfolio,
+        broker=broker,
+        transaction_date=transaction_date,
+        transaction_amount=transaction_amount
+    )
+    print(f'Successfully created RedemptionEvent for Portfolio ID {portfolio} on {transaction_date}')
 
 def create_dividend_distribution_event(portfolio_id, broker_name, transaction_date, transaction_amount):
     portfolio = Portfolio.objects.get(id=portfolio_id)
