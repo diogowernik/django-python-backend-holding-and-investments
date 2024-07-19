@@ -1,3 +1,5 @@
+# equity/models.py
+
 from django.db import models
 from portfolios.models import Portfolio
 from django.db import transaction

@@ -101,6 +101,8 @@ class PortfolioDividend(models.Model):
     average_price_brl = models.FloatField(default=0)
     average_price_usd = models.FloatField(default=0)
     currency = models.CharField(max_length=3, default='BRL')
+    total_dividend_brl = models.FloatField(default=0, null=True, blank=True, editable=False)
+    total_dividend_usd = models.FloatField(default=0, null=True, blank=True, editable=False)
 
     @classmethod
     def create_portfolio_dividend(cls, trade_history, dividend):
@@ -123,6 +125,12 @@ class PortfolioDividend(models.Model):
 
     def save(self, *args, **kwargs):
         self.category = self.asset.category
+        # arredondar para 4 casas decimais
+        self.value_per_share_brl = round(self.value_per_share_brl, 4)
+        self.value_per_share_usd = round(self.value_per_share_usd, 4)
+        # calcular o total do dividendo
+        self.total_dividend_brl = round(self.shares_amount * self.value_per_share_brl, 2)
+        self.total_dividend_usd = round(self.shares_amount * self.value_per_share_usd, 2)
         super().save(*args, **kwargs)
         self.create_dividend_receive_events()  # Cria o DividendReceiveEvent automaticamente
 
@@ -140,6 +148,13 @@ class PortfolioDividend(models.Model):
             description = f'Dividendos recebido de {self.asset.ticker}, {transaction_amount} {self.currency}',
         )
 
+    @property
+    def pay_date_by_month_year(self):
+        return self.pay_date.strftime('%m/%Y')
+
+    @property
+    def pay_date_by_year(self):
+        return self.pay_date.strftime('%Y')
 
 class DividendBr(Dividend):
     def save(self, *args, **kwargs):

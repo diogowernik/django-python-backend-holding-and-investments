@@ -124,10 +124,6 @@ class Command(BaseCommand):
 
         # Definindo intervalos de datas para os lotes
         date_ranges = [
-            # testes
-            # ("8_2019", datetime.strptime('2019-08-01', '%Y-%m-%d'), datetime.strptime('2019-08-31', '%Y-%m-%d')),
-            # ("9_2019", datetime.strptime('2019-09-01', '%Y-%m-%d'), datetime.strptime('2019-09-30', '%Y-%m-%d')),
-            # valendo mas comentado para os testes serem em periodos menores.
             ("2006", datetime.strptime('2006-01-01', '%Y-%m-%d'), datetime.strptime('2006-12-31', '%Y-%m-%d')),
             ("2007_2018", datetime.strptime('2007-01-01', '%Y-%m-%d'), datetime.strptime('2018-12-31', '%Y-%m-%d')),
             ("2019", datetime.strptime('2019-01-01', '%Y-%m-%d'), datetime.strptime('2019-12-31', '%Y-%m-%d')),
@@ -136,8 +132,8 @@ class Command(BaseCommand):
             ("2022", datetime.strptime('2022-01-01', '%Y-%m-%d'), datetime.strptime('2022-12-31', '%Y-%m-%d')),
             ("2023", datetime.strptime('2023-01-01', '%Y-%m-%d'), datetime.strptime('2023-12-31', '%Y-%m-%d')),
             ("2024_1_6", datetime.strptime('2024-01-01', '%Y-%m-%d'), datetime.strptime('2024-06-30', '%Y-%m-%d')),
-            ("7_2024", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
-
+            ("2024_7", datetime.strptime('2024-07-01', '%Y-%m-%d'), datetime.strptime('2024-07-31', '%Y-%m-%d')),
+            # ("2024_8", datetime.strptime('2024-08-01', '%Y-%m-%d'), datetime.strptime('2024-08-31', '%Y-%m-%d')),
         ]
 
         # Ordenando a lista de eventos pela data

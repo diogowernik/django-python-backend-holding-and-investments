@@ -8,8 +8,25 @@ from investments.models import Category
 from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
+from equity.models import ValuationEvent
+from equity.serializers import ValuationEventSerializer
+from dividends.models import PortfolioDividend
+from dividends.serializers import PortfolioDividendSerializer
 
+class ValuationEventList(generics.ListCreateAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, IsOwner)
+    serializer_class = ValuationEventSerializer
 
+    def get_queryset(self):
+        portfolio_id = self.kwargs['pk']
+        return ValuationEvent.objects.filter(portfolio_id=portfolio_id)
+
+class ValuationEventDetail(generics.RetrieveUpdateDestroyAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, IsOwner)
+    serializer_class = ValuationEventSerializer
+    queryset = ValuationEvent.objects.all()
 
 # PortfolioList, apenas donos podem CRUD
 class PortfolioList(generics.ListCreateAPIView):
@@ -44,7 +61,6 @@ class PortfolioInvestmentList(generics.ListAPIView):
         # não mostrar quando shares_amount == 0
         ).exclude(shares_amount=0)
                                             
-
 # PortfolioInvestmentDetail, apenas donos podem CRUD
 class PortfolioInvestmentDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (TokenAuthentication,)
@@ -63,13 +79,16 @@ class CategoryList(generics.ListAPIView):
 
 # Apenas donos podem ver e admin pode CRUD
 class PortfolioDividendList(generics.ListAPIView):
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsOwner, )  # Somente o dono pode acessar
-    serializer_class = serializers.PortfolioDividendSerializer
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsOwner, )  # Somente o dono pode acessar
+    serializer_class = PortfolioDividendSerializer
+    # serializer_class = serializers.PortfolioDividendSerializer
 
     def get_queryset(self):
-        return models.PortfolioDividend.objects.filter(
-            portfolio_id=self.kwargs['pk'],
+        return PortfolioDividend.objects.filter(
+            portfolio_investment__portfolio_id=self.kwargs['pk'],
+        # return models.PortfolioDividend.objects.filter(
+            # portfolio_id=self.kwargs['pk'],
         ).order_by('-pay_date')
 
 # Apenas donos podem ver e admin pode CRUD

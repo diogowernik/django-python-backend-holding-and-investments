@@ -70,6 +70,7 @@ def create_tax_pay_event(portfolio_id, broker, transaction_date, transaction_amo
 
 # brl
 def create_dividend_br_event(asset_ticker, record_date, value_per_share_brl, pay_date, portfolio_id):
+    
     try:
         asset = Asset.objects.get(ticker=asset_ticker)
         DividendBr.objects.create(

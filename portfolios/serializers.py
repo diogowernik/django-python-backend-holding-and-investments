@@ -12,7 +12,6 @@ class PortfolioSerializer(serializers.ModelSerializer):
         # mas como você já está tratando isso na view, pode não ser necessário.
         return models.Portfolio.objects.create(**validated_data)
 
-
 class PortfolioDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Portfolio
@@ -63,8 +62,6 @@ class PortfolioInvestmentSerializer(serializers.ModelSerializer):
 
         )
 
-from rest_framework import serializers
-
 class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
     broker_name = serializers.CharField(source='broker.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -87,7 +84,6 @@ class CreatePortfolioInvestmentSerializer(serializers.ModelSerializer):
             'total_today_brl',
             'total_today_usd',
         )
-
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
