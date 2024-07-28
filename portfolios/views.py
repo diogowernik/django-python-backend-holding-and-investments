@@ -13,15 +13,6 @@ from equity.serializers import ValuationEventSerializer
 from dividends.models import PortfolioDividend
 from dividends.serializers import PortfolioDividendSerializer
 
-class ValuationEventList(generics.ListCreateAPIView):
-    # authentication_classes = (TokenAuthentication,)
-    # permission_classes = (IsAuthenticated, IsOwner)
-    serializer_class = ValuationEventSerializer
-
-    def get_queryset(self):
-        portfolio_id = self.kwargs['pk']
-        return ValuationEvent.objects.filter(portfolio_id=portfolio_id)
-
 class ValuationEventDetail(generics.RetrieveUpdateDestroyAPIView):
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated, IsOwner)
@@ -90,6 +81,15 @@ class PortfolioDividendList(generics.ListAPIView):
         # return models.PortfolioDividend.objects.filter(
             # portfolio_id=self.kwargs['pk'],
         ).order_by('-pay_date')
+    
+class ValuationEventList(generics.ListAPIView):
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, IsOwner)
+    serializer_class = ValuationEventSerializer
+
+    def get_queryset(self):
+        portfolio_id = self.kwargs['pk']
+        return ValuationEvent.objects.filter(portfolio_id=portfolio_id)
 
 # Apenas donos podem ver e admin pode CRUD
 class PortfolioEvolutionList(generics.ListAPIView):

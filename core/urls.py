@@ -38,7 +38,6 @@ urlpatterns = [
     path('api/radar/', include('radar.urls')),
     path('api/cashflow/', include('cashflow.urls')),
     path('api/kids/', include('kids.urls')),
-    path('api/equity/', include('equity.urls')),
 
     path('', home, name='home'),
 ]

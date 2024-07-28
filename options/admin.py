@@ -22,14 +22,40 @@ class PutAdmin(admin.ModelAdmin):
 
 @admin.register(PortfolioCalls)
 class PortfolioCallsAdmin(admin.ModelAdmin):
-    list_display = ('portfolio', 'option', 'status', 'quantity', 'price_brl', 'total_brl', 'collateral', 'total_profit_brl', 'profit_percentage')
+    list_display = (
+        'option', 
+        'strike',
+        'expiration_date',
+        'status', 
+        'quantity', 
+        'price_brl', 
+        'pm_projection',
+        'total_brl', 
+        'total_profit_brl', 
+        'profit_percentage',
+        'collateral', 
+        'portfolio'
+        )
     search_fields = ('portfolio__name', 'option__option_ticker')
-    list_filter = ('status', 'option__expiration__date', 'portfolio__name')
+    list_filter = ('status', 'option__expiration', 'portfolio__name')
     list_editable = ('status',)
 
 @admin.register(PortfolioPuts)
 class PortfolioPutsAdmin(admin.ModelAdmin):
-    list_display = ('portfolio', 'option', 'status', 'quantity', 'price_brl', 'total_brl', 'collateral', 'total_profit_brl', 'profit_percentage')
+    list_display = (
+        'option', 
+        'strike',
+        'expiration_date',
+        'status', 
+        'quantity', 
+        'price_brl', 
+        'pm_projection',
+        'total_brl', 
+        'total_profit_brl', 
+        'profit_percentage',
+        'collateral', 
+        'portfolio'
+        )
     search_fields = ('portfolio__name', 'option__option_ticker')
-    list_filter = ('status', 'option__expiration__date', 'portfolio__name')
+    list_filter = ('status', 'option__expiration', 'portfolio__name')
     list_editable = ('status',)

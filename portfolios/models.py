@@ -7,7 +7,6 @@ from categories.models import Category
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 
-
 class Portfolio(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -115,7 +114,7 @@ class PortfolioInvestment(models.Model):
         return round((self.total_profit_usd / self.total_cost_usd) if self.total_cost_usd > 0 else 0, 4)
 
     def __str__(self):
-        return ' {} | {} | {} '.format(self.asset.ticker, self.shares_amount, self.asset.ticker)
+        return '{} {}'.format(self.shares_amount, self.asset.ticker)
 
     class Meta:
         verbose_name_plural = "  Investimentos por Portfolio"

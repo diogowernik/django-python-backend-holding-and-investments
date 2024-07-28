@@ -7,7 +7,10 @@ class Expiration(models.Model):
     date = models.DateField(unique=True)
 
     def __str__(self):
-        return f"Expiration Date: {self.date}"
+        return f"{self.date}"
+    
+    class Meta:
+        ordering = ['date']
 
 class Option(models.Model):
     """Model representing a general option."""
@@ -23,7 +26,7 @@ class Option(models.Model):
     strike_price = models.FloatField() # Strike
 
     def __str__(self):
-        return f"{self.asset.ticker} - {self.option_type} - Expires on {self.expiration.date}"
+        return f"{self.option_ticker}"
 
     def save(self, *args, **kwargs):
         """Override the save method to set the option type."""
@@ -45,6 +48,10 @@ class Call(Option):
     def set_option_type(self):
         """Set the option type to CALL."""
         self.option_type = 'CALL'
+    
+    class Meta:
+        verbose_name = 'Call Option'
+        verbose_name_plural = 'Call Options'
 
 class Put(Option):
     """Model representing a put option."""
@@ -53,7 +60,9 @@ class Put(Option):
         """Set the option type to PUT."""
         self.option_type = 'PUT'
 
-
+    class Meta:
+        verbose_name = 'Put Option'
+        verbose_name_plural = 'Put Options'
 
 class PortfolioOption(models.Model):
     """Model representing a portfolio option."""
@@ -112,6 +121,17 @@ class PortfolioOption(models.Model):
     def option_price_today(self):
         """Calculate the market value of the option based on the current premium."""
         return self.option.price_brl
+    
+    @property 
+    def strike(self):
+        """Return the strike price of the option."""
+        return self.option.strike_price
+    
+        
+    @property
+    def expiration_date(self):
+        """Return the expiration date of the option."""
+        return self.option.expiration.date
 
 class PortfolioCalls(PortfolioOption):
     """Model representing a portfolio call option."""
@@ -122,6 +142,15 @@ class PortfolioCalls(PortfolioOption):
             self.exercise_price_brl = self.option.price_brl + self.option.strike_price
             return 0
         return super().calculate_net_profit()
+    
+    @property
+    def pm_projection(self):
+        """Calculate the exercise price per share for call options."""
+        return self.option.price_brl + self.option.strike_price
+
+    class Meta:
+        verbose_name = 'Portfolio Call Option'
+        verbose_name_plural = 'Portfolio Call Options'
 
 class PortfolioPuts(PortfolioOption):
     """Model representing a portfolio put option."""
@@ -132,5 +161,13 @@ class PortfolioPuts(PortfolioOption):
             self.exercise_price_brl = self.option.strike_price - self.option.price_brl
             return 0
         return super().calculate_net_profit()
+    
+    @property
+    def pm_projection(self):
+        """Calculate the exercise price per share for put options."""
+        return self.option.strike_price - self.option.price_brl
 
+    class Meta:
+        verbose_name = 'Portfolio Put Option'
+        verbose_name_plural = 'Portfolio Put Options'
 
