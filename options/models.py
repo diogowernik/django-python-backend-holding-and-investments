@@ -146,7 +146,7 @@ class PortfolioCalls(PortfolioOption):
     @property
     def pm_projection(self):
         """Calculate the exercise price per share for call options."""
-        return self.option.price_brl + self.option.strike_price
+        return round(self.option.price_brl + self.option.strike_price, 2)
 
     class Meta:
         verbose_name = 'Portfolio Call Option'

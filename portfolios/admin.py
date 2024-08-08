@@ -38,6 +38,7 @@ class PortfolioInvestmentAdmin(admin.ModelAdmin):
         'category'
     )
     list_editable = [
+        'broker',
         'shares_amount',
         'share_average_price_brl',
         'share_average_price_usd',

@@ -65,3 +65,7 @@ python manage.py startapp wtree
 # update requirements.txt
 
     pip freeze > requirements.txt
+
+# run production
+
+    gunicorn --workers 3 core.wsgi:application
