@@ -1,0 +1,8 @@
+belongs_to,date,description,amount,category
+1,2024-09-15,Recebido de Investimentos,20.0,aluguel
+1,2024-09-01,Presente,10.0,presente
+1,2024-08-19,Recebido de Investimentos,10.0,aluguel
+1,2024-08-15,Recebido de Investimentos,10.0,aluguel
+1,2024-07-15,Recebido de Investimentos,10.0,aluguel
+1,2024-07-15,Recebido de Investimentos,10.0,aluguel
+1,2024-06-15,Recebido de Investimentos,30.0,presente

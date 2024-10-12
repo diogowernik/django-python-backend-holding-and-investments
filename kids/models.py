@@ -12,6 +12,21 @@ class KidProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    LANGUAGE_CHOICES = [
+        ('pt', 'Português'),
+        ('en', 'Inglês'),
+        ('fr', 'Francês'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='pt')
+
+    CURRENCY_CHOICES = [
+        ('R$', 'R$'),
+        ('U$', 'U$'),
+        ('€', '€'),
+    ]
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='BRL')
+
+
     def get_portfolio_investments(self):
         return PortfolioInvestment.objects.filter(portfolio=self.belongs_to)
     
@@ -23,6 +38,76 @@ class KidProfile(models.Model):
     
     def __str__(self):
         return self.name
+
+class KidsTransactions(models.Model):
+    belongs_to = models.ForeignKey(KidProfile, on_delete=models.CASCADE, default=1, verbose_name='Pertence a')
+    date = models.DateField(verbose_name='Data')
+    description = models.CharField(max_length=255, verbose_name='Descrição')
+    amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Valor')
+
+    def __str__(self):
+        return f"{self.date} - {self.description} - R$ {self.amount}"
+    
+    class Meta:
+        abstract = True
+        
+class KidsEarns(KidsTransactions):
+    CATEGORY_CHOICES = [
+        ('aluguel', 'Aluguel'),
+        ('missao', 'Missão'),
+        ('presente', 'Presente'),
+        ('outros', 'Outros'),
+    ]
+    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
+
+    class Meta:
+        verbose_name_plural = "KidsEarns"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # Atualizando um registro existente
+            previous = KidsEarns.objects.get(pk=self.pk)
+            amount_diff = float(self.amount) - float(previous.amount)
+            self.belongs_to.current_balance += amount_diff
+        else:
+            # Novo registro
+            self.belongs_to.current_balance += float(self.amount)
+        self.belongs_to.save()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.belongs_to.current_balance -= float(self.amount)
+        self.belongs_to.save()
+        super().delete(*args, **kwargs)
+
+class KidsExpenses(KidsTransactions):
+    CATEGORY_CHOICES = [
+        ('doces', 'Doces'),
+        ('comidas', 'Comidas'),
+        ('brinquedos', 'Brinquedos'),
+        ('outros', 'Outros'),
+    ]
+    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
+
+    class Meta:
+        verbose_name_plural = "KidsExpenses"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # Atualizando um registro existente
+            previous = KidsExpenses.objects.get(pk=self.pk)
+            amount_diff = float(self.amount) - float(previous.amount)
+            self.belongs_to.current_balance -= amount_diff
+        else:
+            # Novo registro
+            self.belongs_to.current_balance -= float(self.amount)
+        self.belongs_to.save()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.belongs_to.current_balance += float(self.amount)
+        self.belongs_to.save()
+        super().delete(*args, **kwargs)
 
 class KidsQuest(models.Model):
     belongs_to = models.ForeignKey(KidProfile, on_delete=models.CASCADE)
@@ -40,47 +125,6 @@ class KidsQuest(models.Model):
 
     class Meta:
         verbose_name_plural = "KidsQuests"
-
-from django.db import models
-
-class KidsTransactions(models.Model):
-    belongs_to = models.ForeignKey(KidProfile, on_delete=models.CASCADE, default=1, verbose_name='Pertence a')
-    date = models.DateField(verbose_name='Data')
-    description = models.CharField(max_length=255, verbose_name='Descrição')
-    amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Valor')
-
-    def __str__(self):
-        return f"{self.date} - {self.description} - R$ {self.amount}"
-    
-    class Meta:
-        abstract = True
-        
-        
-
-class KidsEarns(KidsTransactions):
-    CATEGORY_CHOICES = [
-        ('aluguel', 'Aluguel'),
-        ('missao', 'Missão'),
-        ('presente', 'Presente'),
-        ('outros', 'Outros'),
-    ]
-    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
-
-    class Meta:
-        verbose_name_plural = "KidsEarns"
-
-
-class KidsExpenses(KidsTransactions):
-    CATEGORY_CHOICES = [
-        ('doces', 'Doces'),
-        ('comidas', 'Comidas'),
-        ('brinquedos', 'Brinquedos'),
-        ('outros', 'Outros'),
-    ]
-    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, verbose_name='Categoria')
-
-    class Meta:
-        verbose_name_plural = "KidsExpenses"
 
 class KidsButtons(models.Model):
     belongs_to = models.OneToOneField(KidProfile, on_delete=models.CASCADE, related_name='dashboard_buttons')

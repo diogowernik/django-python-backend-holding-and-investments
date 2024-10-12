@@ -24,6 +24,8 @@ class KidProfileSerializer(serializers.ModelSerializer):
             'image', 
             'description', 
             'current_balance',
+            'currency',
+            'language',
             # 'portfolio_investments', 
             # 'portfolio_dividends',
             ]
@@ -52,11 +54,14 @@ class KidsEarnsSerializer(serializers.ModelSerializer):
     class Meta:
         model = KidsEarns
         fields = '__all__'
+        read_only_fields = ('belongs_to',)
+
 
 class KidsExpensesSerializer(serializers.ModelSerializer):
     class Meta:
         model = KidsExpenses
         fields = '__all__'
+        read_only_fields = ('belongs_to',)
 
 class KidsButtonsSerializer(serializers.ModelSerializer):
     class Meta:

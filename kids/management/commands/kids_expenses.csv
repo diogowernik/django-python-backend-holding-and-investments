@@ -1,0 +1,21 @@
+belongs_to,date,description,amount,category
+1,2024-09-24,Casino,8.59,doces
+1,2024-09-21,La Mie,7.20,comidas
+1,2024-09-20,Casino,6.32,doces
+1,2024-09-19,La Mie,7.20,comidas
+1,2024-09-19,Le Paradis,3.90,outros
+1,2024-09-18,Casino,6.32,doces
+1,2024-09-18,La Mie,4.80,comidas
+1,2024-08-17,Farmácia,6.50,outros
+1,2024-08-17,Cr Rou Porniche,2.20,outros
+1,2024-09-06,Coco Mango,3.50,doces
+1,2024-08-05,Éole,2.50,outros
+1,2024-08-03,Newrest Wagons Lits,7.30,comidas
+1,2024-08-03,Nyxeasymeal,1.50,doces
+1,2024-08-03,Laforaine,2.50,doces
+1,2024-08-26,Fournil Du Marche,3.90,doces
+1,2024-08-20,Hedgard,3.50,outros
+1,2024-08-01,Nyxeasymeal,1.50,doces
+1,2024-08-01,Newrest Wagons-Lits,3.40,outros
+1,2024-08-01,341542relaypx,2.90,outros
+1,2024-07-25,Relaypx,7.00,outros

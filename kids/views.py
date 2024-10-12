@@ -11,7 +11,9 @@ class KidProfileList(generics.ListAPIView):
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated, IsOwner)
     serializer_class = KidsProfilesSerializer
+    # filter by portfolio
     queryset = KidProfile.objects.all()
+
 
 class KidProfileDetail(generics.RetrieveUpdateAPIView):
     # authentication_classes = (TokenAuthentication,)
@@ -58,22 +60,43 @@ class KidsEarnsList(generics.ListCreateAPIView):
         kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
         return KidsEarns.objects.filter(belongs_to=kid_profile)
     
+    def perform_create(self, serializer):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        serializer.save(belongs_to=kid_profile)
+
+    
 class KidsEarnsDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = KidsEarnsSerializer
-    queryset = KidsEarns.objects.all()
+
+    def get_queryset(self):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        return KidsEarns.objects.filter(belongs_to=kid_profile)
+
     lookup_field = 'pk'
 
-class KidsExpensesList(generics.ListAPIView):
+
+# views.py
+class KidsExpensesList(generics.ListCreateAPIView):
     serializer_class = KidsExpensesSerializer
 
     def get_queryset(self):
         kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
         return KidsExpenses.objects.filter(belongs_to=kid_profile)
 
+    def perform_create(self, serializer):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        serializer.save(belongs_to=kid_profile)
+
+
 class KidsExpensesDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = KidsExpensesSerializer
-    queryset = KidsExpenses.objects.all()
+
+    def get_queryset(self):
+        kid_profile = KidProfile.objects.get(slug=self.kwargs['slug'])
+        return KidsExpenses.objects.filter(belongs_to=kid_profile)
+
     lookup_field = 'pk'
+
     
 class KidsButtonsDetail(generics.ListAPIView):
     serializer_class = KidsButtonsSerializer

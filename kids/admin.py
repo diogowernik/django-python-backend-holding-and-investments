@@ -3,8 +3,8 @@ from kids.models import KidProfile, KidsQuest, KidsEarns, KidsExpenses, KidsButt
 
 
 class KidProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'age', 'belongs_to')
-    list_editable = ['age']
+    list_display = ('name', 'slug', 'age', 'belongs_to', 'currency', 'language')
+    list_editable = ['age', 'belongs_to', 'currency', 'language']
     list_filter = ['belongs_to']
     search_fields = ['name', 'belongs_to__name']
     prepopulated_fields = {'slug': ('name',)}
@@ -23,6 +23,7 @@ admin.site.register(KidsQuest, KidsQuestAdmin)
 class KidsEarnsAdmin(admin.ModelAdmin):
     list_display = ('date', 'description', 'amount', 'belongs_to')
     list_filter = ['belongs_to']
+    list_editable = ['description']
     search_fields = ['description', 'belongs_to__name']
 
 admin.site.register(KidsEarns, KidsEarnsAdmin)
