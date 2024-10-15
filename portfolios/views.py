@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from equity.models import ValuationEvent
 from equity.serializers import ValuationEventSerializer
-from dividends.models import PortfolioDividend
+# from dividends.models import PortfolioDividend
 from dividends.serializers import PortfolioDividendSerializer
 
 class ValuationEventDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -72,14 +72,14 @@ class CategoryList(generics.ListAPIView):
 class PortfolioDividendList(generics.ListAPIView):
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsOwner, )  # Somente o dono pode acessar
-    serializer_class = PortfolioDividendSerializer
-    # serializer_class = serializers.PortfolioDividendSerializer
+    # serializer_class = PortfolioDividendSerializer
+    serializer_class = serializers.PortfolioDividendSerializer
 
     def get_queryset(self):
-        return PortfolioDividend.objects.filter(
-            portfolio_investment__portfolio_id=self.kwargs['pk'],
-        # return models.PortfolioDividend.objects.filter(
-            # portfolio_id=self.kwargs['pk'],
+        # return PortfolioDividend.objects.filter(
+        #     portfolio_investment__portfolio_id=self.kwargs['pk'],
+        return models.PortfolioDividend.objects.filter(
+            portfolio_id=self.kwargs['pk'],
         ).order_by('-pay_date')
     
 class ValuationEventList(generics.ListAPIView):

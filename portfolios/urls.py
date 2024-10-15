@@ -12,6 +12,5 @@ urlpatterns = [
     path('assets/<pk>', views.PortfolioInvestmentDetail.as_view(), name='portfolio-investment-detail'),
     path('portfolio_assets/<pk>', views.PortfolioInvestmentDetail.as_view()),
     path('add-portfolio-asset', views.PortfolioInvestmentCreateView.as_view()),
-
 ]
 
