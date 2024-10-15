@@ -70,8 +70,8 @@ class CategoryList(generics.ListAPIView):
 
 # Apenas donos podem ver e admin pode CRUD
 class PortfolioDividendList(generics.ListAPIView):
-    # authentication_classes = (TokenAuthentication,)
-    # permission_classes = (IsOwner, )  # Somente o dono pode acessar
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsOwner, )  # Somente o dono pode acessar
     # serializer_class = PortfolioDividendSerializer
     serializer_class = serializers.PortfolioDividendSerializer
 

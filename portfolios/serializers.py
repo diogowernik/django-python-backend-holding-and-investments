@@ -125,4 +125,5 @@ class PortfolioEvolutionSerializer(serializers.ModelSerializer):
             'category_total_brl',
             'category_total_usd',
             'date',
+            'evolution_by_year',
         )

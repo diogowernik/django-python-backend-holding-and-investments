@@ -130,6 +130,11 @@ class PortfolioEvolution(models.Model):
         ordering = ['date']
         verbose_name = 'Evolução do Patrimonio'
         verbose_name_plural = 'Evolução do Patrimonio'
+    
+    #evolution by year
+    @property
+    def evolution_by_year(self):
+        return self.date.strftime('%Y')
 
 class PortfolioDividend(models.Model):
     portfolio = models.ForeignKey(
