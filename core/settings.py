@@ -138,7 +138,7 @@ ALLOWED_HOSTS = [
 react_app_host = os.getenv('REACT_APP_HOST')
 
 CORS_ALLOWED_ORIGINS = [
-    react_app_host,
+    # react_app_host,
     'https://wtr.ee',
     'https://kids.wtr.ee',
     'https://holding.wtr.ee',
