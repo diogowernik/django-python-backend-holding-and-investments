@@ -143,6 +143,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://kids.wtr.ee',
     'https://holding.wtr.ee',
     'https://movies.wtr.ee',
+    'http://localhost:3000',
 ]
 # Apenas admin podem criar contas
 # DJOSER = {
