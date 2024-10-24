@@ -64,21 +64,24 @@ class KidsEarns(KidsTransactions):
         verbose_name_plural = "KidsEarns"
 
     def save(self, *args, **kwargs):
+        # Arredondando o valor para duas casas decimais
+        self.amount = round(float(self.amount), 2)
+
         if self.pk:
-            # Atualizando um registro existente
             previous = KidsEarns.objects.get(pk=self.pk)
-            amount_diff = float(self.amount) - float(previous.amount)
-            self.belongs_to.current_balance += amount_diff
+            amount_diff = round(float(self.amount) - float(previous.amount), 2)
+            self.belongs_to.current_balance = round(self.belongs_to.current_balance + amount_diff, 2)
         else:
-            # Novo registro
-            self.belongs_to.current_balance += float(self.amount)
+            self.belongs_to.current_balance = round(self.belongs_to.current_balance + float(self.amount), 2)
+
         self.belongs_to.save()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        self.belongs_to.current_balance -= float(self.amount)
+        self.belongs_to.current_balance = round(self.belongs_to.current_balance - float(self.amount), 2)
         self.belongs_to.save()
         super().delete(*args, **kwargs)
+
 
 class KidsExpenses(KidsTransactions):
     CATEGORY_CHOICES = [
@@ -93,19 +96,21 @@ class KidsExpenses(KidsTransactions):
         verbose_name_plural = "KidsExpenses"
 
     def save(self, *args, **kwargs):
+        # Arredondando o valor para duas casas decimais
+        self.amount = round(float(self.amount), 2)
+
         if self.pk:
-            # Atualizando um registro existente
             previous = KidsExpenses.objects.get(pk=self.pk)
-            amount_diff = float(self.amount) - float(previous.amount)
-            self.belongs_to.current_balance -= amount_diff
+            amount_diff = round(float(self.amount) - float(previous.amount), 2)
+            self.belongs_to.current_balance = round(self.belongs_to.current_balance - amount_diff, 2)
         else:
-            # Novo registro
-            self.belongs_to.current_balance -= float(self.amount)
+            self.belongs_to.current_balance = round(self.belongs_to.current_balance - float(self.amount), 2)
+
         self.belongs_to.save()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        self.belongs_to.current_balance += float(self.amount)
+        self.belongs_to.current_balance = round(self.belongs_to.current_balance + float(self.amount), 2)
         self.belongs_to.save()
         super().delete(*args, **kwargs)
 
