@@ -58,14 +58,17 @@ class Command(BaseCommand):
         # FI-Infra to Fundo Imobiliário
         dividends['subcategory'] = dividends['subcategory'].str.replace('FI-Infra', 'Fundos Imobiliários')
 
+        # FI-Agro to Fundo Imobiliário
+        dividends['subcategory'] = dividends['subcategory'].str.replace('FI-Agro', 'Fundos Imobiliários')
+
         # Ação to Ações Brasileiras
         dividends['subcategory'] = dividends['subcategory'].str.replace('Ação', 'Ações Brasileiras')
 
         # Stock to Stocks
-        dividends['subcategory'] = dividends['subcategory'].str.replace('Stock', 'Stocks')
+        dividends['subcategory'] = dividends['subcategory'].str.replace('Stock', 'US Equities')
 
         # REIT to REITs
-        dividends['subcategory'] = dividends['subcategory'].str.replace('REIT', 'REITs')
+        dividends['subcategory'] = dividends['subcategory'].str.replace('REIT', 'US Equities')
 
         # print(dividends)
 
