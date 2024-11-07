@@ -151,6 +151,7 @@ class PortfolioDividend(models.Model):
         ('FII', 'Fundos Imobiliários'),
         ('FI-Infra', 'Fundos Imobiliários'),
         ('Ação', 'Ações Brasileiras'),
+        ('US Equities', 'US Equities'),
     )
     category = models.CharField(
         max_length=100, choices=categoryChoice, default='Ação')
