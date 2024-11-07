@@ -132,21 +132,21 @@ class PortfolioDividend(models.Model):
         self.total_dividend_brl = round(self.shares_amount * self.value_per_share_brl, 2)
         self.total_dividend_usd = round(self.shares_amount * self.value_per_share_usd, 2)
         super().save(*args, **kwargs)
-        self.create_dividend_receive_events()  # Cria o DividendReceiveEvent automaticamente
+    #     self.create_dividend_receive_events()  # Cria o DividendReceiveEvent automaticamente
 
-    def create_dividend_receive_events(self):
-        if self.currency == 'BRL':
-            transaction_amount = self.shares_amount * self.value_per_share_brl
-        else:
-            transaction_amount = self.shares_amount * self.value_per_share_usd
+    # def create_dividend_receive_events(self):
+    #     if self.currency == 'BRL':
+    #         transaction_amount = self.shares_amount * self.value_per_share_brl
+    #     else:
+    #         transaction_amount = self.shares_amount * self.value_per_share_usd
 
-        DividendReceiveEvent.objects.create(
-            portfolio = self.portfolio_investment.portfolio,
-            broker = self.portfolio_investment.broker,
-            transaction_amount = transaction_amount,
-            transaction_date = self.pay_date,
-            description = f'Dividendos recebido de {self.asset.ticker}, {transaction_amount} {self.currency}',
-        )
+    #     DividendReceiveEvent.objects.create(
+    #         portfolio = self.portfolio_investment.portfolio,
+    #         broker = self.portfolio_investment.broker,
+    #         transaction_amount = transaction_amount,
+    #         transaction_date = self.pay_date,
+    #         description = f'Dividendos recebido de {self.asset.ticker}, {transaction_amount} {self.currency}',
+    #     )
 
     @property
     def pay_date_by_month_year(self):
@@ -206,7 +206,6 @@ class DividendUs(Dividend):
 
     class Meta:
         verbose_name_plural = "Dividendos US"
-
 
 class AccumulatedDividends(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
