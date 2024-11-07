@@ -1,0 +1,17 @@
+ <!-- templates/admin/db_page.html  -->
+
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h1>Administração do Banco de Dados</h1>
+<p>Aqui você pode fazer o download do arquivo de banco de dados.</p>
+
+<form action="{% url 'admin_commands:download_db' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="button default" onclick="return confirm('Tem certeza que deseja baixar o banco de dados?');">
+        Baixar Banco de Dados
+    </button>
+</form>
+
+{% endblock %}

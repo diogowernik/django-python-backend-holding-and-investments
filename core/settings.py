@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'blockchains',
     'contracts',
     'options',
+    'admin_commands',
 ]
 
 MIDDLEWARE = [

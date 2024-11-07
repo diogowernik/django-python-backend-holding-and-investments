@@ -1,0 +1,171 @@
+<!-- templates/admin/command_page.html -->
+
+{% extends "admin/base_site.html" %}
+
+{% load static %}
+
+{% block extrahead %}
+<style>
+    /* Estilos personalizados */
+
+    .container {
+        display: flex;
+        flex-direction: row;
+        max-height: 80vh;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 25%;
+        background-color: #f0f0f0;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .content {
+        width: 75%;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .command-group {
+        margin-bottom: 20px;
+    }
+
+    .command-group h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .command-form {
+        margin-bottom: 15px;
+    }
+
+    .command-button {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+        padding: 10px;
+        background-color: #0C4B33;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-align: left;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .command-button:hover {
+        background-color: #095727;
+    }
+
+    .command-description {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .command-select,
+    .command-input {
+        width: 100%;
+        padding: 5px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+    }
+
+    /* Estilos para mensagens */
+    .messagelist {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .messagelist li {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+
+    .messagelist li.success {
+        background-color: #dff0d8;
+        color: #3c763d;
+    }
+
+    .messagelist li.error {
+        background-color: #f2dede;
+        color: #a94442;
+    }
+
+    /* Estilos para a saída do comando */
+    .command-output {
+        background-color: #f8f8f8;
+        padding: 10px;
+        border: 1px solid #ccc;
+        white-space: pre-wrap;
+        max-height: 70vh;
+        overflow: auto;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Administração de Comandos</h1>
+<p>Utilize esta página para executar comandos de manutenção e atualização do sistema. Certifique-se de que entende o impacto de cada comando antes de executá-lo.</p>
+
+{% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<div class="container">
+    <!-- Sidebar com os botões de comandos -->
+    <div class="sidebar">
+        {% for group in command_groups %}
+            <div class="command-group">
+                <h2>{{ group.group_name }}</h2>
+                {% for command in group.commands %}
+                    <form class="command-form" action="{% url 'admin_commands:run-command' command.name %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="command-button" onclick="return confirm('Tem certeza que deseja executar o comando {{ command.name }}?');">
+                            {{ command.name }}
+                        </button>
+                        {% if command.args %}
+                            {% for arg in command.args %}
+                                {% if arg.type == 'choice' %}
+                                    <select name="{{ arg.name }}" class="command-select">
+                                        {% for option in arg.options %}
+                                            <option value="{{ option.value }}">{{ option.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% elif arg.type == 'text' %}
+                                    <input type="text" name="{{ arg.name }}" class="command-input" placeholder="{{ arg.placeholder }}">
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <p class="command-description">{{ command.description }}</p>
+                    </form>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Área de conteúdo para exibir a saída dos comandos -->
+    <div class="content">
+        {% if command_output %}
+            <h2>Saída do Comando</h2>
+            <pre class="command-output">{{ command_output }}</pre>
+        {% else %}
+            <h2>Bem-vindo à Administração de Comandos</h2>
+            <p>Selecione um comando à esquerda para executar e ver a saída aqui.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
