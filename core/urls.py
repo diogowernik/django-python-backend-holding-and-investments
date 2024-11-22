@@ -10,8 +10,14 @@ from djoser.views import (TokenCreateView)
 from .views import home
 from django.conf import settings
 import os
+from django.http import HttpResponse
+
 
 SECRET_ADMIN_PATH = os.getenv("SECRET_ADMIN_PATH")
+
+def robots_txt(request):
+    content = "User-agent: *\nDisallow: /"
+    return HttpResponse(content, content_type="text/plain")
 
 
 schema_view = get_schema_view(
@@ -34,6 +40,8 @@ urlpatterns = [
 
     path(f'{SECRET_ADMIN_PATH}/commands/', admin_site.urls),
     path(f'{SECRET_ADMIN_PATH}/', admin.site.urls),
+    path("robots.txt", robots_txt),
+
 
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
