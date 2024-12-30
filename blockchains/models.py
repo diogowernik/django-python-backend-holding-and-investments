@@ -1,3 +1,5 @@
+# blockchain/models.py
+
 from django.db import models
 
 class Blockchain(models.Model):

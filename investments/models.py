@@ -187,3 +187,12 @@ class Reit(InternationalAssets):
 class Etf(InternationalAssets):
     class Meta:
         verbose_name_plural = "Internacional / ETF"
+
+
+class LiquidityProvider(Asset):
+    pool_address = models.CharField(max_length=255, default='') # Pool Info
+    position_address = models.CharField(max_length=255, default='')
+    whirlpool = models.CharField(max_length=255, default='')
+
+    class Meta:
+        verbose_name_plural = "Provedores de Liquidez"
