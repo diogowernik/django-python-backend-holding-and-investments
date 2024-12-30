@@ -57,6 +57,9 @@ class ReitAdmin(AssetAdmin):
 class EtfAdmin(AssetAdmin):
     list_filter = ('is_radar',)
 
+class LiquidityProviderAdmin(AssetAdmin):
+    list_filter = ('is_radar',)
+
 
 # admin.site.register(models.Asset, AssetAdmin)
 admin.site.register(models.Fii, FiiAdmin)
@@ -70,3 +73,4 @@ admin.site.register(models.BrStocks, BrStocksAdmin)
 admin.site.register(models.Reit, ReitAdmin)
 admin.site.register(models.Asset, AssetAdmin)
 admin.site.register(models.Etf, EtfAdmin)
+admin.site.register(models.LiquidityProvider, LiquidityProviderAdmin)
