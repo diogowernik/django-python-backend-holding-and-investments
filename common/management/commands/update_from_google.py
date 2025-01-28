@@ -1,29 +1,86 @@
 from django.core.management.base import BaseCommand
 from investments.models import BrStocks, Fii, Stocks, Reit, Etf
-from common.utils.fuctions import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment
+from common.utils.fuctions import fetch_data, rename_set_index, merge_dataframes, get_app_df, update_investment, get_usd_to_brl_today
+import pandas as pd
 
 def update_data_from_google(AppModel, sheet_url):
-    newline = "\n"
-    bold_start = "\033[1m"
-    bold_end = "\033[0m"
+    print(f"\033[1mAtualizando {AppModel.__name__}...\033[0m")
 
-    print(f"{bold_start}Atualizando {AppModel.__name__}...{bold_end}")
-
-    # Fetching app data
+    # Pegamos o DataFrame do model (id, ticker, etc.)
     app_df = get_app_df(AppModel)
 
-    # Google fields from google sheets
-    print(f"{newline}{bold_start}Atualizando preço em reais, topo e fundo 52 semanas, pela planilha do google...{bold_end}{newline}")
-
+    # Lê a planilha do Google
     google_df = fetch_data(sheet_url)
-    column_map_google = {'A': 'ticker', 'C': 'price_brl', 'D': 'top_52w', 'E': 'bottom_52w', 'F': 'price_usd'}
-    google_df = rename_set_index(google_df, column_map_google, 'ticker')
-    merged_google_df = merge_dataframes(app_df, google_df, "ticker")
-    print(merged_google_df)
-    update_investment(AppModel, merged_google_df, ['price_brl', 'top_52w', 'bottom_52w', 'price_usd'])
 
-    print(f"{bold_start}Feito.{bold_end}{newline}")
+    # Cotação atual do dólar
+    usd_brl_price = get_usd_to_brl_today()
+    print(f"Preço do dólar hoje: {usd_brl_price}")
 
+    # Verifica se é ativo brasileiro ou americano
+    if AppModel in [BrStocks, Fii]:
+        # ------------------------------------------------
+        # BRStocks e FII (campos em reais)
+        # ------------------------------------------------
+        column_map_google = {
+            'A': 'ticker',
+            'C': 'price_brl',
+            'D': 'top_52w',
+            'E': 'bottom_52w'
+            # price_usd não existe mais aqui
+        }
+        google_df = rename_set_index(google_df, column_map_google, 'ticker')
+
+        # Converte para float (caso venha com vírgula, etc.)
+        google_df[['price_brl', 'top_52w', 'bottom_52w']] = google_df[[
+            'price_brl', 'top_52w', 'bottom_52w'
+        ]].apply(lambda col: col.astype(str).str.replace(',', '.').astype(float))
+
+        # Calcula price_usd
+        google_df['price_usd'] = (google_df['price_brl'] / usd_brl_price).round(2)
+
+        # Faz merge no DF do App
+        merged_google_df = merge_dataframes(app_df, google_df, "ticker")
+
+        # Exibindo no console (pode usar to_string(), to_markdown(), etc.)
+        print("\n\033[1mExibindo DataFrame (BR)\033[0m:")
+        print(merged_google_df.to_string())  # ou .to_markdown(), .head(), etc.
+
+        # Atualiza no banco
+        update_investment(AppModel, merged_google_df,
+                          ['price_brl', 'top_52w', 'bottom_52w', 'price_usd'])
+
+    else:
+        # ------------------------------------------------
+        # Stocks, Reit, Etf (campos em dólares)
+        # ------------------------------------------------
+        column_map_google = {
+            'A': 'ticker',
+            'F': 'price_usd',
+            'D': 'top_52w',
+            'E': 'bottom_52w'
+            # price_brl foi desativado na planilha
+        }
+        google_df = rename_set_index(google_df, column_map_google, 'ticker')
+
+        # Converte para float
+        google_df[['price_usd', 'top_52w', 'bottom_52w']] = google_df[[
+            'price_usd', 'top_52w', 'bottom_52w'
+        ]].apply(lambda col: col.astype(str).str.replace(',', '.').astype(float))
+
+        # (Opcional) Se quiser calcular price_brl para guardar:
+        google_df['price_brl'] = (google_df['price_usd'] * usd_brl_price).round(2)
+
+        # Faz merge no DF do App
+        merged_google_df = merge_dataframes(app_df, google_df, "ticker")
+
+        print("\n\033[1mExibindo DataFrame (US)\033[0m:")
+        print(merged_google_df.to_string())  # ou .to_markdown(), etc.
+
+        # Atualiza no banco (aqui mantemos ambos, se seu model ainda tem price_brl)
+        update_investment(AppModel, merged_google_df,
+                          ['price_usd', 'price_brl', 'top_52w', 'bottom_52w'])
+
+    print(f"\033[1mFeito {AppModel.__name__}.\033[0m\n")
 
 class Command(BaseCommand):
     def handle(self, *args, **options):

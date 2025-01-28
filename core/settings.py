@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'contracts',
     'options',
     'admin_commands',
+    'movies',
 ]
 
 MIDDLEWARE = [

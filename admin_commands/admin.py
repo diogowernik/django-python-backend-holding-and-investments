@@ -52,9 +52,9 @@ class CommandAdminSite(admin.AdminSite):
                                 'name': 'tipo',
                                 'type': 'choice',
                                 'options': [
-                                    {'value': 'D', 'label': 'Detalhado'},
-                                    {'value': 'I', 'label': 'Intermediário'},
-                                    {'value': 'G', 'label': 'Geral'},
+                                    {'value': 'D', 'label': 'Diogo'},
+                                    {'value': 'I', 'label': 'Isabel'},
+                                    {'value': 'G', 'label': 'Graciela'},
                                 ],
                             },
                         ],
