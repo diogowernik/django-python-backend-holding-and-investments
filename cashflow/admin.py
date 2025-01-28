@@ -14,7 +14,7 @@ class CurrencyTransactionAdmin(admin.ModelAdmin):
         # Somente chame save() quando todos os campos necessários forem preenchidos
         if obj.portfolio and obj.broker and obj.transaction_type is not None and obj.transaction_amount is not None:
             super().save_model(request, obj, form, change)
-admin.site.register(CurrencyTransaction, CurrencyTransactionAdmin)
+# admin.site.register(CurrencyTransaction, CurrencyTransactionAdmin)
 
 # Transferências entre contas
 
@@ -41,7 +41,7 @@ class CurrencyTransferAdmin(admin.ModelAdmin):
         # Somente chame save() quando todos os campos necessários forem preenchidos
         if obj.portfolio and obj.broker and obj.transaction_type is not None and obj.transaction_amount is not None:
             super().save_model(request, obj, form, change)
-admin.site.register(CurrencyTransfer, CurrencyTransferAdmin)
+# admin.site.register(CurrencyTransfer, CurrencyTransferAdmin)
 
 
 class InternationalCurrencyTransferAdmin(admin.ModelAdmin):
@@ -66,5 +66,5 @@ class InternationalCurrencyTransferAdmin(admin.ModelAdmin):
         )
     search_fields = ['portfolio__name']
 
-admin.site.register(InternationalCurrencyTransfer, InternationalCurrencyTransferAdmin)
+# admin.site.register(InternationalCurrencyTransfer, InternationalCurrencyTransferAdmin)
 
